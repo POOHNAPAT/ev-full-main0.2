@@ -8,8 +8,11 @@ import Booking from './pages/Booking'
 import Reviews from './pages/Reviews'
 import PaymentMethods from './pages/PaymentMethods'
 import UsageHistory from './pages/UsageHistory'
+import AddVehicle from './pages/AddVehicle'
+import Contact from './pages/Contact'
 import { AuthProvider } from './components/AuthContext'
 import { LanguageProvider, useLanguage } from './components/LanguageContext'
+import { FaSearch, FaUser } from 'react-icons/fa'
 
 function AppContent() {
   const { language, toggleLanguage, t } = useLanguage();
@@ -19,16 +22,19 @@ function AppContent() {
       <header className="bg-blue-600 text-white p-4 flex justify-between items-center">
         <div className="text-lg font-bold">EV Charger</div>
         <nav className="space-x-4 flex items-center">
-            <Link to="/" className="hover:underline">{t.home}</Link>
-            <Link to="/map" className="hover:underline">{t.map}</Link>
-            <Link to="/reviews" className="hover:underline">{t.reviews}</Link>
-            <a href="#search-all" className="hover:underline">{t.searchAll}</a>
-            <a href="#contact" className="hover:underline">{t.contact}</a>
-          <button onClick={toggleLanguage} className="ml-3 hover:underline">
+            <Link to="/" className="hover:underline transition duration-300 hover:text-blue-200">{t.home}</Link>
+            <Link to="/map" className="hover:underline transition duration-300 hover:text-blue-200">{t.map}</Link>
+            <Link to="/reviews" className="hover:underline transition duration-300 hover:text-blue-200">{t.reviews}</Link>
+            <a href="#search-all" className="hover:underline transition duration-300 hover:text-blue-200 flex items-center space-x-1 bg-white text-blue-600 px-3 py-1 rounded-full">
+              <FaSearch className="text-sm" />
+              <span>{t.searchAll}</span>
+            </a>
+            <Link to="/contact" className="hover:underline transition duration-300 hover:text-blue-200">{t.contact}</Link>
+          <button onClick={toggleLanguage} className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
             {language === 'th' ? 'EN' : 'TH'}
           </button>
-          <Link to="/profile" className="ml-3 hover:underline">
-            <span role="img" aria-label="profile">👤</span>
+          <Link to="/profile" className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
+            <FaUser className="text-lg" />
           </Link>
         </nav>
       </header>
@@ -44,6 +50,8 @@ function AppContent() {
             <Route path="/reviews" element={<Reviews/>} />
             <Route path="/payment-methods" element={<PaymentMethods/>} />
             <Route path="/usage-history" element={<UsageHistory/>} />
+            <Route path="/add-vehicle" element={<AddVehicle/>} />
+            <Route path="/contact" element={<Contact/>} />
           </Routes>
         </main>
 

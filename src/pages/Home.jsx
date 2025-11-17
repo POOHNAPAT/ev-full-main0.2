@@ -65,8 +65,7 @@ export default function Home(){
 
 
       <section id="contact" className="mb-16 bg-gray-50 p-8 rounded-xl">
-        <h4 className="text-2xl font-bold mb-4 text-center">{t.contact}</h4>
-        <p className="text-gray-600 text-center">{t.contactEmail}</p>
+        
       </section>
     </div>
   )

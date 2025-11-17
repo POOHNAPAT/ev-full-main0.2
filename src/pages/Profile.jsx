@@ -43,9 +43,9 @@ export default function Profile() {
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-700">ปุ่มดำเนินการ</h2>
           <div className="flex flex-wrap gap-4">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center">
+            <Link to="/add-vehicle" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center">
               <span className="mr-2">➕</span> เพิ่มพาหนะ
-            </button>
+            </Link>
             <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center">
               <span className="mr-2">🚪</span> Log out
             </button>

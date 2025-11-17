@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import '../styles/PaymentMethods.css';
 
 export default function PaymentMethods() {
   const [selectedMethod, setSelectedMethod] = useState('');
@@ -24,18 +25,17 @@ export default function PaymentMethods() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white shadow-lg rounded-lg p-6">
-          <h1 className="text-3xl font-bold mb-4 text-gray-800">วิธีการชำระเงิน</h1>
-          <p className="mb-6 text-gray-600">เลือกวิธีการชำระเงินที่คุณต้องการ</p>
-          <div className="space-y-4">
+    <div className="payment-container">
+      <div className="payment-card">
+        <div className="payment-header">
+          <h1>วิธีการชำระเงิน</h1>
+          <p>เลือกวิธีการชำระเงินที่คุณต้องการ</p>
+        </div>
+        <div className="payment-methods">
             {methods.map(method => (
               <div
                 key={method.id}
-                className={`border rounded-lg p-4 cursor-pointer transition duration-200 ${
-                  selectedMethod === method.id ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-                }`}
+                className={`payment-method-item ${selectedMethod === method.id ? 'active' : ''}`}
                 onClick={() => {
                   setSelectedMethod(method.id);
                   if (method.id === 'credit') {
@@ -50,73 +50,73 @@ export default function PaymentMethods() {
                   }
                 }}
               >
-                <div className="flex items-center">
-                  <span className="text-2xl mr-4">{method.icon}</span>
-                  <span className="text-lg">{method.name}</span>
+                <span className="payment-method-icon">{method.icon}</span>
+                <div className="payment-method-content">
+                  <span className="payment-method-name">{method.name}</span>
                   {selectedMethod === method.id && (
-                    <span className="ml-auto text-blue-500">✓</span>
+                    <div className="payment-method-checkmark">✓</div>
                   )}
                 </div>
               </div>
             ))}
             {showCreditForm && (
-              <div className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-50">
-                <h3 className="text-lg font-semibold mb-4">เพิ่มบัตรเครดิต/เดบิต</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">หมายเลขบัตร</label>
+              <div className="payment-form-section">
+                <h3>💳 เพิ่มบัตรเครดิต/เดบิต</h3>
+                <div>
+                  <div className="form-group">
+                    <label className="form-label">หมายเลขบัตร</label>
                     <input
                       type="text"
                       placeholder="1234 5678 9012 3456"
                       value={creditCard.number}
                       onChange={(e) => setCreditCard({ ...creditCard, number: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="form-input"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">วันหมดอายุ</label>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">วันหมดอายุ</label>
                       <input
                         type="text"
                         placeholder="MM/YY"
                         value={creditCard.expiry}
                         onChange={(e) => setCreditCard({ ...creditCard, expiry: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="form-input"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">CVV</label>
+                    <div className="form-group">
+                      <label className="form-label">CVV</label>
                       <input
                         type="text"
                         placeholder="123"
                         value={creditCard.cvv}
                         onChange={(e) => setCreditCard({ ...creditCard, cvv: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        className="form-input"
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">ชื่อบนบัตร</label>
+                  <div className="form-group">
+                    <label className="form-label">ชื่อบนบัตร</label>
                     <input
                       type="text"
                       placeholder="ชื่อเต็มบนบัตร"
                       value={creditCard.name}
                       onChange={(e) => setCreditCard({ ...creditCard, name: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="form-input"
                     />
                   </div>
                 </div>
               </div>
             )}
             {showBankForm && (
-              <div className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-50">
-                <h3 className="text-lg font-semibold mb-4">เลือกธนาคาร</h3>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">ธนาคาร</label>
+              <div className="payment-form-section">
+                <h3>🏦 เลือกธนาคาร</h3>
+                <div className="form-group">
+                  <label className="form-label">ธนาคาร</label>
                   <select
                     value={selectedBank}
                     onChange={(e) => setSelectedBank(e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="form-select"
                   >
                     <option value="">เลือกธนาคาร</option>
                     {banks.map(bank => (
@@ -126,18 +126,17 @@ export default function PaymentMethods() {
                 </div>
               </div>
             )}
-          </div>
-          <div className="mt-6 flex justify-between">
-            <Link to="/profile" className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition duration-200">
-              กลับ
-            </Link>
-            <button
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200 disabled:opacity-50"
-              disabled={!selectedMethod}
-            >
-              บันทึก
-            </button>
-          </div>
+        </div>
+        <div className="payment-actions">
+          <Link to="/profile" className="btn btn-back">
+            ← กลับ
+          </Link>
+          <button
+            className="btn btn-save"
+            disabled={!selectedMethod}
+          >
+            บันทึก
+          </button>
         </div>
       </div>
     </div>
