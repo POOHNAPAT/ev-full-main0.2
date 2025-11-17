@@ -15,7 +15,16 @@ const stations = {
   'central-world': { name: 'Central World – ชั้น B2', available: '6/10', power: '150 kW', amenities: 'Wi-Fi ฟรี, ร้านกาแฟ, ห้องน้ำ, ระบบรักษาความปลอดภัย, พื้นที่พักผ่อน, ร้านอาหาร' },
   'siam-paragon': { name: 'Siam Paragon', available: '4/8', power: '100 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ' },
   'mbk-center': { name: 'MBK Center', available: '5/10', power: '120 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
-  // Add more as needed
+  'bangkok-mall': { name: 'Bangkok Mall', available: '3/6', power: '80 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ, ร้านอาหาร' },
+  'terminal-21': { name: 'Terminal 21', available: '7/12', power: '200 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน' },
+  'central-plaza': { name: 'Central Plaza', available: '2/4', power: '50 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
+  'central-chidlom': { name: 'Central Chidlom', available: '8/15', power: '180 kW', amenities: 'Wi-Fi ฟรี, ร้านกาแฟ, ห้องน้ำ, ระบบรักษาความปลอดภัย, ร้านอาหาร, พื้นที่จอดรถ' },
+  'emquartier': { name: 'EmQuartier', available: '5/8', power: '120 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน, ร้านค้า' },
+  'gateway-ekamai': { name: 'Gateway Ekamai', available: '4/6', power: '90 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ, ร้านอาหาร, ระบบรักษาความปลอดภัย' },
+  'the-emerald': { name: 'The Emerald', available: '6/10', power: '150 kW', amenities: 'Wi-Fi ฟรี, ร้านกาแฟ, ห้องน้ำ, พื้นที่พักผ่อน, ร้านอาหาร' },
+  'central-festival': { name: 'Central Festival EastVille', available: '9/14', power: '220 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ, ร้านอาหาร, พื้นที่พักผ่อน, ระบบรักษาความปลอดภัย' },
+  'major-cineplex': { name: 'Major Cineplex', available: '3/5', power: '75 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่จอดรถ' },
+  'chatuchak-market': { name: 'Chatuchak Weekend Market', available: '12/20', power: '250 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่จอดรถ, ระบบรักษาความปลอดภัย, ร้านค้า, พื้นที่พักผ่อน' },
 };
 
 export default function Booking() {
