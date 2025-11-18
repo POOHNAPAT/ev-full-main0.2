@@ -49,7 +49,13 @@ export default function Contact() {
       }, 3000);
     } catch (error) {
       console.error('Email sending failed:', error);
-      alert(`เกิดข้อผิดพลาดในการส่งอีเมล: ${error.text || error.message || 'Unknown error'}`);
+      console.error('Error details:', {
+        message: error.message,
+        text: error.text,
+        status: error.status,
+        name: error.name
+      });
+      alert(`เกิดข้อผิดพลาดในการส่งอีเมล: ${error.text || error.message || 'Unknown error'}. กรุณาตรวจสอบคอนโซลสำหรับรายละเอียดเพิ่มเติม.`);
     }
   };
 

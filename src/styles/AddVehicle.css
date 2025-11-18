@@ -55,65 +55,127 @@
   color: white;
 }
 
+/* Enhanced Step Indicator Styles */
 .step-indicator {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  position: relative;
 }
 
-.step-numbers {
+.step-progress-container {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  position: relative;
+  padding: 0 1rem;
 }
 
-.step-number {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  border: 2px solid;
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 10;
+  flex: 1;
+}
+
+.step-circle {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 3px solid;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
-.step-number.active {
+.step-circle.completed {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+  animation: pulse-green 2s infinite;
+}
+
+.step-circle.active {
   background: white;
   color: #2563eb;
   border-color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: scale(1.1);
 }
 
-.step-number.inactive {
-  border-color: #93c5fd;
+.step-circle.upcoming {
+  background: #60a5fa;
+  color: white;
+  border-color: #60a5fa;
 }
 
-.step-connector {
-  width: 3rem;
-  height: 0.25rem;
-}
-
-.step-connector.active {
-  background: #10b981;
-}
-
-.step-connector.inactive {
-  background: #93c5fd;
-}
-
-.step-labels {
-  display: flex;
-  justify-content: space-between;
+.step-label {
   margin-top: 0.5rem;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+  transition: color 0.3s ease;
+  white-space: nowrap;
 }
 
 .step-label.active {
-  font-weight: 600;
   color: white;
+  font-weight: 600;
 }
 
-.step-label.inactive {
+.step-label.completed {
+  color: #bbf7d0;
+}
+
+.step-label.upcoming {
   color: #bfdbfe;
+}
+
+.step-connector {
+  position: absolute;
+  top: 1.5rem;
+  left: 50%;
+  right: 50%;
+  height: 2px;
+  background: #93c5fd;
+  transition: background-color 0.5s ease;
+  z-index: 5;
+}
+
+.step-connector.completed {
+  background: #34d399;
+}
+
+@keyframes pulse-green {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .step-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 0.625rem;
+  }
+
+  .step-label {
+    font-size: 0.625rem;
+  }
+
+  .step-connector {
+    height: 1.5px;
+    top: 1.25rem;
+  }
 }
 
 .form-content {

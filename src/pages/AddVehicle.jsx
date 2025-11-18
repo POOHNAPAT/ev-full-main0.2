@@ -93,21 +93,51 @@ export default function AddVehicle() {
                 <FaArrowLeft className="text-xl" />
               </Link>
             </div>
-            <div className="mt-4">
-              <div className="flex items-center space-x-2">
-                {[1, 2, 3].map((num) => (
-                  <div key={num} className={`flex items-center ${num < step ? 'text-green-300' : num === step ? 'text-white' : 'text-blue-300'}`}>
-                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold ${num <= step ? 'bg-white text-blue-600 border-white' : 'border-blue-300'}`}>
-                      {num}
-                    </div>
-                    {num < 3 && <div className={`w-12 h-1 ${num < step ? 'bg-green-300' : 'bg-blue-300'}`}></div>}
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-between mt-2 text-sm">
-                <span className={step === 1 ? 'font-semibold text-white' : 'text-blue-200'}>เลือกประเภท</span>
-                <span className={step === 2 ? 'font-semibold text-white' : 'text-blue-200'}>ข้อมูลพาหนะ</span>
-                <span className={step === 3 ? 'font-semibold text-white' : 'text-blue-200'}>ยืนยัน</span>
+            <div className="mt-6">
+              <div className="relative">
+                {/* Background connector line spanning all steps */}
+                <div className="absolute top-6 left-6 right-6 h-0.5 bg-blue-300"></div>
+
+                {/* Active/completed connector overlay */}
+                <div
+                  className="absolute top-6 left-6 h-0.5 bg-green-400 transition-all duration-500"
+                  style={{ width: step > 1 ? `${(step - 1) * 50}%` : '0%' }}
+                ></div>
+
+                <div className="flex items-center justify-between relative z-10">
+                  {[1, 2, 3].map((num) => {
+                    const stepIcons = {
+                      1: <FaCar className="text-xs" />,
+                      2: <FaBatteryHalf className="text-xs" />,
+                      3: <FaCheck className="text-xs" />
+                    };
+                    const stepLabels = {
+                      1: 'เลือกประเภท',
+                      2: 'ข้อมูลพาหนะ',
+                      3: 'ยืนยัน'
+                    };
+                    const isCompleted = num < step;
+                    const isActive = num === step;
+                    const isUpcoming = num > step;
+
+                    return (
+                      <div key={num} className="flex flex-col items-center">
+                        <div className={`w-12 h-12 rounded-full border-3 flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-lg ${
+                          isCompleted ? 'bg-green-500 text-white border-green-500 animate-pulse' :
+                          isActive ? 'bg-white text-blue-600 border-white shadow-xl scale-110' :
+                          'bg-blue-400 text-white border-blue-400'
+                        }`}>
+                          {isCompleted ? <FaCheck className="text-xs" /> : stepIcons[num]}
+                        </div>
+                        <div className={`mt-2 text-xs font-medium transition-colors duration-300 text-center ${
+                          isActive ? 'text-white' : isCompleted ? 'text-green-200' : 'text-blue-200'
+                        }`}>
+                          {stepLabels[num]}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>

@@ -183,7 +183,8 @@ export default function MapPage(){
   }, [filter]);
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="page-background">
+      <div className="max-w-6xl mx-auto p-6">
       <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
         <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">แผนที่สถานีชาร์จ</h2>
         <div className="mb-6 flex justify-center gap-4">
@@ -256,6 +257,7 @@ export default function MapPage(){
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
