@@ -55,7 +55,20 @@
 
 .user-name {
   font-size: 1.125rem; /* ขนาดฟอนต์ของชื่อผู้ใช้ */
-  color: #6b7280; /* สีฟอนต์ของชื่อผู้ใช้ */
+  color: #000000; /* สีฟอนต์ของชื่อผู้ใช้ */
+  margin-bottom: 0.5rem; /* เพิ่มระยะห่างใต้ชื่อผู้ใช้ */
+}
+
+.user-email {
+  font-size: 1rem; /* ขนาดฟอนต์ของอีเมล */
+  color: #000000; /* สีฟอนต์ของอีเมล */
+  margin-bottom: 0.25rem; /* เพิ่มระยะห่างใต้อีเมล */
+}
+
+.user-phone {
+  font-size: 1rem; /* ขนาดฟอนต์ของเบอร์โทร */
+  color: #000000; /* สีฟอนต์ของเบอร์โทร */
+  margin-bottom: 0.25rem; /* เพิ่มระยะห่างใต้เบอร์โทร */
 }
 
 .user-avatar-input {
@@ -73,13 +86,23 @@
   text-align: center; /* จัดข้อความให้อยู่กลาง */
 }
 
-.user-name-input {
-  padding: 0.5rem; /* เพิ่มพื้นที่ภายในอินพุต */
+.user-name-input,
+.user-email-input,
+.user-phone-input {
+  padding: 0.75rem; /* เพิ่มพื้นที่ภายในอินพุต */
   border: 1px solid #d1d5db; /* ขอบของอินพุต */
   border-radius: 0.5rem; /* มุมโค้งของอินพุต */
-  font-size: 1.125rem; /* ขนาดฟอนต์ของอินพุต */
-  color: #6b7280; /* สีฟอนต์ของอินพุต */
-  margin-left: 1rem; /* เพิ่มระยะห่างทางซ้าย */
+  font-size: 1rem; /* ขนาดฟอนต์ของอินพุต */
+  color: #374151; /* สีฟอนต์ของอินพุต */
+  transition: border-color 0.2s, box-shadow 0.2s; /* การเปลี่ยนแปลงเมื่อโฟกัส */
+}
+
+.user-name-input:focus,
+.user-email-input:focus,
+.user-phone-input:focus {
+  outline: none; /* ไม่มีขอบรอบนอก */
+  border-color: #667eea; /* เปลี่ยนสีขอบเมื่อโฟกัส */
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); /* เพิ่มเงาเมื่อโฟกัส */
 }
 
 .edit-button {
@@ -210,4 +233,162 @@
 
 .action-button-icon {
   margin-right: 0.5rem; /* เพิ่มระยะห่างระหว่างไอคอนและข้อความในปุ่ม */
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+}
+
+.user-details-card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+}
+
+.detail-icon {
+  font-size: 2rem;
+}
+
+.detail-content {
+  flex: 1;
+}
+
+.detail-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.25rem;
+}
+
+.detail-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.app-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+.app-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+}
+
+.app-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.app-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.app-description {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.app-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s;
+  display: inline-block;
+}
+
+.app-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.action-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+}
+
+.action-card.logout {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  color: white;
+}
+
+.action-icon {
+  font-size: 2rem;
+}
+
+.action-text {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.action-card.logout .action-text {
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .applications-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
 }

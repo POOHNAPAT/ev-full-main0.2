@@ -1,13 +1,37 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/PaymentMethods.css';
 
 export default function PaymentMethods() {
+  const navigate = useNavigate();
   const [selectedMethod, setSelectedMethod] = useState('');
   const [showCreditForm, setShowCreditForm] = useState(false);
   const [showBankForm, setShowBankForm] = useState(false);
   const [creditCard, setCreditCard] = useState({ number: '', expiry: '', cvv: '', name: '' });
   const [selectedBank, setSelectedBank] = useState('');
+
+  const handleSave = () => {
+    if (selectedMethod === 'credit') {
+      // Validate credit card fields
+      if (!creditCard.number || !creditCard.expiry || !creditCard.cvv || !creditCard.name) {
+        alert('กรุณากรอกข้อมูลบัตรเครดิตให้ครบถ้วน');
+        return;
+      }
+      localStorage.setItem('paymentMethod', 'credit');
+      localStorage.setItem('creditCard', JSON.stringify(creditCard));
+      alert('บันทึกวิธีการชำระเงินเรียบร้อยแล้ว');
+      navigate('/profile');
+    } else if (selectedMethod === 'bank') {
+      if (!selectedBank) {
+        alert('กรุณาเลือกธนาคาร');
+        return;
+      }
+      localStorage.setItem('paymentMethod', 'bank');
+      localStorage.setItem('selectedBank', selectedBank);
+      alert('บันทึกวิธีการชำระเงินเรียบร้อยแล้ว');
+      navigate('/profile');
+    }
+  };
 
   const methods = [
     { id: 'bank', name: 'โอนผ่านธนาคาร', icon: '🏦' },
@@ -21,7 +45,7 @@ export default function PaymentMethods() {
     'ธนาคารไทยพาณิชย์',
     'ธนาคารทหารไทย',
     'ธนาคารออมสิน',
-    'ธนาคารกรุงศรีอยุธยา',
+    'ธนาคารกรุงศรี',
   ];
 
   return (
@@ -134,6 +158,7 @@ export default function PaymentMethods() {
           <button
             className="btn btn-save"
             disabled={!selectedMethod}
+            onClick={handleSave}
           >
             บันทึก
           </button>
