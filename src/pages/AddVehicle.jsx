@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaCar, FaPlus, FaCheck, FaArrowLeft, FaBatteryHalf, FaGasPump, FaChargingStation } from 'react-icons/fa';
+import { FaCar, FaPlus, FaCheck, FaArrowLeft, FaBatteryHalf, FaChargingStation } from 'react-icons/fa';
 import '../styles/AddVehicle.css';
 
 export default function AddVehicle() {
@@ -15,9 +15,7 @@ export default function AddVehicle() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const vehicleTypes = [
-    { id: 'ev', name: 'รถยนต์ไฟฟ้า (EV)', icon: <FaChargingStation className="text-green-600" /> },
-    { id: 'hybrid', name: 'รถยนต์ไฮบริด (Hybrid)', icon: <FaBatteryHalf className="text-blue-600" /> },
-    { id: 'petrol', name: 'รถยนต์น้ำมัน (Petrol)', icon: <FaGasPump className="text-orange-600" /> }
+    { id: 'ev', name: 'รถยนต์ไฟฟ้า (EV)', icon: <FaChargingStation className="text-green-600" /> }
   ];
 
   const handleSubmit = (e) => {
@@ -26,6 +24,22 @@ export default function AddVehicle() {
       setStep(step + 1);
     } else {
       // Submit logic here
+      const vehicleData = {
+        id: Date.now(), // Simple unique ID
+        type: vehicleType,
+        brand,
+        model,
+        year,
+        licensePlate,
+        batteryCapacity: vehicleType === 'ev' ? batteryCapacity : null,
+        chargingType: vehicleType === 'ev' ? chargingType : null
+      };
+
+      // Save to localStorage
+      const existingVehicles = JSON.parse(localStorage.getItem('vehicles') || '[]');
+      existingVehicles.push(vehicleData);
+      localStorage.setItem('vehicles', JSON.stringify(existingVehicles));
+
       setIsSubmitted(true);
     }
   };

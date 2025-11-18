@@ -1,13 +1,10 @@
-# TODO: Enhance Contact Form Beauty
+# TODO: Display Added Vehicles in Profile Page
 
 ## Approved Plan Breakdown
-- Add subtle animations (fade-in for the form, hover effects on inputs and button)
-- Improve colors and gradients (soft background gradient to the form section, enhance button hover states)
-- Better spacing and layout (padding, margins, rounded corners for a more modern look)
-- Add icons or visual elements (integrate icons next to labels for better UX)
-- Ensure responsiveness remains intact
+- Modify AddVehicle.jsx to save vehicle data to localStorage when submitting the form.
+- Modify Profile.jsx to load vehicles from localStorage and display them in a new "Vehicles" section.
 
 ## Logical Steps
-1. Update Contact.css: Add background gradient to form section, enhance button hover states, add animations (fade-in, hover effects), improve spacing and rounded corners.
-2. Update Contact.jsx: Add icons next to form labels for better UX.
-3. Verify responsiveness and functionality.
+1. Update AddVehicle.jsx: In handleSubmit, when submitting (step 3), create a vehicle object and save it to localStorage array. ✅
+2. Update Profile.jsx: Add useState for vehicles, useEffect to load from localStorage, and add a vehicles display section. ✅
+3. Test the flow: Add a vehicle, navigate to Profile, verify it displays.
