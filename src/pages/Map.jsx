@@ -2,25 +2,35 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import '../styles/Map.css';
 import { loadStations } from '../stations';
 
-// Custom icons for AC (green) and DC (red)
-const acIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+// Ensure Leaflet uses the local marker assets provided by the package
+import iconUrl from 'leaflet/dist/images/marker-icon.png';
+import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
+import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
+
+L.Icon.Default.mergeOptions({
+  iconUrl,
+  iconRetinaUrl,
+  shadowUrl
 });
 
-const dcIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+// Create DivIcons so we can style markers with CSS (no external images required)
+const acIcon = L.divIcon({
+  className: 'custom-div-icon',
+  html: `<div class="custom-marker ac"><div class="marker-pin"></div><div class="marker-shadow"></div></div>`,
+  iconSize: [28, 42],
+  iconAnchor: [14, 42],
+  popupAnchor: [0, -36]
+});
+
+const dcIcon = L.divIcon({
+  className: 'custom-div-icon',
+  html: `<div class="custom-marker dc"><div class="marker-pin"></div><div class="marker-shadow"></div></div>`,
+  iconSize: [28, 42],
+  iconAnchor: [14, 42],
+  popupAnchor: [0, -36]
 });
 
 export default function MapPage(){
@@ -68,31 +78,106 @@ export default function MapPage(){
     // Load station details from localStorage or default
     const stations = loadStations();
 
-    filteredMarkers.forEach(m=>{
-      const icon = m.type === 'AC' ? acIcon : dcIcon;
-      const station = stations[m.id] || { name: m.name, available: 'N/A', power: 'N/A', amenities: 'N/A' };
-      const marker = L.marker([m.lat, m.lng], { icon }).addTo(map);
+    // Layer to hold all marker layers so we can clear easily
+    const markerLayer = L.layerGroup().addTo(map);
 
-      // Add click event to show station details below map
-      marker.on('click', () => {
-        setSelectedStation({ ...m, ...station });
-      });
+    // Prepare marker data with station info
+    const markerData = filteredMarkers.map(m => ({
+      ...m,
+      station: stations[m.id] || { name: m.name, available: 'N/A', power: 'N/A', amenities: 'N/A' }
+    }));
 
-      marker.bindPopup(`
-        <div style="max-width: 250px; font-family: Arial, sans-serif;">
-          <b style="font-size: 16px; color: #333;">${m.name}</b><br/>
-          <span style="color: #666; font-size: 14px;">${m.type} Charger</span><br/>
-          <div style="margin: 8px 0; font-size: 13px;">
-            <div><b>จุดว่าง:</b> <span style="color: #22c55e;">${station.available}</span></div>
-            <div><b>กำลังไฟ:</b> ${station.power}</div>
-            <div><b>สิ่งอำนวยความสะดวก:</b> ${station.amenities}</div>
-          </div>
-          <button onclick="window.location.href='/booking/${m.id}'" style="background: #2563eb; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">จอง</button>
-        </div>
-      `);
-    });
+    // Clustering function: group markers that are within `pixelThreshold` of each other
+    function renderClusters() {
+      markerLayer.clearLayers();
+
+      const pixelThreshold = 50; // pixels within which markers will cluster
+        // cluster per 'type' (AC / DC) so clusters only group same-type markers
+        const pointsByType = {};
+        markerData.forEach(d => {
+          const p = { data: d, point: map.latLngToContainerPoint([d.lat, d.lng]) };
+          (pointsByType[d.type] = pointsByType[d.type] || []).push(p);
+        });
+
+        const clusters = [];
+
+        Object.keys(pointsByType).forEach(type => {
+          const pts = pointsByType[type];
+          pts.forEach(p => {
+            if (p._clustered) return;
+            const cluster = { items: [p], sumLat: p.data.lat, sumLng: p.data.lng, type };
+            p._clustered = true;
+
+            pts.forEach(q => {
+              if (q === p || q._clustered) return;
+              const dist = p.point.distanceTo(q.point);
+              if (dist <= pixelThreshold) {
+                q._clustered = true;
+                cluster.items.push(q);
+                cluster.sumLat += q.data.lat;
+                cluster.sumLng += q.data.lng;
+              }
+            });
+
+            clusters.push(cluster);
+          });
+        });
+
+        clusters.forEach(c => {
+          if (c.items.length === 1) {
+            const d = c.items[0].data;
+            const icon = d.type === 'AC' ? acIcon : dcIcon;
+            const m = L.marker([d.lat, d.lng], { icon }).addTo(markerLayer);
+            m.on('click', () => setSelectedStation({ ...d, ...d.station }));
+            m.bindPopup(`
+              <div style="max-width: 250px; font-family: Arial, sans-serif;">
+                <b style="font-size: 16px; color: #333;">${d.name}</b><br/>
+                <span style="color: #666; font-size: 14px;">${d.type} Charger</span><br/>
+                <div style="margin: 8px 0; font-size: 13px;">
+                  <div><b>จุดว่าง:</b> <span style="color: #22c55e;">${d.station.available}</span></div>
+                  <div><b>กำลังไฟ:</b> ${d.station.power}</div>
+                  <div><b>สิ่งอำนวยความสะดวก:</b> ${d.station.amenities}</div>
+                </div>
+                <button onclick="window.location.href='/booking/${d.id}'" style="background: #2563eb; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">จอง</button>
+              </div>
+            `);
+          } else {
+            // create cluster marker (type-aware)
+            const count = c.items.length;
+            const avgLat = c.sumLat / count;
+            const avgLng = c.sumLng / count;
+            const size = Math.min(80, 24 + count * 6);
+            const fontSize = Math.max(12, Math.floor(size / 3));
+            const typeClass = c.type === 'AC' ? 'ac' : 'dc';
+            const html = `<div class="cluster-marker ${typeClass}" style="width:${size}px;height:${size}px;line-height:${size}px;font-size:${fontSize}px;">${count}</div>`;
+            const clusterIcon = L.divIcon({ className: 'cluster-icon', html, iconSize: [size, size], iconAnchor: [size/2, size/2] });
+            const cm = L.marker([avgLat, avgLng], { icon: clusterIcon }).addTo(markerLayer);
+            // animate entry: add enter class then trigger active
+            const el = cm.getElement && cm.getElement();
+            if (el) {
+              const inner = el.querySelector('.cluster-marker');
+              if (inner) {
+                inner.classList.add('cluster-enter');
+                // trigger transition on next frame
+                requestAnimationFrame(() => inner.classList.add('cluster-enter-active'));
+              }
+            }
+            // zoom in on click
+            cm.on('click', () => {
+              map.setView([avgLat, avgLng], Math.min(map.getMaxZoom(), map.getZoom() + 2));
+            });
+          }
+        });
+    }
+
+    // initial render
+    renderClusters();
+
+    // re-render clusters on map move/zoom or when filter changes
+    map.on('moveend zoomend', renderClusters);
 
     return ()=> {
+      map.off('moveend zoomend', renderClusters);
       map.remove();
     }
   }, [filter]);

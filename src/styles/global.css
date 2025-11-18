@@ -1,5 +1,9 @@
-/* small tweaks for leaflet container */
+
+/* Global stylesheet (kept minimal). Map-specific styles moved to `Map.css`. */
+
+/* small tweaks for leaflet container (kept global so it's always applied) */
 .leaflet-container {
-  height: 70vh;
-  width: 100%;
+	height: 70vh;
+	width: 100%;
 }
+

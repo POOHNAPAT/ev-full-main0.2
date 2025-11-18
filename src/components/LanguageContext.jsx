@@ -24,7 +24,7 @@ export const LanguageProvider = ({ children }) => {
       bookButton: 'จองจุดชาร์จ',
       whyBook: 'ทำไมต้องจองกับเรา',
       advanceBooking: 'จองล่วงหน้า',
-      advanceDesc: 'จองได้ 24 ชั่วโมง ไม่ต้องกังวลเรื่องที่ว่าง',
+      advanceDesc: '  จองได้ 24 ชั่วโมง ไม่ต้องกังวลเรื่องที่ว่าง',
       usageReport: 'รายงานการใช้งาน',
       usageDesc: 'ดูสถิติการชาร์จ ค่าใช้จ่าย และข้อมูลสถานีชาร์จได้',
       allVehicles: 'รองรับทุกรุ่นรถ',

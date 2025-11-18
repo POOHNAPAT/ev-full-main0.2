@@ -1,0 +1,97 @@
+/* Map-specific styles (custom DivIcon markers and clusters) */
+
+/* Custom marker using DivIcon */
+.custom-div-icon {
+  background: transparent;
+}
+
+.custom-marker {
+  position: relative;
+  width: 28px;
+  height: 42px;
+  display: inline-block;
+}
+
+.custom-marker .marker-pin {
+  width: 20px;
+  height: 20px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--marker-color, #10b981);
+  position: absolute;
+  left: 4px;
+  top: 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.33);
+}
+
+.custom-marker .marker-pin::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 50%;
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  transform: rotate(45deg);
+}
+
+.custom-marker .marker-shadow {
+  position: absolute;
+  left: 6px;
+  top: 28px;
+  width: 16px;
+  height: 6px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.custom-marker.ac { --marker-color: #16a34a; }
+.custom-marker.dc { --marker-color: #dc2626; }
+
+/* Cluster marker */
+.cluster-marker {
+  display: inline-block;
+  color: #fff;
+  border-radius: 50%;
+  text-align: center;
+  box-shadow: 0 6px 12px rgba(2,6,23,0.2);
+  transition: transform 220ms ease, box-shadow 220ms ease, opacity 220ms ease, width 220ms ease, height 220ms ease, line-height 220ms ease, font-size 220ms ease;
+  cursor: pointer;
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Cluster colors per type */
+.cluster-marker.ac {
+  background: #16a34a; /* green */
+}
+.cluster-marker.dc {
+  background: #dc2626; /* red */
+}
+
+.cluster-marker:hover {
+  transform: scale(1.08);
+  box-shadow: 0 10px 18px rgba(2,6,23,0.28);
+}
+
+/* Enter animation (fade + scale) */
+.cluster-enter {
+  opacity: 0;
+  transform: scale(0.6);
+}
+.cluster-enter-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes cluster-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+.cluster-marker.pulse {
+  animation: cluster-pulse 2s infinite ease-in-out;
+}
