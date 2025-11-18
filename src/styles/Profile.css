@@ -2,7 +2,7 @@
 
 .profile-container {
   min-height: 100vh; /* กำหนดความสูงขั้นต่ำของหน้าโปรไฟล์ให้เต็มหน้าจอ */
-  background: #f9fafb; /* ตั้งสีพื้นหลังของหน้าโปรไฟล์ให้เป็นสีอ่อน */
+  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff); /* ตั้งสีพื้นหลังเป็นการไล่สี */
   padding: 2rem 0; /* เพิ่มพื้นที่ด้านบนและล่างของหน้า */
 }
 

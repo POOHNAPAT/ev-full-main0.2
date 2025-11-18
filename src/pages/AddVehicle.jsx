@@ -71,10 +71,6 @@ export default function AddVehicle() {
                 <FaArrowLeft />
                 กลับไปโปรไฟล์
               </Link>
-              <Link to="/map" className="btn btn-book">
-                <FaChargingStation />
-                จองจุดชาร์จ
-              </Link>
             </div>
           </div>
         </div>
