@@ -3,3 +3,10 @@
   height: 70vh;
   width: 100%;
 }
+
+/* Page background for full-screen gradient */
+.page-background {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+  padding: 2rem 0;
+}

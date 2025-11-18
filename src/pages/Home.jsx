@@ -16,7 +16,8 @@ export default function Home(){
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="page-background">
+      <div className="max-w-5xl mx-auto">
       {/* Hero Section */}
       <section className="hero-section">
         <h2 className="hero-title">{t.bookEV}</h2>
@@ -99,6 +100,7 @@ export default function Home(){
 
       <section id="contact" className="contact-section">
       </section>
+      </div>
     </div>
   )
 }

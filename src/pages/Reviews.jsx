@@ -27,7 +27,8 @@ export default function Reviews() {
   }));
 
   return (
-    <div className="reviews-container">
+    <div className="page-background">
+      <div className="reviews-container">
       <div className="reviews-section">
         <h1 className="reviews-title">รีวิวจากผู้ใช้งาน</h1>
 
@@ -121,6 +122,7 @@ export default function Reviews() {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
