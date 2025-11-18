@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import '../styles/UsageHistory.css';
 
 export default function UsageHistory() {
   const [filter, setFilter] = useState('ทั้งหมด');
@@ -56,74 +57,74 @@ export default function UsageHistory() {
   const filteredHistory = filter === 'ทั้งหมด' ? history : history.filter(item => item.status === filter.toLowerCase());
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold mb-4 text-gray-800">Usage history</h1>
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-700">สรุปการใช้งาน</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">ครั้งทั้งหมด</p>
-                <p className="text-2xl font-bold text-blue-600">{summary.totalSessions} ครั้ง</p>
+    <div className="usage-history-container">
+      <div className="usage-history-content">
+        <div className="usage-history-section">
+          <h1 className="usage-history-title">Usage history</h1>
+          <div className="summary-section">
+            <h2 className="usage-history-subtitle">สรุปการใช้งาน</h2>
+            <div className="summary-grid">
+              <div className="summary-card blue">
+                <p className="summary-label">ครั้งทั้งหมด</p>
+                <p className="summary-value blue">{summary.totalSessions} ครั้ง</p>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">พลังงานรวม</p>
-                <p className="text-2xl font-bold text-green-600">{summary.totalEnergy} kWh</p>
+              <div className="summary-card green">
+                <p className="summary-label">พลังงานรวม</p>
+                <p className="summary-value green">{summary.totalEnergy} kWh</p>
               </div>
-              <div className="bg-yellow-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">ค่าใช้จ่ายทั้งหมด</p>
-                <p className="text-2xl font-bold text-yellow-600">฿ {summary.totalCost} บาท</p>
+              <div className="summary-card yellow">
+                <p className="summary-label">ค่าใช้จ่ายทั้งหมด</p>
+                <p className="summary-value yellow">฿ {summary.totalCost} บาท</p>
               </div>
             </div>
           </div>
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-700">ตัวกรอง</h2>
+          <div className="filter-section">
+            <h2 className="filter-label">ตัวกรอง</h2>
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="filter-select"
             >
               <option value="ทั้งหมด">ทั้งหมด</option>
               <option value="completed">ประวัติการใช้งาน</option>
               <option value="paid">ประวัติการชำระเงิน</option>
             </select>
           </div>
-          <div className="space-y-4">
+          <div className="history-list">
             {filteredHistory.map(item => (
-              <div key={item.id} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800">
+              <div key={item.id} className="history-item">
+                <div className="history-item-content">
+                  <div className="history-details">
+                    <p className="history-station">
                       {item.station} {item.type && `(มีป้าย ${item.type})`}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="history-meta">
                       {item.date} 🕓 {item.time}
                     </p>
                     {item.duration && (
-                      <p className="text-sm text-gray-600">ระยะเวลาชาร์จ {item.duration}</p>
+                      <p className="history-meta">ระยะเวลาชาร์จ {item.duration}</p>
                     )}
                     {item.energy && (
-                      <p className="text-sm text-gray-600">พลังงานที่ชาร์จได้: {item.energy} kWh</p>
+                      <p className="history-meta">พลังงานที่ชาร์จได้: {item.energy} kWh</p>
                     )}
                     {item.payment && (
-                      <p className="text-sm text-gray-600">{item.payment}</p>
+                      <p className="history-meta">{item.payment}</p>
                     )}
                     {item.status === 'paid' && (
-                      <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mt-1">
+                      <span className="history-status">
                         ชำระเงินแล้ว
                       </span>
                     )}
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-800">฿ {item.cost} บาท</p>
+                  <div className="history-cost">
+                    ฿ {item.cost} บาท
                   </div>
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-6">
-            <Link to="/profile" className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition duration-200">
+          <div className="back-section">
+            <Link to="/profile" className="back-button">
               กลับ
             </Link>
           </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaCar, FaPlus, FaCheck, FaArrowLeft, FaBatteryHalf, FaGasPump, FaChargingStation } from 'react-icons/fa';
+import '../styles/AddVehicle.css';
 
 export default function AddVehicle() {
   const [vehicleType, setVehicleType] = useState('');
@@ -37,27 +38,27 @@ export default function AddVehicle() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
-        <div className="max-w-2xl mx-auto p-6">
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FaCheck className="text-green-600 text-3xl" />
+      <div className="success-container">
+        <div className="success-card">
+          <div className="success-content">
+            <div className="success-icon">
+              <FaCheck />
             </div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">เพิ่มพาหนะสำเร็จ!</h1>
-            <p className="text-gray-600 mb-6">พาหนะของคุณได้ถูกเพิ่มเข้าสู่ระบบเรียบร้อยแล้ว</p>
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h3 className="font-semibold text-gray-800 mb-2">รายละเอียดพาหนะ</h3>
-              <p className="text-sm text-gray-600">ประเภท: {vehicleTypes.find(v => v.id === vehicleType)?.name}</p>
-              <p className="text-sm text-gray-600">รุ่น: {brand} {model} ({year})</p>
-              <p className="text-sm text-gray-600">ทะเบียน: {licensePlate}</p>
+            <h1 className="success-title">เพิ่มพาหนะสำเร็จ!</h1>
+            <p className="success-message">พาหนะของคุณได้ถูกเพิ่มเข้าสู่ระบบเรียบร้อยแล้ว</p>
+            <div className="success-details">
+              <h3 className="success-details-title">รายละเอียดพาหนะ</h3>
+              <p className="success-details-item">ประเภท: {vehicleTypes.find(v => v.id === vehicleType)?.name}</p>
+              <p className="success-details-item">รุ่น: {brand} {model} ({year})</p>
+              <p className="success-details-item">ทะเบียน: {licensePlate}</p>
             </div>
-            <div className="flex space-x-4 justify-center">
-              <Link to="/profile" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center">
-                <FaArrowLeft className="mr-2" />
+            <div className="success-actions">
+              <Link to="/profile" className="btn btn-profile">
+                <FaArrowLeft />
                 กลับไปโปรไฟล์
               </Link>
-              <Link to="/map" className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-300 flex items-center">
-                <FaChargingStation className="mr-2" />
+              <Link to="/map" className="btn btn-book">
+                <FaChargingStation />
                 จองจุดชาร์จ
               </Link>
             </div>

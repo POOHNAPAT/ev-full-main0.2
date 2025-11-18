@@ -1,0 +1,391 @@
+/* Add Vehicle Page Styling */
+
+.add-vehicle-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+  padding: 2rem 0;
+}
+
+.add-vehicle-card {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.add-vehicle-form {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.add-vehicle-header {
+  background: #2563eb;
+  color: white;
+  padding: 1.5rem;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+}
+
+.header-icon {
+  font-size: 1.5rem;
+  margin-right: 0.75rem;
+}
+
+.header-title-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.header-back-link {
+  color: #bfdbfe;
+  transition: color 0.3s;
+}
+
+.header-back-link:hover {
+  color: white;
+}
+
+.step-indicator {
+  margin-top: 1rem;
+}
+
+.step-numbers {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.step-number {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.step-number.active {
+  background: white;
+  color: #2563eb;
+  border-color: white;
+}
+
+.step-number.inactive {
+  border-color: #93c5fd;
+}
+
+.step-connector {
+  width: 3rem;
+  height: 0.25rem;
+}
+
+.step-connector.active {
+  background: #10b981;
+}
+
+.step-connector.inactive {
+  background: #93c5fd;
+}
+
+.step-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.step-label.active {
+  font-weight: 600;
+  color: white;
+}
+
+.step-label.inactive {
+  color: #bfdbfe;
+}
+
+.form-content {
+  padding: 1.5rem;
+}
+
+.step-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+}
+
+.vehicle-type-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.vehicle-type-option {
+  display: block;
+}
+
+.vehicle-type-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.vehicle-type-card {
+  padding: 1rem;
+  border: 2px solid;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.vehicle-type-card:hover {
+  border-color: #d1d5db;
+}
+
+.vehicle-type-card.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.vehicle-type-content {
+  display: flex;
+  align-items: center;
+}
+
+.vehicle-type-icon {
+  font-size: 1.5rem;
+  margin-right: 0.75rem;
+}
+
+.vehicle-type-name {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.vehicle-form-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .vehicle-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: transparent;
+}
+
+.confirmation-section {
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.confirmation-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .confirmation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.confirmation-item {
+  margin-bottom: 1rem;
+}
+
+.confirmation-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.confirmation-value {
+  font-size: 1.125rem;
+  color: #1f2937;
+}
+
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn-back {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-back:hover {
+  background: #4b5563;
+}
+
+.btn-next {
+  background: #2563eb;
+  color: white;
+  margin-left: auto;
+}
+
+.btn-next:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.btn-next:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.success-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #f0fdf4, #eff6ff);
+  padding: 2rem 0;
+}
+
+.success-card {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.success-content {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+}
+
+.success-icon {
+  width: 5rem;
+  height: 5rem;
+  background: #dcfce7;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.success-icon svg {
+  color: #16a34a;
+  font-size: 1.875rem;
+}
+
+.success-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.success-message {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.success-details {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.success-details-title {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.success-details-item {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.success-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btn-profile {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-profile:hover {
+  background: #1d4ed8;
+}
+
+.btn-book {
+  background: #16a34a;
+  color: white;
+}
+
+.btn-book:hover {
+  background: #15803d;
+}

@@ -1,0 +1,380 @@
+/* Booking Page Styling */
+
+.booking-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+  padding: 2rem 0;
+}
+
+.booking-card {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.booking-content {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.booking-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.booking-header-icon {
+  color: #2563eb;
+  font-size: 1.5rem;
+  margin-right: 0.75rem;
+}
+
+.booking-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.station-info {
+  background: #eff6ff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.station-info-icon {
+  color: #2563eb;
+  margin-right: 0.5rem;
+}
+
+.station-details {
+  flex: 1;
+}
+
+.station-name {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.station-date {
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.station-date-icon {
+  margin-right: 0.25rem;
+}
+
+.booking-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.section-title-icon {
+  color: #2563eb;
+  margin-right: 0.5rem;
+}
+
+.time-selection {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .time-selection {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.time-group {
+  margin-bottom: 1rem;
+}
+
+.time-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.time-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.time-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #3b82f6;
+  border-color: transparent;
+}
+
+.station-details-section {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.details-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  color: #1f2937;
+}
+
+.details-title-icon {
+  color: #eab308;
+  margin-right: 0.5rem;
+}
+
+.details-item {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.details-item:last-child {
+  margin-bottom: 0;
+}
+
+.book-button {
+  width: 100%;
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  transition: all 0.3s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+.book-button:hover:not(:disabled) {
+  background: linear-gradient(to right, #1d4ed8, #1e40af);
+}
+
+.book-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirmation-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.confirmation-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  color: #1f2937;
+}
+
+.confirmation-title-icon {
+  color: #16a34a;
+  margin-right: 0.5rem;
+}
+
+.confirmation-details {
+  background: #f0fdf4;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.confirmation-details-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #166534;
+}
+
+.confirmation-detail {
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.confirmation-detail-icon {
+  margin-right: 0.5rem;
+}
+
+.confirmation-detail-icon.clock {
+  color: #2563eb;
+}
+
+.confirmation-detail-icon.bolt {
+  color: #eab308;
+}
+
+.confirmation-detail-icon.marker {
+  color: #2563eb;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-secondary {
+  flex: 1;
+  background: #4b5563;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  transition: all 0.3s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background: #374151;
+}
+
+.btn-primary {
+  flex: 1;
+  background: linear-gradient(to right, #16a34a, #15803d);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  transition: all 0.3s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(to right, #15803d, #166534);
+}
+
+.qr-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  margin-top: 1.5rem;
+}
+
+.qr-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  color: #1f2937;
+}
+
+.qr-title-icon {
+  color: #2563eb;
+  margin-right: 0.5rem;
+}
+
+.qr-container {
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.qr-code {
+  border: 2px solid #d1d5db;
+  padding: 1rem;
+  display: inline-block;
+}
+
+.qr-code p {
+  font-size: 0.875rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.qr-instruction {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.back-link {
+  width: 100%;
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  background: linear-gradient(to right, #1d4ed8, #1e40af);
+}
+
+.footer-link {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.footer-link a {
+  color: #2563eb;
+  transition: color 0.3s;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.footer-link a:hover {
+  color: #1e40af;
+}
+
+.footer-link-icon {
+  margin-right: 0.25rem;
+}

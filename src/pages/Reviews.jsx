@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import '../styles/Reviews.css';
 
 export default function Reviews() {
   const [reviews, setReviews] = useState([
@@ -26,73 +27,70 @@ export default function Reviews() {
   }));
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-        <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">รีวิวจากผู้ใช้งาน</h1>
+    <div className="reviews-container">
+      <div className="reviews-section">
+        <h1 className="reviews-title">รีวิวจากผู้ใช้งาน</h1>
 
-        {/* Summary Stats */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6 text-center">สรุปคะแนนและรีวิว</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl text-center shadow-md">
-              <p className="text-4xl font-bold text-blue-600 mb-2">{averageRating}</p>
-              <p className="text-sm text-gray-600">คะแนนเฉลี่ย</p>
-              <div className="flex justify-center mt-2">
+        <div className="stats-section">
+          <h2 className="stats-title">สรุปคะแนนและรีวิว</h2>
+          <div className="stats-grid">
+            <div className="stat-card blue">
+              <p className="stat-value blue">{averageRating}</p>
+              <p className="stat-label">คะแนนเฉลี่ย</p>
+              <div className="stat-stars">
                 {'⭐'.repeat(Math.round(averageRating))}
               </div>
             </div>
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl text-center shadow-md">
-              <p className="text-4xl font-bold text-green-600 mb-2">{totalReviews}</p>
-              <p className="text-sm text-gray-600">รีวิวทั้งหมด</p>
-              <div className="text-2xl mt-2">📝</div>
+            <div className="stat-card green">
+              <p className="stat-value green">{totalReviews}</p>
+              <p className="stat-label">รีวิวทั้งหมด</p>
+              <div className="stat-emoji">📝</div>
             </div>
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-xl text-center shadow-md">
-              <p className="text-4xl font-bold text-purple-600 mb-2">{satisfaction}</p>
-              <p className="text-sm text-gray-600">ความพึงพอใจ</p>
-              <div className="text-2xl mt-2">😊</div>
+            <div className="stat-card purple">
+              <p className="stat-value purple">{satisfaction}</p>
+              <p className="stat-label">ความพึงพอใจ</p>
+              <div className="stat-emoji">😊</div>
             </div>
           </div>
 
-          {/* Rating Breakdown */}
-          <div className="bg-gray-50 p-6 rounded-xl">
-            <h3 className="text-xl font-semibold mb-4">การให้คะแนน</h3>
+          <div className="rating-breakdown">
+            <h3 className="rating-title">การให้คะแนน</h3>
             {ratingCounts.map(({ star, count, percentage }) => (
-              <div key={star} className="flex items-center mb-3">
-                <span className="w-12 text-sm font-medium">{star} ดาว</span>
-                <div className="flex-1 bg-gray-200 rounded-full h-3 mx-3">
+              <div key={star} className="rating-item">
+                <span className="rating-label">{star} ดาว</span>
+                <div className="rating-bar-container">
                   <div
-                    className="bg-yellow-400 h-3 rounded-full transition-all duration-500"
+                    className="rating-bar"
                     style={{ width: `${percentage}%` }}
                   ></div>
                 </div>
-                <span className="w-8 text-right text-sm text-gray-600">{count}</span>
+                <span className="rating-count">{count}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Write Review Form */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6 text-center">เขียนรีวิวของคุณ</h2>
-          <form onSubmit={handleSubmit} className="bg-gray-50 p-6 rounded-xl space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">คะแนน (1-5 ดาว)</label>
+        <div className="write-review-section">
+          <h2 className="write-review-title">เขียนรีวิวของคุณ</h2>
+          <form onSubmit={handleSubmit} className="review-form">
+            <div className="form-group">
+              <label className="form-label">คะแนน (1-5 ดาว)</label>
               <select
                 value={newReview.rating}
                 onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="form-select"
               >
                 {[1, 2, 3, 4, 5].map(num => (
                   <option key={num} value={num}>{num} ดาว {'⭐'.repeat(num)}</option>
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">ความคิดเห็น</label>
+            <div className="form-group">
+              <label className="form-label">ความคิดเห็น</label>
               <textarea
                 value={newReview.comment}
                 onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="form-textarea"
                 rows="5"
                 placeholder="แบ่งปันประสบการณ์ของคุณ..."
                 required
@@ -100,26 +98,25 @@ export default function Reviews() {
             </div>
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition duration-300 shadow-md"
+              className="submit-button"
             >
               ส่งรีวิว
             </button>
           </form>
         </div>
 
-        {/* Reviews List */}
-        <div>
-          <h2 className="text-2xl font-semibold mb-6 text-center">รีวิวล่าสุด</h2>
-          <div className="space-y-6">
+        <div className="reviews-list-section">
+          <h2 className="reviews-list-title">รีวิวล่าสุด</h2>
+          <div className="reviews-list">
             {reviews.map(review => (
-              <div key={review.id} className="bg-white border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg transition duration-300">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="font-semibold text-gray-800">{review.user}</p>
-                  <div className="flex text-yellow-400">
+              <div key={review.id} className="review-item">
+                <div className="review-header">
+                  <p className="review-user">{review.user}</p>
+                  <div className="review-stars">
                     {'⭐'.repeat(review.rating)}
                   </div>
                 </div>
-                <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                <p className="review-content">{review.comment}</p>
               </div>
             ))}
           </div>
