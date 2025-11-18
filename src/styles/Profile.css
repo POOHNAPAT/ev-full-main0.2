@@ -1,144 +1,213 @@
 /* Profile Page Styling */
 
 .profile-container {
-  min-height: 100vh;
-  background: #f9fafb;
-  padding: 2rem 0;
+  min-height: 100vh; /* กำหนดความสูงขั้นต่ำของหน้าโปรไฟล์ให้เต็มหน้าจอ */
+  background: #f9fafb; /* ตั้งสีพื้นหลังของหน้าโปรไฟล์ให้เป็นสีอ่อน */
+  padding: 2rem 0; /* เพิ่มพื้นที่ด้านบนและล่างของหน้า */
 }
 
 .profile-content {
-  max-width: 56rem;
-  margin: 0 auto;
-  padding: 1.5rem;
+  max-width: 56rem; /* จำกัดความกว้างของเนื้อหาของโปรไฟล์ */
+  margin: 0 auto; /* จัดให้เนื้อหาอยู่กลางหน้าจอ */
+  padding: 1.5rem; /* เพิ่มพื้นที่ภายในของเนื้อหา */
 }
 
 .profile-section {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  background: white; /* ตั้งพื้นหลังของแต่ละส่วนเป็นสีขาว */
+  border-radius: 0.5rem; /* ทำให้มุมของแต่ละส่วนโค้งเล็กน้อย */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); /* เพิ่มเงาเบาๆ เพื่อให้ดูเหมือนยกขึ้น */
+  padding: 1.5rem; /* เพิ่มพื้นที่ภายในแต่ละส่วน */
+  margin-bottom: 1.5rem; /* เพิ่มระยะห่างระหว่างแต่ละส่วน */
 }
 
 .profile-title {
-  font-size: 1.875rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: #1f2937;
+  font-size: 1.875rem; /* ขนาดฟอนต์ของชื่อหัวข้อ */
+  font-weight: 700; /* ฟอนต์หนา */
+  margin-bottom: 1rem; /* เพิ่มระยะห่างใต้ชื่อหัวข้อ */
+  color: #1f2937; /* กำหนดสีฟอนต์ให้เป็นสีเข้ม */
 }
 
 .profile-subtitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #374151;
+  font-size: 1.25rem; /* ขนาดฟอนต์ของชื่อรอง */
+  font-weight: 600; /* ฟอนต์ค่อนข้างหนา */
+  margin-bottom: 0.5rem; /* เพิ่มระยะห่างใต้ชื่อรอง */
+  color: #374151; /* สีฟอนต์ */
 }
 
 .user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  display: flex; /* ใช้ flexbox สำหรับการจัดเรียงข้อมูลในแนวนอน */
+  align-items: center; /* จัดตำแหน่งแนวตั้งให้ตรงกลาง */
+  gap: 1rem; /* เพิ่มระยะห่างระหว่างไอเท็ม */
 }
 
 .user-avatar {
-  width: 4rem;
-  height: 4rem;
-  background: #2563eb;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 700;
+  width: 4rem; /* ขนาดของรูปโปรไฟล์ */
+  height: 4rem; /* ขนาดของรูปโปรไฟล์ */
+  background: #2563eb; /* สีพื้นหลังของรูปโปรไฟล์ */
+  border-radius: 50%; /* ทำให้เป็นวงกลม */
+  display: flex; /* ใช้ flexbox เพื่อจัดตำแหน่ง */
+  align-items: center; /* จัดตำแหน่งข้อความให้อยู่กลางในแนวตั้ง */
+  justify-content: center; /* จัดตำแหน่งข้อความให้อยู่กลางในแนวนอน */
+  color: white; /* เปลี่ยนสีข้อความในรูปโปรไฟล์เป็นสีขาว */
+  font-size: 1.5rem; /* ขนาดฟอนต์ในรูปโปรไฟล์ */
+  font-weight: 700; /* ฟอนต์หนา */
 }
 
 .user-name {
-  font-size: 1.125rem;
-  color: #6b7280;
+  font-size: 1.125rem; /* ขนาดฟอนต์ของชื่อผู้ใช้ */
+  color: #6b7280; /* สีฟอนต์ของชื่อผู้ใช้ */
+}
+
+.user-avatar-input {
+  width: 4rem; /* ขนาดของอินพุตสำหรับรูปโปรไฟล์ */
+  height: 4rem; /* ขนาดของอินพุตสำหรับรูปโปรไฟล์ */
+  background: #2563eb; /* สีพื้นหลังของอินพุต */
+  border-radius: 50%; /* ทำให้เป็นวงกลม */
+  display: flex; /* ใช้ flexbox เพื่อจัดตำแหน่ง */
+  align-items: center; /* จัดตำแหน่งข้อความให้อยู่กลางในแนวตั้ง */
+  justify-content: center; /* จัดตำแหน่งข้อความให้อยู่กลางในแนวนอน */
+  color: white; /* เปลี่ยนสีข้อความในอินพุตเป็นสีขาว */
+  font-size: 1.5rem; /* ขนาดฟอนต์ในอินพุต */
+  font-weight: 700; /* ฟอนต์หนา */
+  border: none; /* ไม่มีขอบ */
+  text-align: center; /* จัดข้อความให้อยู่กลาง */
+}
+
+.user-name-input {
+  padding: 0.5rem; /* เพิ่มพื้นที่ภายในอินพุต */
+  border: 1px solid #d1d5db; /* ขอบของอินพุต */
+  border-radius: 0.5rem; /* มุมโค้งของอินพุต */
+  font-size: 1.125rem; /* ขนาดฟอนต์ของอินพุต */
+  color: #6b7280; /* สีฟอนต์ของอินพุต */
+  margin-left: 1rem; /* เพิ่มระยะห่างทางซ้าย */
+}
+
+.edit-button {
+  background: #f3f4f6; /* สีพื้นหลังของปุ่มแก้ไข */
+  color: #1f2937; /* สีข้อความของปุ่ม */
+  padding: 0.5rem 1rem; /* เพิ่มพื้นที่ภายในปุ่ม */
+  border-radius: 0.5rem; /* มุมโค้งของปุ่ม */
+  border: none; /* ไม่มีขอบ */
+  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อชี้ */
+  margin-left: 1rem; /* เพิ่มระยะห่างทางซ้าย */
+  transition: background 0.2s; /* เพิ่มการเปลี่ยนแปลงสีพื้นหลัง */
+}
+
+.edit-button:hover {
+  background: #e5e7eb; /* เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์ */
+}
+
+.save-button {
+  background: #10b981; /* สีพื้นหลังของปุ่มบันทึก */
+  color: white; /* สีข้อความของปุ่ม */
+  padding: 0.5rem 1rem; /* เพิ่มพื้นที่ภายในปุ่ม */
+  border-radius: 0.5rem; /* มุมโค้งของปุ่ม */
+  border: none; /* ไม่มีขอบ */
+  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อชี้ */
+  margin-left: 0.5rem; /* เพิ่มระยะห่างทางซ้าย */
+  transition: background 0.2s; /* เพิ่มการเปลี่ยนแปลงสีพื้นหลัง */
+}
+
+.save-button:hover {
+  background: #059669; /* เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์ */
+}
+
+.cancel-button {
+  background: #ef4444; /* สีพื้นหลังของปุ่มยกเลิก */
+  color: white; /* สีข้อความของปุ่ม */
+  padding: 0.5rem 1rem; /* เพิ่มพื้นที่ภายในปุ่ม */
+  border-radius: 0.5rem; /* มุมโค้งของปุ่ม */
+  border: none; /* ไม่มีขอบ */
+  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อชี้ */
+  margin-left: 0.5rem; /* เพิ่มระยะห่างทางซ้าย */
+  transition: background 0.2s; /* เพิ่มการเปลี่ยนแปลงสีพื้นหลัง */
+}
+
+.cancel-button:hover {
+  background: #dc2626; /* เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์ */
 }
 
 .applications-grid {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 1rem;
+  display: grid; /* ใช้กริดสำหรับจัดวางปุ่มแอปพลิเคชัน */
+  grid-template-columns: repeat(1, minmax(0, 1fr)); /* กำหนดให้มีแค่หนึ่งคอลัมน์ในหน้าจอขนาดเล็ก */
+  gap: 1rem; /* เพิ่มระยะห่างระหว่างแต่ละปุ่ม */
 }
 
 @media (min-width: 768px) {
   .applications-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* กำหนดให้มีสองคอลัมน์ในหน้าจอขนาดใหญ่ */
   }
 }
 
 .app-button {
-  background: #f3f4f6;
-  color: #1f2937;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  font-weight: 500;
-  border: none;
-  width: 100%;
-  justify-content: flex-start;
+  background: #f3f4f6; /* สีพื้นหลังของปุ่ม */
+  color: #1f2937; /* สีข้อความในปุ่ม */
+  padding: 0.75rem 1rem; /* เพิ่มพื้นที่ภายในปุ่ม */
+  border-radius: 0.5rem; /* ทำให้มุมปุ่มโค้ง */
+  transition: all 0.2s; /* เพิ่มการเปลี่ยนแปลงอย่างลื่นไหลเมื่อมีการโฮเวอร์ */
+  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อชี้ที่ปุ่ม */
+  display: inline-flex; /* ใช้ flexbox เพื่อจัดไอเท็มในแนวนอน */
+  align-items: center; /* จัดตำแหน่งข้อความให้อยู่กลาง */
+  font-weight: 500; /* ความหนาของฟอนต์ */
+  border: none; /* ไม่ให้กรอบรอบปุ่ม */
+  width: 100%; /* ทำให้ปุ่มยืดขยายเต็มความกว้าง */
+  justify-content: flex-start; /* จัดข้อความให้อยู่ทางซ้าย */
 }
 
 .app-button:hover {
-  background: #e5e7eb;
+  background: #e5e7eb; /* เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์ */
 }
 
 .app-button-icon {
-  margin-right: 0.5rem;
+  margin-right: 0.5rem; /* เพิ่มระยะห่างระหว่างไอคอนและข้อความในปุ่ม */
 }
 
 .actions-section {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  background: white; /* พื้นหลังของส่วนปุ่มการกระทำ */
+  border-radius: 0.5rem; /* มุมโค้งของส่วน */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); /* เงาเบาๆ เพื่อทำให้ดูเหมือนยกขึ้น */
+  padding: 1.5rem; /* เพิ่มพื้นที่ภายในส่วนการกระทำ */
 }
 
 .actions-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #374151;
+  font-size: 1.25rem; /* ขนาดฟอนต์ของชื่อหัวข้อในส่วนการกระทำ */
+  font-weight: 600; /* ความหนาของฟอนต์ */
+  margin-bottom: 1rem; /* เพิ่มระยะห่างใต้ชื่อหัวข้อ */
+  color: #374151; /* สีฟอนต์ */
 }
 
 .actions-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  display: flex; /* ใช้ flexbox เพื่อจัดปุ่มการกระทำ */
+  flex-wrap: wrap; /* ให้ปุ่มสามารถย้ายไปบรรทัดถัดไปได้เมื่อพื้นที่ไม่พอ */
+  gap: 1rem; /* เพิ่มระยะห่างระหว่างปุ่ม */
 }
 
 .action-button {
-  background: linear-gradient(to right, #2563eb, #1d4ed8);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  border: none;
-  transition: all 0.3s;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  font-weight: 500;
-  text-decoration: none;
+  background: linear-gradient(to right, #2563eb, #1d4ed8); /* พื้นหลังของปุ่มที่เป็นการไล่สี */
+  color: white; /* สีข้อความของปุ่ม */
+  padding: 0.75rem 1.5rem; /* เพิ่มพื้นที่ภายในปุ่ม */
+  border-radius: 0.5rem; /* ทำมุมของปุ่มให้โค้ง */
+  border: none; /* ไม่ให้กรอบรอบปุ่ม */
+  transition: all 0.3s; /* เพิ่มการเปลี่ยนแปลงอย่างลื่นไหล */
+  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อชี้ที่ปุ่ม */
+  display: inline-flex; /* จัดไอเท็มในแนวนอน */
+  align-items: center; /* จัดตำแหน่งข้อความให้อยู่กลาง */
+  font-weight: 500; /* ฟอนต์ปกติ */
+  text-decoration: none; /* ไม่มีการขีดเส้นใต้ข้อความ */
 }
 
 .action-button:hover {
-  background: linear-gradient(to right, #1d4ed8, #1e40af);
+  background: linear-gradient(to right, #1d4ed8, #1e40af); /* เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์ */
 }
 
 .action-button.secondary {
-  background: linear-gradient(to right, #dc2626, #b91c1c);
+  background: linear-gradient(to right, #dc2626, #b91c1c); /* ปุ่มสีแดงสำหรับการกระทำที่สำคัญ */
 }
 
 .action-button.secondary:hover {
-  background: linear-gradient(to right, #b91c1c, #991b1b);
+  background: linear-gradient(to right, #b91c1c, #991b1b); /* เปลี่ยนสีพื้นหลังเมื่อโฮเวอร์บนปุ่มสีแดง */
 }
 
 .action-button-icon {
-  margin-right: 0.5rem;
+  margin-right: 0.5rem; /* เพิ่มระยะห่างระหว่างไอคอนและข้อความในปุ่ม */
 }
