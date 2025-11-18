@@ -6,13 +6,16 @@ export default function Profile() {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [userName, setUserName] = useState('นาย xxxx xxxxx');
-  const [userAvatar, setUserAvatar] = useState('น');
+  const [userEmail, setUserEmail] = useState('example@email.com');
+  const [userPhone, setUserPhone] = useState('081-234-5678');
 
   useEffect(() => {
     const savedName = localStorage.getItem('userName');
-    const savedAvatar = localStorage.getItem('userAvatar');
+    const savedEmail = localStorage.getItem('userEmail');
+    const savedPhone = localStorage.getItem('userPhone');
     if (savedName) setUserName(savedName);
-    if (savedAvatar) setUserAvatar(savedAvatar);
+    if (savedEmail) setUserEmail(savedEmail);
+    if (savedPhone) setUserPhone(savedPhone);
   }, []);
 
   const handlePaymentMethods = () => {
@@ -25,15 +28,18 @@ export default function Profile() {
 
   const handleSave = () => {
     localStorage.setItem('userName', userName);
-    localStorage.setItem('userAvatar', userAvatar);
+    localStorage.setItem('userEmail', userEmail);
+    localStorage.setItem('userPhone', userPhone);
     setIsEditing(false);
   };
 
   const handleCancel = () => {
     const savedName = localStorage.getItem('userName') || 'นาย xxxx xxxxx';
-    const savedAvatar = localStorage.getItem('userAvatar') || 'น';
+    const savedEmail = localStorage.getItem('userEmail') || 'example@email.com';
+    const savedPhone = localStorage.getItem('userPhone') || '081-234-5678';
     setUserName(savedName);
-    setUserAvatar(savedAvatar);
+    setUserEmail(savedEmail);
+    setUserPhone(savedPhone);
     setIsEditing(false);
   };
 
@@ -43,32 +49,51 @@ export default function Profile() {
         <div className="profile-section">
           <h1 className="profile-title">Profile</h1>
           <div className="user-info">
-            <h2 className="profile-subtitle">ข้อมูลผู้ใช้</h2>
-            <div className="user-info">
+
+            <div className="user-details">
               {isEditing ? (
-                <>
-                  <input
-                    type="text"
-                    value={userAvatar}
-                    onChange={(e) => setUserAvatar(e.target.value)}
-                    className="user-avatar-input"
-                    maxLength="1"
-                  />
-                  <input
-                    type="text"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    className="user-name-input"
-                  />
-                  <button onClick={handleSave} className="save-button">บันทึก</button>
-                  <button onClick={handleCancel} className="cancel-button">ยกเลิก</button>
-                </>
+                <div className="edit-form">
+                  <div className="form-group">
+                    <label className="form-label">Name:</label>
+                    <input
+                      type="text"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      className="user-name-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Email:</label>
+                    <input
+                      type="email"
+                      value={userEmail}
+                      onChange={(e) => setUserEmail(e.target.value)}
+                      className="user-email-input"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Phone:</label>
+                    <input
+                      type="tel"
+                      value={userPhone}
+                      onChange={(e) => setUserPhone(e.target.value)}
+                      className="user-phone-input"
+                    />
+                  </div>
+                  <div className="button-group">
+                    <button onClick={handleSave} className="save-button">บันทึก</button>
+                    <button onClick={handleCancel} className="cancel-button">ยกเลิก</button>
+                  </div>
+                </div>
               ) : (
-                <>
-                  <div className="user-avatar">{userAvatar}</div>
-                  <p className="user-name">{userName}</p>
+                <div className="display-info">
+                  <div className="user-text-info">
+                    <p className="user-name">{userName}</p>
+                    <p className="user-email">{userEmail}</p>
+                    <p className="user-phone">{userPhone}</p>
+                  </div>
                   <button onClick={handleEdit} className="edit-button">แก้ไข</button>
-                </>
+                </div>
               )}
             </div>
           </div>
