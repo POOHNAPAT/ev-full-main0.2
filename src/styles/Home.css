@@ -169,3 +169,64 @@
   padding: 2rem;
   border-radius: 0.75rem;
 }
+
+/* Recent Booking Section */
+.recent-booking-section {
+  margin-bottom: 2rem;
+}
+
+.recent-booking-card {
+  background: linear-gradient(to right, #3b82f6);
+  color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.recent-booking-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+  opacity: 0.1;
+}
+
+.recent-booking-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.recent-booking-title::before {
+  content: '✅';
+  margin-right: 0.5rem;
+}
+
+.recent-booking-details p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.status-confirmed {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: bold;
+}
+
+.recent-booking-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+

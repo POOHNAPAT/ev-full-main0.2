@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../components/LanguageContext';
 import '../styles/Home.css';
 
 export default function Home(){
   const { t } = useLanguage();
+  const [recentBooking, setRecentBooking] = useState(null);
+
+  useEffect(() => {
+    // Check for recent booking in localStorage
+    const booking = localStorage.getItem('recentBooking');
+    if (booking) {
+      setRecentBooking(JSON.parse(booking));
+    }
+  }, []);
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -38,6 +47,7 @@ export default function Home(){
           </div>
           <h4 className="feature-title">{t.advanceBooking}</h4>
           <p className="feature-description">{t.advanceDesc}</p>
+          <Link to="/map" className="feature-button">จองเลย</Link>
         </div>
 
         <div className="feature-card">
@@ -46,6 +56,7 @@ export default function Home(){
           </div>
           <h4 className="feature-title">{t.usageReport}</h4>
           <p className="feature-description">{t.usageDesc}</p>
+          <Link to="/usage-history" className="feature-button">ดูรายงาน</Link>
         </div>
 
         <div className="feature-card">
@@ -56,12 +67,29 @@ export default function Home(){
           <p className="feature-description">{t.allVehiclesDesc}</p>
           <ul className="vehicle-list">
             <li>CCS2</li>
-            <li>CHAdeMO</li>
             <li>Type 2</li>
             <li>Tesla</li>
           </ul>
+          <Link to="/add-vehicle" className="feature-button">เพิ่มรถ</Link>
         </div>
       </section>
+
+      {/* Recent Booking Section */}
+      {recentBooking && (
+        <section className="recent-booking-section">
+          <div className="recent-booking-card">
+            <h3 className="recent-booking-title">การจองล่าสุด</h3>
+            <div className="recent-booking-details">
+              <p><strong>สถานี:</strong> {recentBooking.stationName}</p>
+              <p><strong>วันที่:</strong> {recentBooking.date}</p>
+              <p><strong>เวลา:</strong> {recentBooking.startTime} - {recentBooking.endTime}</p>
+              <p><strong>สถานะ:</strong> <span className="status-confirmed">ยืนยันแล้ว</span></p>
+            </div>
+            <div className="recent-booking-actions">
+            </div>
+          </div>
+        </section>
+      )}
 
       <section id="contact" className="contact-section">
       </section>

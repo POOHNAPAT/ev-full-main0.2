@@ -74,6 +74,10 @@ export default function Booking() {
       // In production, uncomment the line below:
       // await addDoc(collection(db, 'bookings'), bookingData);
       console.log('Booking data:', bookingData);
+
+      // Save to localStorage for demo purposes
+      localStorage.setItem('recentBooking', JSON.stringify(bookingData));
+
       setShowQR(true);
     } catch (error) {
       console.error('Error saving booking:', error);
@@ -197,17 +201,17 @@ export default function Booking() {
                 <QRCode value={`${id}-${startTime}-${endTime}`} />
               </div>
               <p className="qr-instruction">สแกน QR Code ที่ตู้ชาร์จเพื่อเริ่มใช้งาน</p>
-              <Link to="/map" className="back-link">
+              <Link to="/" className="back-link">
                 <FaArrowLeft />
-                กลับไปแผนที่
+                กลับไปหน้าแรก
               </Link>
             </div>
           )}
 
           <div className="footer-link">
-            <Link to="/map">
+            <Link to="/">
               <FaArrowLeft className="footer-link-icon" />
-              กลับไปแผนที่
+              กลับไปหน้าแรก
             </Link>
           </div>
         </div>
