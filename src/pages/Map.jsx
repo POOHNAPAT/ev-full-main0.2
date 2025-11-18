@@ -160,7 +160,7 @@ export default function MapPage(){
                 <p><span className="font-medium">สิ่งอำนวยความสะดวก:</span> {selectedStation.amenities}</p>
               </div>
             </div>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-end">
               <button
                 onClick={() => navigate(`/booking/${selectedStation.id}`)}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition duration-200 hover:scale-105"

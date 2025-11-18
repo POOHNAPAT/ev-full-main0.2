@@ -28,6 +28,12 @@ export default function Home(){
             aria-label="ค้นหาสถานีชาร์จ"
             placeholder={t.searchPlaceholder}
             className="search-input"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                // Navigate to map page when Enter is pressed
+                window.location.href = '/map';
+              }
+            }}
           />
           <Link to="/map" className="search-button">{t.bookButton}</Link>
         </div>
