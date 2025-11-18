@@ -1,11 +1,13 @@
-# TODO List for Home Page Updates
+# TODO: Enhance Contact Form Beauty
 
-- [x] Create src/pages/Profile.jsx with a basic profile component
-- [x] Update src/App.jsx to add profile link in header and route to /profile
-- [x] Update src/pages/Home.jsx with new hero section, main title, and updated feature sections
-- [x] Add AC Charger and DC Fast Charger buttons to Map page
-- [x] Create src/pages/Booking.jsx with a basic booking component
-- [x] Update src/App.jsx to add booking route
-- [x] Update src/pages/Map.jsx to make markers clickable for booking
-- [x] Create src/pages/Reviews.jsx with review functionality
-- [x] Update src/App.jsx to add reviews route and link in header
+## Approved Plan Breakdown
+- Add subtle animations (fade-in for the form, hover effects on inputs and button)
+- Improve colors and gradients (soft background gradient to the form section, enhance button hover states)
+- Better spacing and layout (padding, margins, rounded corners for a more modern look)
+- Add icons or visual elements (integrate icons next to labels for better UX)
+- Ensure responsiveness remains intact
+
+## Logical Steps
+1. Update Contact.css: Add background gradient to form section, enhance button hover states, add animations (fade-in, hover effects), improve spacing and rounded corners.
+2. Update Contact.jsx: Add icons next to form labels for better UX.
+3. Verify responsiveness and functionality.

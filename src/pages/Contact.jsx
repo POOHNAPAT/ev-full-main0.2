@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaPaperPlane, FaCheckCircle, FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaPaperPlane, FaCheckCircle, FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaUser, FaAt, FaTag, FaComment } from 'react-icons/fa';
 import { useLanguage } from '../components/LanguageContext';
+import emailjs from '@emailjs/browser';
 import '../styles/Contact.css';
 
 export default function Contact() {
@@ -21,15 +22,35 @@ export default function Contact() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission here
-    setIsSubmitted(true);
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 3000);
+
+    try {
+      const templateParams = {
+        from_name: formData.name,
+        from_email: formData.email,
+        subject: formData.subject,
+        message: `หัวข้อ: ${formData.subject}\nจาก: ${formData.name} (${formData.email})\n\n${formData.message}`,
+        to_email: 'napat.pic@spumail.net'
+      };
+
+      await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        templateParams,
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      );
+
+      setIsSubmitted(true);
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      }, 3000);
+    } catch (error) {
+      console.error('Email sending failed:', error);
+      alert(`เกิดข้อผิดพลาดในการส่งอีเมล: ${error.text || error.message || 'Unknown error'}`);
+    }
   };
 
   const contactInfo = [
@@ -142,7 +163,10 @@ export default function Contact() {
               <form onSubmit={handleSubmit} className="contact-form">
                 <div className="form-row">
                   <div className="form-group">
-                    <label className="form-label">ชื่อ *</label>
+                    <label className="form-label">
+                      <FaUser className="inline mr-2 text-blue-500" />
+                      ชื่อ *
+                    </label>
                     <input
                       type="text"
                       name="name"
@@ -154,7 +178,10 @@ export default function Contact() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">อีเมล *</label>
+                    <label className="form-label">
+                      <FaAt className="inline mr-2 text-blue-500" />
+                      อีเมล *
+                    </label>
                     <input
                       type="email"
                       name="email"
@@ -168,7 +195,10 @@ export default function Contact() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">หัวข้อ *</label>
+                  <label className="form-label">
+                    <FaTag className="inline mr-2 text-blue-500" />
+                    หัวข้อ *
+                  </label>
                   <input
                     type="text"
                     name="subject"
@@ -181,7 +211,10 @@ export default function Contact() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">ข้อความ *</label>
+                  <label className="form-label">
+                    <FaComment className="inline mr-2 text-blue-500" />
+                    ข้อความ *
+                  </label>
                   <textarea
                     name="message"
                     value={formData.message}
