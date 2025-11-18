@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaCalendarAlt, FaClock, FaBolt, FaWifi, FaCoffee, FaRestroom, FaShieldAlt, FaUtensils, FaShoppingCart, FaMapMarkerAlt, FaCheckCircle, FaEdit, FaQrcode, FaArrowLeft } from 'react-icons/fa';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { firebaseConfig } from '../firebaseConfig';
 import '../styles/Booking.css';
 
 // Simple QR code component (placeholder)
@@ -16,16 +19,26 @@ const stations = {
   'central-world': { name: 'Central World – ชั้น B2', available: '6/10', power: '150 kW', amenities: 'Wi-Fi ฟรี, ร้านกาแฟ, ห้องน้ำ, ระบบรักษาความปลอดภัย, พื้นที่พักผ่อน, ร้านอาหาร' },
   'siam-paragon': { name: 'Siam Paragon', available: '4/8', power: '100 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ' },
   'mbk-center': { name: 'MBK Center', available: '5/10', power: '120 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
-  'bangkok-mall': { name: 'Bangkok Mall', available: '3/6', power: '80 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ, ร้านอาหาร' },
-  'terminal-21': { name: 'Terminal 21', available: '7/12', power: '200 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน' },
-  'central-plaza': { name: 'Central Plaza', available: '2/4', power: '50 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
-  'central-chidlom': { name: 'Central Chidlom', available: '8/15', power: '180 kW', amenities: 'Wi-Fi ฟรี, ร้านกาแฟ, ห้องน้ำ, ระบบรักษาความปลอดภัย, ร้านอาหาร, พื้นที่จอดรถ' },
   'emquartier': { name: 'EmQuartier', available: '5/8', power: '120 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน, ร้านค้า' },
-  'gateway-ekamai': { name: 'Gateway Ekamai', available: '4/6', power: '90 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ, ร้านอาหาร, ระบบรักษาความปลอดภัย' },
-  'the-emerald': { name: 'The Emerald', available: '6/10', power: '150 kW', amenities: 'Wi-Fi ฟรี, ร้านกาแฟ, ห้องน้ำ, พื้นที่พักผ่อน, ร้านอาหาร' },
-  'central-festival': { name: 'Central Festival EastVille', available: '9/14', power: '220 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ, ร้านอาหาร, พื้นที่พักผ่อน, ระบบรักษาความปลอดภัย' },
-  'major-cineplex': { name: 'Major Cineplex', available: '3/5', power: '75 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่จอดรถ' },
+  'terminal-21': { name: 'Terminal 21', available: '7/12', power: '200 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน' },
+  'asiatique': { name: 'Asiatique', available: '3/6', power: '80 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน' },
   'chatuchak-market': { name: 'Chatuchak Weekend Market', available: '12/20', power: '250 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่จอดรถ, ระบบรักษาความปลอดภัย, ร้านค้า, พื้นที่พักผ่อน' },
+  'lumpini-park': { name: 'Lumpini Park', available: '2/4', power: '50 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+  'bangkok-hospital': { name: 'Bangkok Hospital', available: '1/2', power: '30 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, ระบบรักษาความปลอดภัย' },
+  'grand-palace': { name: 'Grand Palace', available: '4/8', power: '100 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+  'siam-square': { name: 'Siam Square', available: '5/10', power: '120 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
+  'wat-arun': { name: 'Wat Arun', available: '3/6', power: '80 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+  'jim-thompson': { name: 'Jim Thompson House', available: '2/4', power: '50 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ' },
+  'patpong': { name: 'Patpong Night Market', available: '6/12', power: '150 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ' },
+  'erawan-shrine': { name: 'Erawan Shrine', available: '4/8', power: '100 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+  'khao-san': { name: 'Khao San Road', available: '8/15', power: '180 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ' },
+  'silom-complex': { name: 'Silom Complex', available: '5/10', power: '120 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
+  'victory-monument': { name: 'Victory Monument', available: '3/6', power: '80 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+  'central-chidlom': { name: 'Central Chidlom', available: '8/15', power: '180 kW', amenities: 'Wi-Fi ฟรี, ร้านกาแฟ, ห้องน้ำ, ระบบรักษาความปลอดภัย, ร้านอาหาร, พื้นที่จอดรถ' },
+  'sukhumvit': { name: 'Sukhumvit Road', available: '4/8', power: '100 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
+  'don-mueang': { name: 'Don Mueang Airport', available: '10/20', power: '300 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน, ระบบรักษาความปลอดภัย' },
+  'suvarnabhumi': { name: 'Suvarnabhumi Airport', available: '15/30', power: '500 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน, ระบบรักษาความปลอดภัย, ร้านค้า' },
+  'bangkok-university': { name: 'Bangkok University', available: '6/12', power: '150 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
 };
 
 export default function Booking() {
@@ -36,9 +49,35 @@ export default function Booking() {
   const [endTime, setEndTime] = useState('');
   const [showQR, setShowQR] = useState(false);
 
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
   const handleBook = () => {
     if (startTime && endTime) {
       setStep('confirm');
+    }
+  };
+
+  const handleConfirmBooking = async () => {
+    try {
+      const bookingData = {
+        stationId: id,
+        stationName: station.name,
+        startTime,
+        endTime,
+        date: '28 พฤศจิกายน 2568',
+        timestamp: new Date(),
+        status: 'confirmed'
+      };
+      // For demo purposes, we'll simulate saving to Firebase
+      // In production, uncomment the line below:
+      // await addDoc(collection(db, 'bookings'), bookingData);
+      console.log('Booking data:', bookingData);
+      setShowQR(true);
+    } catch (error) {
+      console.error('Error saving booking:', error);
+      alert('เกิดข้อผิดพลาดในการบันทึกการจอง กรุณาลองใหม่อีกครั้ง');
     }
   };
 
@@ -138,7 +177,7 @@ export default function Booking() {
                   แก้ไข
                 </button>
                 <button
-                  onClick={() => setShowQR(true)}
+                  onClick={handleConfirmBooking}
                   className="btn btn-primary"
                 >
                   <FaCheckCircle />

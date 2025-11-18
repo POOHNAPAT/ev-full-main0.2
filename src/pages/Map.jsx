@@ -24,6 +24,7 @@ const dcIcon = L.icon({
 
 export default function MapPage(){
   const [filter, setFilter] = useState('all');
+  const [selectedStation, setSelectedStation] = useState(null);
   const navigate = useNavigate();
 
   useEffect(()=>{
@@ -63,10 +64,55 @@ export default function MapPage(){
 
     const filteredMarkers = filter === 'all' ? markers : markers.filter(m => m.type === filter);
 
+    // Station details mapping (same as in Booking.jsx)
+    const stations = {
+      'central-world': { name: 'Central World – ชั้น B2', available: '6/10', power: '150 kW', amenities: 'Wi-Fi ฟรี, ร้านกาแฟ, ห้องน้ำ, ระบบรักษาความปลอดภัย, พื้นที่พักผ่อน, ร้านอาหาร' },
+      'siam-paragon': { name: 'Siam Paragon', available: '4/8', power: '100 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ' },
+      'mbk-center': { name: 'MBK Center', available: '5/10', power: '120 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
+      'emquartier': { name: 'EmQuartier', available: '5/8', power: '120 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน, ร้านค้า' },
+      'terminal-21': { name: 'Terminal 21', available: '7/12', power: '200 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน' },
+      'asiatique': { name: 'Asiatique', available: '3/6', power: '80 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน' },
+      'chatuchak-market': { name: 'Chatuchak Weekend Market', available: '12/20', power: '250 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่จอดรถ, ระบบรักษาความปลอดภัย, ร้านค้า, พื้นที่พักผ่อน' },
+      'lumpini-park': { name: 'Lumpini Park', available: '2/4', power: '50 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+      'bangkok-hospital': { name: 'Bangkok Hospital', available: '1/2', power: '30 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, ระบบรักษาความปลอดภัย' },
+      'grand-palace': { name: 'Grand Palace', available: '4/8', power: '100 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+      'siam-square': { name: 'Siam Square', available: '5/10', power: '120 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
+      'wat-arun': { name: 'Wat Arun', available: '3/6', power: '80 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+      'jim-thompson': { name: 'Jim Thompson House', available: '2/4', power: '50 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ' },
+      'patpong': { name: 'Patpong Night Market', available: '6/12', power: '150 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ' },
+      'erawan-shrine': { name: 'Erawan Shrine', available: '4/8', power: '100 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+      'khao-san': { name: 'Khao San Road', available: '8/15', power: '180 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ' },
+      'silom-complex': { name: 'Silom Complex', available: '5/10', power: '120 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
+      'victory-monument': { name: 'Victory Monument', available: '3/6', power: '80 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+      'central-chidlom': { name: 'Central Chidlom', available: '8/15', power: '180 kW', amenities: 'Wi-Fi ฟรี, ร้านกาแฟ, ห้องน้ำ, ระบบรักษาความปลอดภัย, ร้านอาหาร, พื้นที่จอดรถ' },
+      'sukhumvit': { name: 'Sukhumvit Road', available: '4/8', power: '100 kW', amenities: 'Wi-Fi ฟรี, ร้านค้า, ห้องน้ำ' },
+      'don-mueang': { name: 'Don Mueang Airport', available: '10/20', power: '300 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน, ระบบรักษาความปลอดภัย' },
+      'suvarnabhumi': { name: 'Suvarnabhumi Airport', available: '15/30', power: '500 kW', amenities: 'Wi-Fi ฟรี, ร้านอาหาร, ห้องน้ำ, พื้นที่พักผ่อน, ระบบรักษาความปลอดภัย, ร้านค้า' },
+      'bangkok-university': { name: 'Bangkok University', available: '6/12', power: '150 kW', amenities: 'Wi-Fi ฟรี, ห้องน้ำ, พื้นที่พักผ่อน' },
+    };
+
     filteredMarkers.forEach(m=>{
       const icon = m.type === 'AC' ? acIcon : dcIcon;
+      const station = stations[m.id] || { name: m.name, available: 'N/A', power: 'N/A', amenities: 'N/A' };
       const marker = L.marker([m.lat, m.lng], { icon }).addTo(map);
-      marker.bindPopup(`<b>${m.name}</b><br/>${m.type} Charger<br/><button onclick="window.location.href='/booking/${m.id}'" class="bg-blue-600 text-white px-2 py-1 rounded text-sm">จอง</button>`);
+
+      // Add click event to show station details below map
+      marker.on('click', () => {
+        setSelectedStation({ ...m, ...station });
+      });
+
+      marker.bindPopup(`
+        <div style="max-width: 250px; font-family: Arial, sans-serif;">
+          <b style="font-size: 16px; color: #333;">${m.name}</b><br/>
+          <span style="color: #666; font-size: 14px;">${m.type} Charger</span><br/>
+          <div style="margin: 8px 0; font-size: 13px;">
+            <div><b>จุดว่าง:</b> <span style="color: #22c55e;">${station.available}</span></div>
+            <div><b>กำลังไฟ:</b> ${station.power}</div>
+            <div><b>สิ่งอำนวยความสะดวก:</b> ${station.amenities}</div>
+          </div>
+          <button onclick="window.location.href='/booking/${m.id}'" style="background: #2563eb; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">จอง</button>
+        </div>
+      `);
     });
 
     return ()=> {
@@ -123,6 +169,31 @@ export default function MapPage(){
         </div>
         <p className="mt-4 text-center text-sm text-gray-500">คลิกที่หมุดเพื่อจองสถานีชาร์จ</p>
       </div>
+
+      {selectedStation && (
+        <div className="bg-white rounded-2xl shadow-xl p-6 mt-6">
+          <h3 className="text-2xl font-bold mb-4 text-gray-800">รายละเอียดสถานี</h3>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-xl font-semibold mb-2 text-blue-600">{selectedStation.name}</h4>
+              <div className="space-y-2 text-gray-700">
+                <p><span className="font-medium">ประเภท:</span> {selectedStation.type} Charger</p>
+                <p><span className="font-medium">จุดว่าง:</span> <span className="text-green-600 font-semibold">{selectedStation.available}</span></p>
+                <p><span className="font-medium">กำลังไฟ:</span> {selectedStation.power}</p>
+                <p><span className="font-medium">สิ่งอำนวยความสะดวก:</span> {selectedStation.amenities}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-center">
+              <button
+                onClick={() => navigate(`/booking/${selectedStation.id}`)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition duration-200 hover:scale-105"
+              >
+                จองสถานีนี้
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
