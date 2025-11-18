@@ -1,135 +1,136 @@
 /* Contact Page Styling */
 
 .contact-container {
-  min-height: 100vh;
-  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
-  padding: 2rem 0;
+  min-height: 100vh; /* กำหนดความสูงขั้นต่ำให้หน้า Contact page เต็มหน้าจอ */
+  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff); /* ตั้งสีพื้นหลังเป็นการไล่สี */
+  padding: 2rem 0; /* เพิ่มระยะห่างบนและล่างสำหรับพื้นที่ */
 }
 
 .contact-content {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 1.5rem;
+  max-width: 72rem; /* จำกัดความกว้างของเนื้อหาในหน้า Contact */
+  margin: 0 auto; /* จัดตำแหน่งเนื้อหาให้อยู่กลางหน้าจอ */
+  padding: 1.5rem; /* เพิ่มระยะห่างภายใน */
 }
 
 .contact-header {
-  text-align: center;
-  margin-bottom: 3rem;
+  text-align: center; /* จัดข้อความให้ตรงกลาง */
+  margin-bottom: 3rem; /* เพิ่มระยะห่างใต้หัวข้อ */
 }
 
 .contact-header-title {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 1rem;
+  font-size: 2.25rem; /* ขนาดฟอนต์ของหัวข้อหลัก */
+  font-weight: 700; /* ความหนาของฟอนต์ */
+  color: #1f2937; /* สีของหัวข้อ */
+  margin-bottom: 1rem; /* เพิ่มระยะห่างใต้หัวข้อ */
 }
 
 .contact-header-subtitle {
-  font-size: 1.25rem;
-  color: #6b7280;
-  max-width: 42rem;
-  margin: 0 auto;
+  font-size: 1.25rem; /* ขนาดฟอนต์ของคำอธิบายรอง */
+  color: #6b7280; /* สีของคำอธิบายรอง */
+  max-width: 42rem; /* จำกัดความกว้างของคำอธิบาย */
+  margin: 0 auto; /* จัดให้อยู่กลาง */
 }
 
 .contact-grid {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
+  display: grid; /* ใช้กริดสำหรับจัดวางเนื้อหาหลายคอลัมน์ */
+  grid-template-columns: repeat(1, minmax(0, 1fr)); /* ใช้คอลัมน์เดียวในหน้าจอขนาดเล็ก */
+  gap: 2rem; /* เพิ่มระยะห่างระหว่างแต่ละคอลัมน์ */
+  margin-bottom: 3rem; /* เพิ่มระยะห่างใต้กริด */
 }
 
 @media (min-width: 1024px) {
   .contact-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* ใช้ 3 คอลัมน์ในหน้าจอขนาดใหญ่ */
   }
 }
 
 .contact-info-section {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  background: white; /* พื้นหลังของส่วนข้อมูลติดต่อ */
+  border: 1px solid #e5e7eb; /* เพิ่มขอบเพื่อแยกกรอบ */
+  border-radius: 0.5rem; /* ทำให้มุมของส่วนโค้ง */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); /* เพิ่มเงาเล็กน้อย */
+  padding: 1.5rem; /* เพิ่มระยะห่างภายใน */
 }
 
 .contact-info-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1.5rem;
+  font-size: 1.5rem; /* ขนาดฟอนต์ของชื่อหัวข้อ */
+  font-weight: 600; /* ฟอนต์หนา */
+  color: #1f2937; /* สีฟอนต์ */
+  margin-bottom: 1.5rem; /* เพิ่มระยะห่างใต้ชื่อหัวข้อ */
 }
 
 .contact-info-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  display: flex; /* ใช้ flexbox เพื่อจัดระเบียบรายการ */
+  flex-direction: column; /* วางรายการในแนวตั้ง */
+  gap: 1.5rem; /* เพิ่มระยะห่างระหว่างรายการ */
 }
 
 .contact-info-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+  display: flex; /* ใช้ flexbox สำหรับการจัดรายการ */
+  align-items: flex-start; /* จัดให้อยู่เริ่มต้นในแนวตั้ง */
+  gap: 1rem; /* เพิ่มระยะห่างระหว่างไอคอนและข้อมูล */
 }
 
 .contact-info-icon {
-  flex-shrink: 0;
-  margin-top: 0.25rem;
+  flex-shrink: 0; /* ป้องกันไม่ให้ไอคอนหดตัว */
+  margin-top: 0.25rem; /* เพิ่มระยะห่างด้านบน */
 }
 
 .contact-info-details h3 {
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.25rem;
+  font-weight: 600; /* ฟอนต์หนา */
+  color: #1f2937; /* สีของหัวข้อรายละเอียด */
+  margin-bottom: 0.25rem; /* เพิ่มระยะห่างใต้หัวข้อ */
 }
 
 .contact-info-details p {
-  color: #6b7280;
-  margin-bottom: 0.125rem;
+  color: #6b7280; /* สีข้อความรายละเอียด */
+  margin-bottom: 0.125rem; /* เพิ่มระยะห่างใต้ข้อความ */
 }
 
 .contact-info-description {
-  font-size: 0.875rem;
-  color: #9ca3af;
-  margin-top: 0.25rem;
+  font-size: 0.875rem; /* ขนาดฟอนต์เล็กของคำอธิบาย */
+  color: #9ca3af; /* สีของคำอธิบาย */
+  margin-top: 0.25rem; /* เพิ่มระยะห่างด้านบน */
 }
 
 .social-media {
-  margin-top: 2rem;
+  margin-top: 2rem; /* เพิ่มระยะห่างด้านบนสำหรับส่วนโซเชียล */
 }
 
 .social-media-title {
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1rem;
+  font-weight: 600; /* ฟอนต์หนา */
+  color: #1f2937; /* สีฟอนต์ */
+  margin-bottom: 1rem; /* เพิ่มระยะห่างใต้หัวข้อ */
 }
 
 .social-links {
-  display: flex;
-  gap: 1rem;
+  display: flex; /* ใช้ flexbox สำหรับการจัดลิงก์ */
+  gap: 1rem; /* เพิ่มระยะห่างระหว่างลิงก์ */
 }
 
 .social-link {
-  color: #2563eb;
-  transition: color 0.3s;
+  color: #2563eb; /* สีของลิงก์ */
+  transition: color 0.3s; /* เพิ่มการเปลี่ยนแปลงสีเมื่อโฮเวอร์ */
 }
 
 .social-link:hover {
-  color: #1e40af;
+  color: #1e40af; /* เปลี่ยนสีเมื่อโฮเวอร์ */
 }
 
 .social-link.facebook:hover {
-  color: #1877f2;
+  color: #1877f2; /* สีเฉพาะสำหรับ Facebook */
 }
 
 .social-link.twitter:hover {
-  color: #1da1f2;
+  color: #1da1f2; /* สีเฉพาะสำหรับ Twitter */
 }
 
 .social-link.instagram:hover {
-  color: #e4405f;
+  color: #e4405f; /* สีเฉพาะสำหรับ Instagram */
 }
 
 .social-link.linkedin:hover {
-  color: #0077b5;
+  color: #0077b5; /* สีเฉพาะสำหรับ LinkedIn */
 }
 
 .contact-form-section {
@@ -160,117 +161,117 @@
 }
 
 .contact-form-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1.5rem;
+  font-size: 1.5rem; /* ขนาดฟอนต์ของชื่อหัวข้อฟอร์ม */
+  font-weight: 600; /* ฟอนต์หนา */
+  color: #1f2937; /* สีฟอนต์ */
+  margin-bottom: 1.5rem; /* เพิ่มระยะห่างใต้ชื่อหัวข้อ */
 }
 
 .success-message {
-  text-align: center;
-  padding: 3rem 0;
+  text-align: center; /* จัดข้อความให้ตรงกลาง */
+  padding: 3rem 0; /* เพิ่มพื้นที่ด้านบนและล่าง */
 }
 
 .success-icon {
-  width: 5rem;
-  height: 5rem;
-  background: #dcfce7;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.5rem;
+  width: 5rem; /* ขนาดของไอคอนสำเร็จ */
+  height: 5rem; /* ขนาดของไอคอนสำเร็จ */
+  background: #dcfce7; /* สีพื้นหลังของไอคอน */
+  border-radius: 50%; /* ทำให้เป็นวงกลม */
+  display: inline-flex; /* ใช้ flexbox เพื่อจัดตำแหน่ง */
+  align-items: center; /* จัดให้ไอคอนอยู่กลาง */
+  justify-content: center; /* จัดให้ไอคอนอยู่กลาง */
+  margin-bottom: 1.5rem; /* เพิ่มระยะห่างใต้ไอคอน */
 }
 
 .success-icon svg {
-  color: #16a34a;
-  font-size: 1.875rem;
+  color: #16a34a; /* สีของไอคอนสำเร็จ */
+  font-size: 1.875rem; /* ขนาดของไอคอนสำเร็จ */
 }
 
 .success-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1rem;
+  font-size: 1.5rem; /* ขนาดฟอนต์ของข้อความสำเร็จ */
+  font-weight: 600; /* ฟอนต์หนา */
+  color: #1f2937; /* สีฟอนต์ */
+  margin-bottom: 1rem; /* เพิ่มระยะห่างใต้ข้อความสำเร็จ */
 }
 
 .success-text {
-  color: #6b7280;
+  color: #6b7280; /* สีข้อความสำเร็จ */
 }
 
 .contact-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  display: flex; /* ใช้ flexbox สำหรับการจัดเรียงฟอร์ม */
+  flex-direction: column; /* วางฟอร์มในแนวตั้ง */
+  gap: 1.5rem; /* เพิ่มระยะห่างระหว่างฟอร์ม */
 }
 
 .form-row {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 1.5rem;
+  display: grid; /* ใช้กริดสำหรับการจัดระเบียบฟอร์ม */
+  grid-template-columns: repeat(1, minmax(0, 1fr)); /* ใช้คอลัมน์เดียวในหน้าจอเล็ก */
+  gap: 1.5rem; /* เพิ่มระยะห่างระหว่างคอลัมน์ */
 }
 
 @media (min-width: 768px) {
   .form-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* ใช้ 2 คอลัมน์ในหน้าจอขนาดกลางขึ้นไป */
   }
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
+  display: flex; /* ใช้ flexbox สำหรับการจัดระเบียบฟอร์ม */
+  flex-direction: column; /* วางรายการในแนวตั้ง */
 }
 
 .form-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.5rem;
+  font-size: 0.875rem; /* ขนาดฟอนต์ของป้ายฟอร์ม */
+  font-weight: 500; /* ฟอนต์ปกติ */
+  color: #374151; /* สีของป้ายฟอร์ม */
+  margin-bottom: 0.5rem; /* เพิ่มระยะห่างใต้ป้ายฟอร์ม */
 }
 
 .form-input {
-  padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-  font-family: inherit;
+  padding: 0.75rem 1rem; /* เพิ่มพื้นที่ภายในฟอร์มอินพุต */
+  border: 1px solid #d1d5db; /* กำหนดขอบของฟอร์มอินพุต */
+  border-radius: 0.5rem; /* มุมโค้งของฟอร์มอินพุต */
+  transition: all 0.2s; /* เพิ่มการเปลี่ยนแปลงลื่นๆ */
+  font-family: inherit; /* ใช้ฟอนต์เดียวกับส่วนอื่นๆ */
 }
 
 .form-input:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px #3b82f6;
-  border-color: transparent;
+  outline: none; /* ลบขอบเมื่อโฟกัส */
+  box-shadow: 0 0 0 2px #3b82f6; /* เพิ่มเงาสีฟ้าเมื่อโฟกัส */
+  border-color: transparent; /* เปลี่ยนสีขอบเป็นโปร่งใส */
 }
 
 .form-textarea {
-  padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-  font-family: inherit;
-  resize: none;
-  min-height: 9rem;
+  padding: 0.75rem 1rem; /* เพิ่มพื้นที่ภายในสำหรับฟอร์มเท็กซ์เรีย */
+  border: 1px solid #d1d5db; /* กำหนดขอบ */
+  border-radius: 0.5rem; /* มุมโค้ง */
+  transition: all 0.2s; /* เพิ่มการเปลี่ยนแปลงลื่นๆ */
+  font-family: inherit; /* ใช้ฟอนต์เดียวกับส่วนอื่นๆ */
+  resize: none; /* ปิดการปรับขนาด */
+  min-height: 9rem; /* กำหนดความสูงขั้นต่ำ */
 }
 
 .form-textarea:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px #3b82f6;
-  border-color: transparent;
+  outline: none; /* ลบขอบเมื่อโฟกัส */
+  box-shadow: 0 0 0 2px #3b82f6; /* เพิ่มเงาสีฟ้าเมื่อโฟกัส */
+  border-color: transparent; /* เปลี่ยนสีขอบเป็นโปร่งใส */
 }
 
 .submit-button {
-  width: 100%;
-  background: linear-gradient(to right, #2563eb, #1d4ed8);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  border: none;
-  transition: all 0.3s;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 500;
+  width: 100%; /* ทำให้ปุ่มยืดขยายเต็มความกว้าง */
+  background: linear-gradient(to right, #2563eb, #1d4ed8); /* สีพื้นหลังของปุ่ม */
+  color: white; /* สีข้อความของปุ่ม */
+  padding: 0.75rem 1.5rem; /* เพิ่มพื้นที่ภายใน */
+  border-radius: 0.5rem; /* ทำมุมโค้ง */
+  border: none; /* ไม่มีขอบ */
+  transition: all 0.3s; /* เพิ่มการเปลี่ยนแปลงลื่นๆ */
+  cursor: pointer; /* เปลี่ยนเคอร์เซอร์เมื่อชี้ที่ปุ่ม */
+  display: inline-flex; /* จัดไอเท็มในแนวนอน */
+  align-items: center; /* จัดตำแหน่งไอเท็มให้อยู่กลาง */
+  justify-content: center; /* จัดตำแหน่งไอเท็มให้อยู่กลาง */
+  font-weight: 500; /* ฟอนต์ปกติ */
 }
 
 .submit-button:hover {
@@ -280,51 +281,51 @@
 }
 
 .submit-button svg {
-  margin-right: 0.5rem;
+  margin-right: 0.5rem; /* เพิ่มระยะห่างระหว่างไอคอนกับข้อความ */
 }
 
 .faq-section {
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
+  background: white; /* พื้นหลังของส่วนคำถามที่พบบ่อย */
+  border-radius: 0.5rem; /* มุมโค้ง */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); /* เงาเบาๆ */
+  padding: 1.5rem; /* เพิ่มพื้นที่ภายใน */
 }
 
 .faq-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 1.5rem;
-  text-align: center;
+  font-size: 1.5rem; /* ขนาดฟอนต์ของหัวข้อคำถามที่พบบ่อย */
+  font-weight: 600; /* ฟอนต์หนา */
+  color: #1f2937; /* สีฟอนต์ */
+  margin-bottom: 1.5rem; /* เพิ่มระยะห่างใต้หัวข้อ */
+  text-align: center; /* จัดข้อความให้ตรงกลาง */
 }
 
 .faq-grid {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 1.5rem;
+  display: grid; /* ใช้กริดสำหรับจัดวางคำถาม */
+  grid-template-columns: repeat(1, minmax(0, 1fr)); /* ใช้คอลัมน์เดียวในหน้าจอขนาดเล็ก */
+  gap: 1.5rem; /* เพิ่มระยะห่างระหว่างคำถาม */
 }
 
 @media (min-width: 768px) {
   .faq-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* ใช้ 2 คอลัมน์ในหน้าจอขนาดกลาง */
   }
 }
 
 .faq-item {
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  border: 1px solid #e5e7eb; /* ขอบของคำถาม */
+  border-radius: 0.5rem; /* ทำมุมโค้ง */
+  padding: 1rem; /* เพิ่มพื้นที่ภายใน */
 }
 
 .faq-question {
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
+  font-weight: 600; /* ฟอนต์หนาสำหรับคำถาม */
+  color: #1f2937; /* สีของคำถาม */
+  margin-bottom: 0.5rem; /* เพิ่มระยะห่างใต้คำถาม */
 }
 
 .faq-answer {
-  color: #6b7280;
-  font-size: 0.875rem;
+  color: #6b7280; /* สีของคำตอบ */
+  font-size: 0.875rem; /* ขนาดฟอนต์ของคำตอบ */
 }
 
 /* Keyframe animations */
