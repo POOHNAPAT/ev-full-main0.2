@@ -14,7 +14,7 @@ export const LanguageProvider = ({ children }) => {
   const translations = {
     th: {
       home: 'หน้าแรก',
-      map: 'แผนที่',
+      map: 'แผนที่สถานีชาร์จ',
       reviews: 'รีวิว',
       searchAll: 'ค้นหาสถานีชาร์จทั้งหมดในปัจจุบัน',
       contact: 'ติดต่อเรา',
@@ -30,10 +30,21 @@ export const LanguageProvider = ({ children }) => {
       allVehicles: 'รองรับทุกรุ่นรถ',
       allVehiclesDesc: 'รองรับปลั๊กชาร์จทุกมาตรฐาน',
       contactEmail: 'Email: support@evcharger.example (ตัวอย่าง)',
+      acCharger: 'AC Charger',
+      dcCharger: 'DC Fast Charger',
+      clickMarkerNote: 'คลิกที่หมุดเพื่อจองสถานีชาร์จ',
+      stationDetails: 'รายละเอียดสถานี',
+      typeLabel: 'ประเภท',
+      availableLabel: 'จุดว่าง',
+      powerLabel: 'กำลังไฟ',
+      amenitiesLabel: 'สิ่งอำนวยความสะดวก',
+      bookThisStation: 'จองสถานีนี้',
+      acLegend: 'AC Charger (ชาร์จปกติ)',
+      dcLegend: 'DC Fast Charger (ชาร์จเร็ว)'
     },
     en: {
       home: 'Home',
-      map: 'Map',
+      map: 'Charging Stations Map',
       reviews: 'Reviews',
       searchAll: 'Search all current charging stations',
       contact: 'Contact Us',
@@ -49,6 +60,17 @@ export const LanguageProvider = ({ children }) => {
       allVehicles: 'Supports All Vehicle Types',
       allVehiclesDesc: 'Supports all charging plug standards',
       contactEmail: 'Email: support@evcharger.example (example)',
+      acCharger: 'AC Charger',
+      dcCharger: 'DC Fast Charger',
+      clickMarkerNote: 'Click a marker to book a station',
+      stationDetails: 'Station Details',
+      typeLabel: 'Type',
+      availableLabel: 'Available Slots',
+      powerLabel: 'Power',
+      amenitiesLabel: 'Amenities',
+      bookThisStation: 'Book this station',
+      acLegend: 'AC Charger (normal charging)',
+      dcLegend: 'DC Fast Charger (fast charging)'
     },
   };
 

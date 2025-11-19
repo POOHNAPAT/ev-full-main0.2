@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../styles/Map.css';
 import { loadStations } from '../data/stations';
+import { useLanguage } from '../components/LanguageContext';
 
 // Ensure Leaflet uses the local marker assets provided by the package
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
@@ -61,6 +62,7 @@ const thaiNameMap = {
 };
 
 export default function MapPage(){
+  const { language, toggleLanguage, t } = useLanguage();
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAmenities, setSelectedAmenities] = useState([]);
@@ -175,13 +177,13 @@ export default function MapPage(){
             m.bindPopup(`
               <div style="max-width: 250px; font-family: Arial, sans-serif;">
                 <b style="font-size: 16px; color: #333;">${d.name}</b><br/>
-                <span style="color: #666; font-size: 14px;">${d.type} Charger</span><br/>
+                <span style="color: #666; font-size: 14px;">${d.type} ${t.evCharger || 'Charger'}</span><br/>
                 <div style="margin: 8px 0; font-size: 13px;">
-                  <div><b>จุดว่าง:</b> <span style="color: #22c55e;">${d.station.available}</span></div>
-                  <div><b>กำลังไฟ:</b> ${d.station.power}</div>
-                  <div><b>สิ่งอำนวยความสะดวก:</b> ${d.station.amenities}</div>
+                  <div><b>${t.availableLabel}:</b> <span style="color: #22c55e;">${d.station.available}</span></div>
+                  <div><b>${t.powerLabel}:</b> ${d.station.power}</div>
+                  <div><b>${t.amenitiesLabel}:</b> ${d.station.amenities}</div>
                 </div>
-                <button onclick="window.location.href='/booking/${d.id}'" style="background: #2563eb; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">จอง</button>
+                <button onclick="window.location.href='/booking/${d.id}'" style="background: #2563eb; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">${t.bookButton || t.bookThisStation || 'Book'}</button>
               </div>
             `);
           } else {
@@ -251,13 +253,13 @@ export default function MapPage(){
       map.off('moveend zoomend', renderClusters);
       map.remove();
     }
-  }, [filter, searchQuery, selectedAmenities]);
+  }, [filter, searchQuery, selectedAmenities, t]);
 
   return (
     <div className="page-background">
       <div className="max-w-6xl mx-auto p-6">
       <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-        <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">แผนที่สถานีชาร์จ</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">{t.map || 'Map'}</h2>
         
         {/* Search Bar */}
         <div className="mb-6 max-w-md mx-auto">
@@ -265,7 +267,7 @@ export default function MapPage(){
             <span className="text-gray-400 mr-3">🔍</span>
             <input
               type="text"
-              placeholder="ค้นหาสถานี..."
+              placeholder={t.searchPlaceholder || 'Search...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="flex-1 bg-gray-100 outline-none text-gray-700 placeholder-gray-500"
@@ -343,12 +345,12 @@ export default function MapPage(){
           )}
         </div>
 
-        <div className="mb-6 flex justify-center gap-4">
+        <div className="filter-buttons-container">
           <button
             onClick={() => setFilter('all')}
-            className={`px-6 py-3 rounded-full font-semibold transition duration-300 ${
+            className={`filter-button ${
               filter === 'all'
-                ? 'bg-blue-600 text-white shadow-lg transform scale-105'
+                ? 'bg-blue-600 text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -356,9 +358,9 @@ export default function MapPage(){
           </button>
           <button
             onClick={() => setFilter('AC')}
-            className={`px-6 py-3 rounded-full font-semibold transition duration-300 ${
+            className={`filter-button ${
               filter === 'AC'
-                ? 'bg-green-600 text-white shadow-lg transform scale-105'
+                ? 'bg-green-600 text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -366,9 +368,9 @@ export default function MapPage(){
           </button>
           <button
             onClick={() => setFilter('DC')}
-            className={`px-6 py-3 rounded-full font-semibold transition duration-300 ${
+            className={`filter-button ${
               filter === 'DC'
-                ? 'bg-red-600 text-white shadow-lg transform scale-105'
+                ? 'bg-red-600 text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -379,27 +381,27 @@ export default function MapPage(){
         <div className="mt-4 flex justify-center gap-6 text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <span className="w-4 h-4 bg-green-500 rounded-full"></span>
-            <span>AC Charger (ชาร์จปกติ)</span>
+            <span>{t.acLegend}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-4 h-4 bg-red-500 rounded-full"></span>
-            <span>DC Fast Charger (ชาร์จเร็ว)</span>
+            <span>{t.dcLegend}</span>
           </div>
         </div>
-        <p className="mt-4 text-center text-sm text-gray-500">คลิกที่หมุดเพื่อจองสถานีชาร์จ</p>
+        <p className="mt-4 text-center text-sm text-gray-500">{t.clickMarkerNote}</p>
       </div>
 
       {selectedStation && (
         <div className="bg-white rounded-2xl shadow-xl p-6 mt-6">
-          <h3 className="text-2xl font-bold mb-4 text-gray-800">รายละเอียดสถานี</h3>
+          <h3 className="text-2xl font-bold mb-4 text-gray-800">{t.stationDetails}</h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h4 className="text-xl font-semibold mb-2 text-blue-600">{selectedStation.name}</h4>
               <div className="space-y-2 text-gray-700">
-                <p><span className="font-medium">ประเภท:</span> {selectedStation.type} Charger</p>
-                <p><span className="font-medium">จุดว่าง:</span> <span className="text-green-600 font-semibold">{selectedStation.available}</span></p>
-                <p><span className="font-medium">กำลังไฟ:</span> {selectedStation.power}</p>
-                <p><span className="font-medium">สิ่งอำนวยความสะดวก:</span> {selectedStation.amenities}</p>
+                <p><span className="font-medium">{t.typeLabel}:</span> {selectedStation.type} {t.evCharger}</p>
+                <p><span className="font-medium">{t.availableLabel}:</span> <span className="text-green-600 font-semibold">{selectedStation.available}</span></p>
+                <p><span className="font-medium">{t.powerLabel}:</span> {selectedStation.power}</p>
+                <p><span className="font-medium">{t.amenitiesLabel}:</span> {selectedStation.amenities}</p>
               </div>
             </div>
             <div className="flex items-center justify-end">
@@ -407,7 +409,7 @@ export default function MapPage(){
                 onClick={() => navigate(`/booking/${selectedStation.id}`)}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition duration-200 hover:scale-105"
               >
-                จองสถานีนี้
+                {t.bookThisStation}
               </button>
             </div>
           </div>

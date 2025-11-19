@@ -1,0 +1,10 @@
+<svg width="200" height="80" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue background -->
+  <rect width="200" height="80" fill="#6366f1" rx="8"/>
+  
+  <!-- EV text in black -->
+  <text x="50" y="55" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#000">EV</text>
+  
+  <!-- Charger text in black -->
+  <text x="100" y="55" font-family="Arial, sans-serif" font-size="16" fill="#000">Charger</text>
+</svg>

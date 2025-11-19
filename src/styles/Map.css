@@ -110,3 +110,24 @@
 .cluster-marker.pulse {
   animation: cluster-pulse 2s infinite ease-in-out;
 }
+
+/* Equal-width filter buttons */
+.filter-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-button {
+  flex: 1;
+  max-width: 200px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
