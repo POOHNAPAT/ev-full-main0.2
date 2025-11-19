@@ -1,0 +1,187 @@
+:root {
+    --main-blue: #709afc; /* สีฟ้าหลัก */
+    --light-blue: #a3baff; /* สีฟ้าอ่อนสำหรับพื้นหลัง */
+    --login-button-blue: #6d93ff; /* สีปุ่ม Log in */
+    --white: #ffffff;
+    --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.login-wrapper {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    /* ไล่โทนสีพื้นหลังอ่อน ๆ */
+    background: linear-gradient(135deg, var(--light-blue), #c2d6ff);
+}
+
+/* กล่องหลักของ UI */
+.login-container {
+    display: flex;
+    width: 800px; /* ปรับขนาดตามต้องการ */
+    max-width: 90%;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    overflow: hidden; /* สำคัญเพื่อให้ border-radius แสดงผลถูกต้อง */
+    background-color: var(--white);
+}
+
+/* ส่วนซ้าย: แผงสีฟ้า */
+.left-panel {
+    flex: 1; /* กินพื้นที่ 1 ส่วน */
+    background-color: var(--main-blue);
+    color: var(--white);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    /* สร้างส่วนโค้งมนที่มุมขวาบนและขวาล่างของแผงซ้าย */
+    border-top-right-radius: 100px; /* ทำให้เกิดส่วนโค้งมน */
+    border-bottom-right-radius: 100px;
+    /* จัดเลย์เอาต์เฉพาะส่วนโค้งมนเพื่อให้ออกมาเหมือนในภาพ */
+    transform: translateX(0); 
+    z-index: 1; /* ให้ทับซ้อนกับ right-panel เล็กน้อย */
+    
+    /* การจัดตำแหน่ง H2 และ P ให้เหมือนในภาพ */
+    gap: 10px;
+}
+
+.left-panel h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.left-panel p {
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+}
+
+.signup-button {
+    background-color: transparent;
+    border: 2px solid var(--white);
+    color: var(--white);
+    padding: 10px 30px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.signup-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ส่วนขวา: ฟอร์มเข้าสู่ระบบ */
+.right-panel {
+    flex: 1.2; /* กินพื้นที่มากกว่าส่วนซ้ายเล็กน้อย */
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: var(--white);
+}
+
+.right-panel h1 {
+    font-size: 2.2rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.right-panel input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px; /* มุมโค้งมนสำหรับช่อง input */
+    box-sizing: border-box;
+    background-color: #f5f5f5; /* สีพื้นหลังช่อง input อ่อนๆ */
+    border: none;
+    outline: none;
+}
+
+.forgot-password {
+    display: block;
+    text-align: right;
+    font-size: 0.85rem;
+    color: #888;
+    text-decoration: none;
+    margin-bottom: 20px;
+}
+
+.login-button {
+    width: 100%;
+    background-color: var(--login-button-blue);
+    color: var(--white);
+    padding: 12px;
+    border: none;
+    border-radius: 8px; /* มุมโค้งมนสำหรับปุ่ม */
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+    box-shadow: 0 5px 10px rgba(109, 147, 255, 0.3); /* เงาสำหรับปุ่ม */
+}
+
+.login-button:hover {
+    background-color: #4a75ff;
+}
+
+.social-text {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #888;
+    margin: 30px 0 15px;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.social-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ccc;
+    border-radius: 50%; /* วงกลม */
+    color: #555;
+    font-size: 1.2rem;
+    text-decoration: none;
+    transition: border-color 0.3s;
+}
+
+.social-icon:hover {
+    border-color: var(--login-button-blue);
+    color: var(--login-button-blue);
+}
+
+/* ปรับให้รองรับหน้าจอขนาดเล็ก */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        border-radius: 10px;
+    }
+
+    .left-panel {
+        /* ยกเลิกการโค้งมนเฉพาะมุมขวาบน/ล่างเมื่ออยู่ในโหมดคอลัมน์ */
+        border-radius: 0;
+        padding: 30px 20px;
+    }
+    
+    .right-panel {
+        padding: 40px 30px;
+    }
+}

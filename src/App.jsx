@@ -1,7 +1,6 @@
 import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
+import LoginSignup from './components/LoginSignup'
 import MapPage from './pages/Map'
 import Profile from './pages/Profile'
 import Booking from './pages/Booking'
@@ -10,12 +9,21 @@ import PaymentMethods from './pages/PaymentMethods'
 import UsageHistory from './pages/UsageHistory'
 import AddVehicle from './pages/AddVehicle'
 import Contact from './pages/Contact'
-import { AuthProvider } from './components/AuthContext'
+import { AuthProvider, useAuth } from './components/AuthContext'
 import { LanguageProvider, useLanguage } from './components/LanguageContext'
 import { FaSearch, FaUser } from 'react-icons/fa'
 
 function AppContent() {
   const { language, toggleLanguage, t } = useLanguage();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+
+  if (!user) {
+    return <LoginSignup initialIsLogin={true} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -45,14 +53,20 @@ function AppContent() {
           <Link to="/profile" className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
             <FaUser className="text-lg" />
           </Link>
+          <button onClick={() => {
+            const { logout } = useAuth();
+            logout();
+          }} className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
+            Logout
+          </button>
         </nav>
       </header>
 
         <main className="flex-1 p-6">
           <Routes>
             <Route path="/" element={<Home/>} />
-            <Route path="/login" element={<Login/>} />
-            <Route path="/signup" element={<Signup/>} />
+            <Route path="/login" element={<LoginSignup initialIsLogin={true} />} />
+            <Route path="/signup" element={<LoginSignup initialIsLogin={false} />} />
             <Route path="/map" element={<MapPage/>} />
             <Route path="/profile" element={<Profile/>} />
             <Route path="/booking/:id" element={<Booking/>} />
