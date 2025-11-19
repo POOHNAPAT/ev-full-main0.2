@@ -13,7 +13,7 @@
   flex-direction: column;
   justify-content: flex-end;
   align-items: flex-end;
-  min-height: 400px;
+  min-height: 30rem;
 }
 
 .hero-text-content {
@@ -126,7 +126,6 @@
 .feature-card {
   padding: 2rem;
   background: white;
-  border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s, transform 0.3s;
@@ -179,12 +178,12 @@
   margin-bottom: 0.25rem;
 }
 
-.contact-section {
+/* .contact-section {
   margin-bottom: 4rem;
   background: #f9fafb;
   padding: 2rem;
   border-radius: 0.75rem;
-}
+} */
 
 /* Recent Booking Section */
 .recent-booking-section {
@@ -243,6 +242,23 @@
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+}
+
+.delete-booking-button {
+  background: rgba(239, 68, 68, 0.8);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  position: relative;
+  z-index: 10;
+}
+
+.delete-booking-button:hover {
+  background: rgba(239, 68, 68, 1);
 }
 
 

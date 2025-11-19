@@ -140,36 +140,31 @@ export default function MapPage(){
       markerLayer.clearLayers();
 
       const pixelThreshold = 50; // pixels within which markers will cluster
-        // cluster per 'type' (AC / DC) so clusters only group same-type markers
-        const pointsByType = {};
-        markerData.forEach(d => {
-          const p = { data: d, point: map.latLngToContainerPoint([d.lat, d.lng]) };
-          (pointsByType[d.type] = pointsByType[d.type] || []).push(p);
+      const allPoints = markerData.map(d => ({
+        data: d,
+        point: map.latLngToContainerPoint([d.lat, d.lng])
+      }));
+
+      const clusters = [];
+
+      allPoints.forEach(p => {
+        if (p._clustered) return;
+        const cluster = { items: [p], sumLat: p.data.lat, sumLng: p.data.lng };
+        p._clustered = true;
+
+        allPoints.forEach(q => {
+          if (q === p || q._clustered) return;
+          const dist = p.point.distanceTo(q.point);
+          if (dist <= pixelThreshold) {
+            q._clustered = true;
+            cluster.items.push(q);
+            cluster.sumLat += q.data.lat;
+            cluster.sumLng += q.data.lng;
+          }
         });
 
-        const clusters = [];
-
-        Object.keys(pointsByType).forEach(type => {
-          const pts = pointsByType[type];
-          pts.forEach(p => {
-            if (p._clustered) return;
-            const cluster = { items: [p], sumLat: p.data.lat, sumLng: p.data.lng, type };
-            p._clustered = true;
-
-            pts.forEach(q => {
-              if (q === p || q._clustered) return;
-              const dist = p.point.distanceTo(q.point);
-              if (dist <= pixelThreshold) {
-                q._clustered = true;
-                cluster.items.push(q);
-                cluster.sumLat += q.data.lat;
-                cluster.sumLng += q.data.lng;
-              }
-            });
-
-            clusters.push(cluster);
-          });
-        });
+        clusters.push(cluster);
+      });
 
         clusters.forEach(c => {
           if (c.items.length === 1) {
@@ -190,14 +185,42 @@ export default function MapPage(){
               </div>
             `);
           } else {
-            // create cluster marker (type-aware)
+            // create cluster marker - split into AC/DC halves
             const count = c.items.length;
             const avgLat = c.sumLat / count;
             const avgLng = c.sumLng / count;
             const size = Math.min(80, 24 + count * 6);
             const fontSize = Math.max(12, Math.floor(size / 3));
-            const typeClass = c.type === 'AC' ? 'ac' : 'dc';
-            const html = `<div class="cluster-marker ${typeClass}" style="width:${size}px;height:${size}px;line-height:${size}px;font-size:${fontSize}px;">${count}</div>`;
+
+            // Count AC and DC in cluster
+            const acCount = c.items.filter(item => item.data.type === 'AC').length;
+            const dcCount = c.items.filter(item => item.data.type === 'DC').length;
+
+            let html;
+            if (acCount > 0 && dcCount > 0) {
+              // Mixed: split circle
+              html = `
+                <div class="cluster-marker" style="width:${size}px;height:${size}px;line-height:${size}px;font-size:${fontSize}px;">
+                  <div class="cluster-half cluster-ac" style="width:50%;height:100%;background:#16a34a;border-radius:${size/2}px 0 0 ${size/2}px;"></div>
+                  <div class="cluster-half cluster-dc" style="width:50%;height:100%;background:#dc2626;border-radius:0 ${size/2}px ${size/2}px 0;"></div>
+                  <div class="cluster-text">${count}</div>
+                </div>
+              `;
+            } else if (acCount > 0) {
+              // AC only: full green
+              html = `
+                <div class="cluster-marker cluster-ac-only" style="width:${size}px;height:${size}px;line-height:${size}px;font-size:${fontSize}px;background:#16a34a;border-radius:50%;">
+                  <div class="cluster-text">${count}</div>
+                </div>
+              `;
+            } else if (dcCount > 0) {
+              // DC only: full red
+              html = `
+                <div class="cluster-marker cluster-dc-only" style="width:${size}px;height:${size}px;line-height:${size}px;font-size:${fontSize}px;background:#dc2626;border-radius:50%;">
+                  <div class="cluster-text">${count}</div>
+                </div>
+              `;
+            }
             const clusterIcon = L.divIcon({ className: 'cluster-icon', html, iconSize: [size, size], iconAnchor: [size/2, size/2] });
             const cm = L.marker([avgLat, avgLng], { icon: clusterIcon }).addTo(markerLayer);
             // animate entry: add enter class then trigger active

@@ -15,6 +15,13 @@ export default function Home() {
     }
   }, []);
 
+  const handleDeleteBooking = () => {
+    console.log("Deleting booking...");
+    localStorage.removeItem("recentBooking");
+    setRecentBooking(null);
+    console.log("Booking deleted");
+  };
+
   return (
     <div className="page-background">
       <div className="max-w-5xl mx-auto">
@@ -114,13 +121,17 @@ export default function Home() {
                 <span className="status-confirmed">ยืนยันแล้ว</span>
               </p>
             </div>
-            <div className="recent-booking-actions"></div>
+            <div className="recent-booking-actions">
+              <button
+                onClick={handleDeleteBooking}
+                className="delete-booking-button"
+              >
+                ลบการจอง
+              </button>
+            </div>
           </div>
         </section>
       )}
-
-      <section id="contact" className="contact-section">
-      </section>
       </div>
     </div>
   );
