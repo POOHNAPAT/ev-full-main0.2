@@ -121,6 +121,7 @@ export default function Home() {
 
       <section id="contact" className="contact-section">
       </section>
+      </div>
     </div>
   );
 }

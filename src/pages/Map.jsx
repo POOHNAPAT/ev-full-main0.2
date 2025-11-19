@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../styles/Map.css';
-import { loadStations } from '../stations';
+import { loadStations } from '../data/stations';
 
 // Ensure Leaflet uses the local marker assets provided by the package
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
@@ -33,8 +33,37 @@ const dcIcon = L.divIcon({
   popupAnchor: [0, -36]
 });
 
+// Thai name mapping for search
+const thaiNameMap = {
+  'สนามบินสุวรรณภูมิ': 'suvarnabhumi',
+  'ดอนเมือง': 'don-mueang',
+  'มหาวิทยาลัยกรุงเทพ': 'bangkok-university',
+  'สยาม': 'siam-square',
+  'ชัยชนะ': 'victory-monument',
+  'สีลม': 'silom-complex',
+  'เขาสาน': 'khao-san',
+  'เศรษฐีพลาซ่า': 'erawan-shrine',
+  'พัฒน์พระนคร': 'patpong',
+  'วัดอรุณ': 'wat-arun',
+  'จิมโทมป์': 'jim-thompson',
+  'เซนทรัล': 'central-world',
+  'พระแกรนด์': 'grand-palace',
+  'ลุมพินี': 'lumpini-park',
+  'สุขุมวิท': 'sukhumvit',
+  'เอมควอเทียร์': 'emquartier',
+  'สยามพารากอน': 'siam-paragon',
+  'เอ็มบีเค': 'mbk-center',
+  'ตั้ง21': 'terminal-21',
+  'อโศะ': 'asiatique',
+  'เซนทรัลชิดลม': 'central-chidlom',
+  'ตลาดจตุจักร': 'chatuchak-market',
+  'โรงพยาบาลกรุงเทพ': 'bangkok-hospital'
+};
+
 export default function MapPage(){
   const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedStation, setSelectedStation] = useState(null);
   const navigate = useNavigate();
 
@@ -46,34 +75,53 @@ export default function MapPage(){
       maxZoom: 19,
     }).addTo(map);
 
-    // sample markers with charger types and ids
+    // sample markers with charger types and amenities
     const markers = [
-      { id: 'central-world', name: 'Central World', lat:13.7466, lng:100.5390, type: 'AC' },
-      { id: 'siam-paragon', name: 'Siam Paragon', lat:13.7460, lng:100.5345, type: 'DC' },
-      { id: 'mbk-center', name: 'MBK Center', lat:13.7469, lng:100.5291, type: 'AC' },
-      { id: 'emquartier', name: 'EmQuartier', lat:13.7313, lng:100.5696, type: 'DC' },
-      { id: 'terminal-21', name: 'Terminal 21', lat:13.7384, lng:100.5601, type: 'AC' },
-      { id: 'asiatique', name: 'Asiatique', lat:13.7204, lng:100.5134, type: 'DC' },
-      { id: 'chatuchak-market', name: 'Chatuchak Weekend Market', lat:13.7991, lng:100.5492, type: 'AC' },
-      { id: 'lumpini-park', name: 'Lumpini Park', lat:13.7313, lng:100.5411, type: 'DC' },
-      { id: 'bangkok-hospital', name: 'Bangkok Hospital', lat:13.7229, lng:100.5289, type: 'AC' },
-      { id: 'grand-palace', name: 'Grand Palace', lat:13.7500, lng:100.4917, type: 'DC' },
-      { id: 'siam-square', name: 'Siam Square', lat:13.7456, lng:100.5347, type: 'AC' },
-      { id: 'wat-arun', name: 'Wat Arun', lat:13.7437, lng:100.4889, type: 'DC' },
-      { id: 'jim-thompson', name: 'Jim Thompson House', lat:13.7504, lng:100.5279, type: 'AC' },
-      { id: 'patpong', name: 'Patpong Night Market', lat:13.7286, lng:100.5347, type: 'DC' },
-      { id: 'erawan-shrine', name: 'Erawan Shrine', lat:13.7438, lng:100.5394, type: 'AC' },
-      { id: 'khao-san', name: 'Khao San Road', lat:13.7589, lng:100.4972, type: 'DC' },
-      { id: 'silom-complex', name: 'Silom Complex', lat:13.7229, lng:100.5172, type: 'AC' },
-      { id: 'victory-monument', name: 'Victory Monument', lat:13.7627, lng:100.5371, type: 'DC' },
-      { id: 'central-chidlom', name: 'Central Chidlom', lat:13.7442, lng:100.5431, type: 'AC' },
-      { id: 'sukhumvit', name: 'Sukhumvit Road', lat:13.7367, lng:100.5600, type: 'DC' },
-      { id: 'don-mueang', name: 'Don Mueang Airport', lat:13.9125, lng:100.6067, type: 'AC' },
-      { id: 'suvarnabhumi', name: 'Suvarnabhumi Airport', lat:13.6811, lng:100.7472, type: 'DC' },
-      { id: 'bangkok-university', name: 'Bangkok University', lat:13.7384, lng:100.5322, type: 'AC' }
+      { id: 'central-world', name: 'Central World', lat:13.7466, lng:100.5390, type: 'AC', amenities: ['wifi', 'bathroom', 'restaurant', 'restroom'] },
+      { id: 'siam-paragon', name: 'Siam Paragon', lat:13.7460, lng:100.5345, type: 'DC', amenities: ['wifi', 'bathroom', 'shopping', 'restroom'] },
+      { id: 'mbk-center', name: 'MBK Center', lat:13.7469, lng:100.5291, type: 'AC', amenities: ['wifi', 'bathroom', 'shopping', 'restaurant', 'restroom'] },
+      { id: 'emquartier', name: 'EmQuartier', lat:13.7313, lng:100.5696, type: 'DC', amenities: ['wifi', 'shopping', 'restaurant', 'restroom'] },
+      { id: 'terminal-21', name: 'Terminal 21', lat:13.7384, lng:100.5601, type: 'AC', amenities: ['wifi', 'bathroom', 'shopping', 'restaurant', 'restroom'] },
+      { id: 'asiatique', name: 'Asiatique', lat:13.7204, lng:100.5134, type: 'DC', amenities: ['wifi', 'bathroom'] },
+      { id: 'chatuchak-market', name: 'Chatuchak Weekend Market', lat:13.7991, lng:100.5492, type: 'AC', amenities: ['bathroom', 'restaurant', 'restroom'] },
+      { id: 'lumpini-park', name: 'Lumpini Park', lat:13.7313, lng:100.5411, type: 'DC', amenities: ['wifi', 'bathroom'] },
+      { id: 'bangkok-hospital', name: 'Bangkok Hospital', lat:13.7229, lng:100.5289, type: 'AC', amenities: ['wifi', 'bathroom'] },
+      { id: 'grand-palace', name: 'Grand Palace', lat:13.7500, lng:100.4917, type: 'DC', amenities: ['bathroom'] },
+      { id: 'siam-square', name: 'Siam Square', lat:13.7456, lng:100.5347, type: 'AC', amenities: ['wifi', 'bathroom', 'shopping', 'restaurant', 'restroom'] },
+      { id: 'wat-arun', name: 'Wat Arun', lat:13.7437, lng:100.4889, type: 'DC', amenities: ['bathroom'] },
+      { id: 'jim-thompson', name: 'Jim Thompson House', lat:13.7504, lng:100.5279, type: 'AC', amenities: ['wifi'] },
+      { id: 'patpong', name: 'Patpong Night Market', lat:13.7286, lng:100.5347, type: 'DC', amenities: ['bathroom', 'restaurant'] },
+      { id: 'erawan-shrine', name: 'Erawan Shrine', lat:13.7438, lng:100.5394, type: 'AC', amenities: ['bathroom'] },
+      { id: 'khao-san', name: 'Khao San Road', lat:13.7589, lng:100.4972, type: 'DC', amenities: ['wifi', 'bathroom', 'restaurant', 'restroom'] },
+      { id: 'silom-complex', name: 'Silom Complex', lat:13.7229, lng:100.5172, type: 'AC', amenities: ['wifi', 'bathroom', 'restaurant', 'restroom'] },
+      { id: 'victory-monument', name: 'Victory Monument', lat:13.7627, lng:100.5371, type: 'DC', amenities: ['wifi', 'bathroom'] },
+      { id: 'central-chidlom', name: 'Central Chidlom', lat:13.7442, lng:100.5431, type: 'AC', amenities: ['wifi', 'bathroom', 'shopping', 'restaurant', 'restroom'] },
+      { id: 'sukhumvit', name: 'Sukhumvit Road', lat:13.7367, lng:100.5600, type: 'DC', amenities: ['wifi', 'bathroom'] },
+      { id: 'don-mueang', name: 'Don Mueang Airport', lat:13.9125, lng:100.6067, type: 'AC', amenities: ['wifi', 'bathroom', 'restaurant', 'restroom'] },
+      { id: 'suvarnabhumi', name: 'Suvarnabhumi Airport', lat:13.6811, lng:100.7472, type: 'DC', amenities: ['wifi', 'bathroom', 'shopping', 'restaurant', 'restroom'] },
+      { id: 'bangkok-university', name: 'Bangkok University', lat:13.7384, lng:100.5322, type: 'AC', amenities: ['wifi', 'bathroom'] }
     ];
 
     const filteredMarkers = filter === 'all' ? markers : markers.filter(m => m.type === filter);
+
+    // Apply search filter by name (English + Thai)
+    const searchFiltered = searchQuery.trim() === '' 
+      ? filteredMarkers 
+      : filteredMarkers.filter(m => {
+          const query = searchQuery.toLowerCase();
+          const matchesEnglish = m.name.toLowerCase().includes(query);
+          const matchesThai = Object.entries(thaiNameMap).some(([thai, id]) => 
+            thai.includes(query) && m.id === id
+          );
+          return matchesEnglish || matchesThai;
+        });
+    
+    // Apply amenity filter
+    const amenityFiltered = selectedAmenities.length === 0
+      ? searchFiltered
+      : searchFiltered.filter(m => 
+          selectedAmenities.every(amenity => m.amenities.includes(amenity))
+        );
 
     // Load station details from localStorage or default
     const stations = loadStations();
@@ -82,7 +130,7 @@ export default function MapPage(){
     const markerLayer = L.layerGroup().addTo(map);
 
     // Prepare marker data with station info
-    const markerData = filteredMarkers.map(m => ({
+    const markerData = amenityFiltered.map(m => ({
       ...m,
       station: stations[m.id] || { name: m.name, available: 'N/A', power: 'N/A', amenities: 'N/A' }
     }));
@@ -180,13 +228,98 @@ export default function MapPage(){
       map.off('moveend zoomend', renderClusters);
       map.remove();
     }
-  }, [filter]);
+  }, [filter, searchQuery, selectedAmenities]);
 
   return (
     <div className="page-background">
       <div className="max-w-6xl mx-auto p-6">
       <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
         <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">แผนที่สถานีชาร์จ</h2>
+        
+        {/* Search Bar */}
+        <div className="mb-6 max-w-md mx-auto">
+          <div className="flex items-center bg-gray-100 rounded-full px-4 py-2 shadow-sm">
+            <span className="text-gray-400 mr-3">🔍</span>
+            <input
+              type="text"
+              placeholder="ค้นหาสถานี..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 bg-gray-100 outline-none text-gray-700 placeholder-gray-500"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-gray-400 hover:text-gray-600 ml-2"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Amenity Filters */}
+        <div className="mb-6 flex flex-wrap justify-center gap-3">
+          <button
+            onClick={() => setSelectedAmenities(selectedAmenities.includes('wifi') ? selectedAmenities.filter(a => a !== 'wifi') : [...selectedAmenities, 'wifi'])}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+              selectedAmenities.includes('wifi') 
+                ? 'bg-blue-600 text-white shadow-lg' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            📡 WiFi
+          </button>
+          <button
+            onClick={() => setSelectedAmenities(selectedAmenities.includes('bathroom') ? selectedAmenities.filter(a => a !== 'bathroom') : [...selectedAmenities, 'bathroom'])}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+              selectedAmenities.includes('bathroom') 
+                ? 'bg-blue-600 text-white shadow-lg' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            🚽 ห้องน้ำ
+          </button>
+          <button
+            onClick={() => setSelectedAmenities(selectedAmenities.includes('restroom') ? selectedAmenities.filter(a => a !== 'restroom') : [...selectedAmenities, 'restroom'])}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+              selectedAmenities.includes('restroom') 
+                ? 'bg-blue-600 text-white shadow-lg' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            🛏️ ห้องพัก
+          </button>
+          <button
+            onClick={() => setSelectedAmenities(selectedAmenities.includes('restaurant') ? selectedAmenities.filter(a => a !== 'restaurant') : [...selectedAmenities, 'restaurant'])}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+              selectedAmenities.includes('restaurant') 
+                ? 'bg-blue-600 text-white shadow-lg' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            🍽️ ร้านอาหาร
+          </button>
+          <button
+            onClick={() => setSelectedAmenities(selectedAmenities.includes('shopping') ? selectedAmenities.filter(a => a !== 'shopping') : [...selectedAmenities, 'shopping'])}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+              selectedAmenities.includes('shopping') 
+                ? 'bg-blue-600 text-white shadow-lg' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            🛍️ ช้อปปิ้ง
+          </button>
+          {selectedAmenities.length > 0 && (
+            <button
+              onClick={() => setSelectedAmenities([])}
+              className="px-4 py-2 rounded-full text-sm font-medium bg-red-200 text-red-700 hover:bg-red-300 transition"
+            >
+              ✕ ล้างตัวกรอง
+            </button>
+          )}
+        </div>
+
         <div className="mb-6 flex justify-center gap-4">
           <button
             onClick={() => setFilter('all')}

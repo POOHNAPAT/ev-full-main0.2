@@ -4,7 +4,7 @@ import { FaCalendarAlt, FaClock, FaBolt, FaWifi, FaCoffee, FaRestroom, FaShieldA
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { firebaseConfig } from '../firebaseConfig';
-import { loadStations, decrementAvailable } from '../stations';
+import { loadStations, decrementAvailable } from '../data/stations';
 import '../styles/Booking.css';
 
 // Simple QR code component (placeholder)
