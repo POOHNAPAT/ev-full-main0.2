@@ -1,6 +1,7 @@
 import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import LoginSignup from './components/LoginSignup'
+import Logout from './pages/Logout'
 import MapPage from './pages/Map'
 import Profile from './pages/Profile'
 import Booking from './pages/Booking'
@@ -15,7 +16,7 @@ import { FaSearch, FaUser } from 'react-icons/fa'
 
 function AppContent() {
   const { language, toggleLanguage, t } = useLanguage();
-  const { user, loading } = useAuth();
+  const { user, loading, authLoading } = useAuth();
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
@@ -53,12 +54,9 @@ function AppContent() {
           <Link to="/profile" className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
             <FaUser className="text-lg" />
           </Link>
-          <button onClick={() => {
-            const { logout } = useAuth();
-            logout();
-          }} className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
+          <Link to="/logout" className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
             Logout
-          </button>
+          </Link>
         </nav>
       </header>
 
@@ -67,6 +65,7 @@ function AppContent() {
             <Route path="/" element={<Home/>} />
             <Route path="/login" element={<LoginSignup initialIsLogin={true} />} />
             <Route path="/signup" element={<LoginSignup initialIsLogin={false} />} />
+            <Route path="/logout" element={<Logout/>} />
             <Route path="/map" element={<MapPage/>} />
             <Route path="/profile" element={<Profile/>} />
             <Route path="/booking/:id" element={<Booking/>} />

@@ -166,9 +166,6 @@ export default function Profile() {
             <Link to="/add-vehicle" className="action-button">
               <span className="action-button-icon">➕</span> เพิ่มพาหนะ
             </Link>
-            <button className="action-button secondary">
-              <span className="action-button-icon">🚪</span> Log out
-            </button>
           </div>
         </div>
       </div>
