@@ -1,6 +1,12 @@
 
 /* Global stylesheet (kept minimal). Map-specific styles moved to `Map.css`. */
 
+.page-background {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+  padding: 2rem 0;
+}
+
 /* small tweaks for leaflet container (kept global so it's always applied) */
 .leaflet-container {
 	height: 70vh;
