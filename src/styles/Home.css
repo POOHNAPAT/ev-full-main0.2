@@ -12,7 +12,10 @@
   justify-content: flex-end;
   align-items: flex-end;
   min-height: 30rem;
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay for text readability */
+  background: rgba(0, 0, 0, 0.5) url('../image/evchangerbackground.png'); /* Semi-transparent overlay for text readability with background image */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .hero-text-content {

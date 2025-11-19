@@ -50,7 +50,8 @@ export default function PaymentMethods() {
 
   return (
     <div className="payment-container">
-      <div className="payment-card">
+      <div className="payment-content">
+        <div className="payment-card">
         <div className="payment-header">
           <h1>วิธีการชำระเงิน</h1>
           <p>เลือกวิธีการชำระเงินที่คุณต้องการ</p>
@@ -162,6 +163,7 @@ export default function PaymentMethods() {
           >
             บันทึก
           </button>
+        </div>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 .usage-history-container {
   min-height: 100vh;
-  background: #f9fafb;
+  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
   padding: 2rem 0;
 }
 

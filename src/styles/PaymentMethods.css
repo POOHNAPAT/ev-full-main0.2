@@ -2,7 +2,14 @@
 
 .payment-container {
   min-height: 100vh;
-  padding: 2rem 1rem;
+  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+  padding: 2rem 0;
+}
+
+.payment-content {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 1.5rem;
 }
 
 .payment-card {
@@ -10,8 +17,6 @@
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   padding: 2.5rem;
-  max-width: 600px;
-  margin: 0 auto;
 }
 
 .payment-header {
