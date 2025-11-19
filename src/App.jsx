@@ -55,7 +55,7 @@ function AppContent() {
             <FaUser className="text-lg" />
           </Link>
           <Link to="/logout" className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
-            Logout
+            ออกจากระบบ
           </Link>
         </nav>
       </header>

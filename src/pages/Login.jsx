@@ -31,5 +31,5 @@ export default function Login(){
       </form>
       <p className="mt-3">ยังไม่มียูสเซอร์? <Link to="/signup" className="text-blue-600">สมัคร</Link></p>
     </div>
-  )
+  )   
 }

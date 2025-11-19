@@ -185,13 +185,6 @@ export default function Booking() {
               </Link>
             </div>
           )}
-
-          <div className="footer-link">
-            <Link to="/">
-              <FaArrowLeft className="footer-link-icon" />
-              กลับไปหน้าแรก
-            </Link>
-          </div>
         </div>
       </div>
     </div>
