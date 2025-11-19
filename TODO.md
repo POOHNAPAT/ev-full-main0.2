@@ -1,15 +1,7 @@
-# TODO: Implement Mock Authentication for Login and Signup
+# TODO for Adding Receipt Page
 
-## Tasks
-- [x] Create src/data/users.js with sample user data for demo purposes
-- [x] Update AuthContext.jsx to use local authentication logic with localStorage for persistence, replacing Firebase calls
-- [x] Remove unused username field from LoginSignup.jsx
-- [x] Add authLoading state for loading feedback during auth operations
-- [x] Make logout async with loading state
-- [x] Update logout button to be async and show loading text
-
-## Notes
-- Switching to mock auth since Firebase config has placeholders
-- Use localStorage to persist user session
-- Ensure login/signup redirects to home and maintains state
-- Demo accounts: user1@example.com / password123, demo@evcharger.com / demo123
+- [x] Create src/pages/Receipt.jsx: Component that uses useParams to get id, finds the item from history data, and displays receipt details.
+- [x] Create src/styles/Receipt.css: Styling for the receipt page, similar to UsageHistory modal.
+- [x] Edit src/App.jsx: Add import for Receipt component and add route <Route path="/receipt/:id" element={<Receipt />} />
+- [x] Edit src/pages/UsageHistory.jsx: Change the "ใบเสร็จ" button to a Link component navigating to `/receipt/${item.id}`
+- [x] Remove unused modal code from UsageHistory.jsx

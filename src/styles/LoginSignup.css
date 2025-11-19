@@ -110,7 +110,7 @@
 
 .forgot-password {
     display: block;
-    text-align: right;
+    text-align: center;
     font-size: 0.85rem;
     color: #888;
     text-decoration: none;
@@ -143,30 +143,55 @@
     margin: 30px 0 15px;
 }
 
+/* === ไอคอนเข้าสู่ระบบด้วยโซเชียล === */
+
 .social-icons {
     display: flex;
     justify-content: center;
-    gap: 15px;
+    align-items: center;
+    gap: 25px; /* เพิ่มระยะให้พอดีกับ 2 วงกลม */
 }
 
 .social-icon {
+    font-size: 32px;
+    width: 60px;
+    height: 60px;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 40px;
-    height: 40px;
-    border: 1px solid #ccc;
-    border-radius: 50%; /* วงกลม */
-    color: #555;
-    font-size: 1.2rem;
-    text-decoration: none;
-    transition: border-color 0.3s;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.3s ease;
+    color: #444; /* สีพื้นฐาน */
+    background-color: #fff; /* ทำให้วงกลมดูเด่น */
+}
+
+/* ยกเลิกสีแดงที่ทำให้ icon เพี้ยน */
+.social-icon svg {
+    width: 24px;
+    height: 24px;
+    color: inherit; /* รับจาก .social-icon */
 }
 
 .social-icon:hover {
     border-color: var(--login-button-blue);
     color: var(--login-button-blue);
+    transform: scale(1.1);
 }
+
+/* Facebook hover สีฟ้า */
+.social-icon.facebook:hover {
+    border-color: #1877f2;
+    color: #1877f2;
+}
+
+/* Google hover สีแดง */
+.social-icon.google:hover {
+    border-color: #db4437;
+    color: #db4437;
+}
+
 
 /* ปรับให้รองรับหน้าจอขนาดเล็ก */
 @media (max-width: 768px) {
@@ -184,4 +209,10 @@
     .right-panel {
         padding: 40px 30px;
     }
+}
+/* ทำให้ไอคอน svg มองเห็นได้จริง */
+.social-icon svg {
+    width: 24px;
+    height: 24px;
+    color: #ff0000;  /* ปรับสีให้เห็นชัดในพื้นหลังอ่อน */
 }

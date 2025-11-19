@@ -8,6 +8,7 @@ import Booking from './pages/Booking'
 import Reviews from './pages/Reviews'
 import PaymentMethods from './pages/PaymentMethods'
 import UsageHistory from './pages/UsageHistory'
+import Receipt from './pages/Receipt'
 import AddVehicle from './pages/AddVehicle'
 import Contact from './pages/Contact'
 import { AuthProvider, useAuth } from './components/AuthContext'
@@ -72,6 +73,7 @@ function AppContent() {
             <Route path="/reviews" element={<Reviews/>} />
             <Route path="/payment-methods" element={<PaymentMethods/>} />
             <Route path="/usage-history" element={<UsageHistory/>} />
+            <Route path="/receipt/:id" element={<Receipt/>} />
             <Route path="/add-vehicle" element={<AddVehicle/>} />
             <Route path="/contact" element={<Contact/>} />
           </Routes>

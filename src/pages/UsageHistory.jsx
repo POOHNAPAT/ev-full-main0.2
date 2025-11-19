@@ -117,7 +117,10 @@ export default function UsageHistory() {
                     )}
                   </div>
                   <div className="history-cost">
-                    ฿ {item.cost} บาท
+                    <div>฿ {item.cost} บาท</div>
+                    {item.status === 'paid' && (
+                      <Link to={`/receipt/${item.id}`} className="receipt-button">ใบเสร็จ</Link>
+                    )}
                   </div>
                 </div>
               </div>
