@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import '../styles/PaymentMethods.css';
 import '../styles/UsageHistory.css';
 
 export default function UsageHistory() {
@@ -57,10 +58,13 @@ export default function UsageHistory() {
   const filteredHistory = filter === 'ทั้งหมด' ? history : history.filter(item => item.status === filter.toLowerCase());
 
   return (
-    <div className="usage-history-container">
-      <div className="usage-history-content">
-        <div className="usage-history-section">
-          <h1 className="usage-history-title">Usage history</h1>
+    <div className="payment-container">
+      <div className="payment-content">
+        <div className="payment-card">
+          <div className="payment-header">
+            <h1>ประวัติการใช้งาน</h1>
+            <p>สรุปการใช้งานและใบเสร็จของคุณ</p>
+          </div>
           <div className="summary-section">
             <h2 className="usage-history-subtitle">สรุปการใช้งาน</h2>
             <div className="summary-grid">
@@ -126,9 +130,9 @@ export default function UsageHistory() {
               </div>
             ))}
           </div>
-          <div className="back-section">
-            <Link to="/profile" className="back-button">
-              กลับ
+          <div className="payment-actions">
+            <Link to="/profile" className="btn btn-back">
+              ← กลับ
             </Link>
           </div>
         </div>

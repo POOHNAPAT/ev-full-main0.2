@@ -1,3 +1,19 @@
+/* Page-specific override: make the back button smaller on Usage History */
+.payment-actions .btn-back {
+  flex: 0 0 auto;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.95rem;
+  min-width: 88px;
+  max-width: 140px;
+}
+
+@media (max-width: 768px) {
+  /* On small screens keep the back button full-width for readability */
+  .payment-actions .btn-back {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
 /* Usage History Page Styling */
 
 .usage-history-container {
@@ -125,8 +141,9 @@
 .history-item {
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
-  padding: 1rem;
+  padding: 1rem 1rem 2.5rem 1rem;
   background: #f9fafb;
+  position: relative;
 }
 
 .history-item-content {
@@ -167,6 +184,9 @@
   color: #1f2937;
 }
 
+/* Small receipt button positioned top-left inside each history item */
+/* receipt-small removed to restore original receipt-button styles and placement */
+
 .back-section {
   margin-top: 1rem;
 }
@@ -196,7 +216,11 @@
   transition: all 0.2s;
   cursor: pointer;
   font-size: 0.875rem;
-  margin-top: 3rem;
+  /* anchor button at bottom-right of the history item */
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  margin-top: 0;
 }
 
 .receipt-button:hover {

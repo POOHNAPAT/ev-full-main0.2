@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import '../styles/LoginSignup.css';
+import { FaGoogle, FaFacebookF } from 'react-icons/fa';
 
 function LoginSignup({ initialIsLogin = true }) {
   const [isLogin, setIsLogin] = useState(initialIsLogin);
@@ -120,9 +121,8 @@ function LoginSignup({ initialIsLogin = true }) {
             <p className="social-text">or register with social platforms</p>
 
             <div className="social-icons">
-              <a href="#" className="social-icon"><i className="fab fa-google"></i></a>
-              <a href="#" className="social-icon"><i className="fab fa-apple"></i></a>
-              <a href="#" className="social-icon"><i className="fab fa-facebook-f"></i></a>
+              <a href="#" className="social-icon"><FaGoogle /></a>
+              <a href="#" className="social-icon"><FaFacebookF /></a>
             </div>
           </form>
         </div>
