@@ -1,6 +1,7 @@
 import { Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import LoginSignup from './components/LoginSignup'
+import Admin from './pages/Admin'
 import Logout from './pages/Logout'
 import MapPage from './pages/Map'
 import Profile from './pages/Profile'
@@ -63,6 +64,7 @@ function AppContent() {
 
         <main className="flex-1 p-6">
           <Routes>
+            <Route path="/admin" element={<Admin />} />
             <Route path="/" element={<Home/>} />
             <Route path="/login" element={<LoginSignup initialIsLogin={true} />} />
             <Route path="/signup" element={<LoginSignup initialIsLogin={false} />} />
@@ -86,7 +88,18 @@ function AppContent() {
   );
 }
 
+import { useLocation } from 'react-router-dom';
+
 export default function App(){
+  const location = useLocation();
+  // ถ้าอยู่หน้า /admin ไม่ต้องใช้ AuthProvider
+  if (location.pathname === '/admin') {
+    return (
+      <LanguageProvider>
+        <Admin />
+      </LanguageProvider>
+    );
+  }
   return (
     <LanguageProvider>
       <AuthProvider>

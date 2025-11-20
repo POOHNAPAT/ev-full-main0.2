@@ -12,8 +12,14 @@ function LoginSignup({ initialIsLogin = true }) {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
-  const { login, signup } = useAuth();
+  const { login, signup, clearAuthUser } = useAuth();
   const navigate = useNavigate();
+
+  const handleAdminClick = (e) => {
+    e.preventDefault();
+    clearAuthUser();
+    window.location.href = '/admin';
+  };
 
   useEffect(() => {
     setIsLogin(initialIsLogin);
@@ -66,6 +72,9 @@ function LoginSignup({ initialIsLogin = true }) {
 
   return (
     <div className="login-wrapper">
+      <a className="admin-button top-right" href="/admin" onClick={handleAdminClick}>
+        Admin
+      </a>
       <div className="login-container">
         <div className="left-panel">
           <h2>{isLogin ? 'Hello, Welcome!' : 'Join Us!'}</h2>

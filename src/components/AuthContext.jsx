@@ -64,8 +64,13 @@ export function AuthProvider({ children }){
     setAuthLoading(false);
   };
 
+  const clearAuthUser = () => {
+    setUser(null);
+    localStorage.removeItem('currentUser');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, authLoading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, loading, authLoading, login, signup, logout, clearAuthUser }}>
       {children}
     </AuthContext.Provider>
   )
