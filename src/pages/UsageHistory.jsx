@@ -1,61 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/PaymentMethods.css';
 import '../styles/UsageHistory.css';
+import { loadHistory, loadPayments, initialHistory, paymentHistory } from '../data/History';
+import stationsData from '../data/stations';
+import { useAuth } from '../components/AuthContext';
 
 export default function UsageHistory() {
   const [filter, setFilter] = useState('ทั้งหมด');
+  const [stationSerial, setStationSerial] = useState('ทั้งหมด');
+  const [historyList, setHistoryList] = useState([]);
+
+  const { user } = useAuth();
+  // If AuthContext doesn't provide a user (e.g. during testing), fall back
+  // to a `currentUser` object stored in localStorage. This matches the
+  // test snippet provided by the app (see README / console hint).
+  const fallbackUser = (() => {
+    try {
+      const raw = localStorage.getItem('currentUser');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+  const effectiveUser = user || fallbackUser;
+
+  useEffect(() => {
+    // Build lists from initial/persisted usage and mock payment data,
+    // then merge them so usage+payment for the same session show as one card.
+    const usageList = (() => { const x = loadHistory(stationSerial, effectiveUser?.id); return Array.isArray(x) ? x : []; })();
+    const paymentsList = (() => { const x = loadPayments(stationSerial, effectiveUser?.id); return Array.isArray(x) ? x : []; })();
+
+    // Merge by key (stationSerial|date|time). If a payment matches a usage
+    // entry, merge payment fields into the usage object. Otherwise keep
+    // payment-only entries.
+    const map = new Map();
+    const makeKey = (it) => `${it.stationSerial || ''}|${it.date || ''}|${it.time || ''}`;
+
+    usageList.forEach(u => {
+      const key = makeKey(u);
+      map.set(key, { ...u, _isUsage: true });
+    });
+
+    paymentsList.forEach(p => {
+      const key = makeKey(p);
+      if (map.has(key)) {
+        const existing = map.get(key);
+        map.set(key, {
+          ...existing,
+          payment: p.payment || existing.payment,
+          cost: (typeof p.cost !== 'undefined' ? p.cost : existing.cost),
+          status: p.status || existing.status,
+          _hasPayment: true,
+        });
+      } else {
+        map.set(key, { ...p, _isPaymentOnly: true });
+      }
+    });
+
+    const merged = Array.from(map.values());
+
+    if (filter === 'ทั้งหมด') {
+      setHistoryList(merged);
+    } else if (filter === 'การใช้งาน' || filter === 'completed') {
+      setHistoryList(merged.filter(i => i._isUsage));
+    } else if (filter === 'การชำระเงิน' || filter === 'paid') {
+      setHistoryList(merged.filter(i => i._hasPayment || i._isPaymentOnly));
+    } else {
+      setHistoryList(merged);
+    }
+  }, [stationSerial, filter, user]);
+
+  const filteredHistory = historyList;
+
+  // Compute usage/payment sources for summary (respect station filter and user)
+  const usageListRaw = (() => { const x = loadHistory(stationSerial, effectiveUser?.id); return Array.isArray(x) ? x : []; })();
+  const usageSource = usageListRaw;
+  const paymentsSource = (() => { const x = loadPayments(stationSerial, effectiveUser?.id); return Array.isArray(x) ? x : []; })();
+
+  // Summary: usage-based totals come from `usageSource`; payments totals come from `paymentsSource`.
+  let totalSessions = 0;
+  let totalEnergy = 0;
+  let totalCost = 0;
+
+  if (filter === 'การชำระเงิน') {
+    totalSessions = paymentsSource.length;
+    totalEnergy = 0;
+    totalCost = paymentsSource.reduce((acc, cur) => acc + (cur.cost || 0), 0);
+  } else {
+    // For 'การใช้งาน' and 'ทั้งหมด' show usage totals (count/energy/cost) based on usageSource
+    totalSessions = usageSource.length;
+    totalEnergy = usageSource.reduce((acc, cur) => acc + (cur.energy || 0), 0);
+    totalCost = usageSource.reduce((acc, cur) => acc + (cur.cost || 0), 0);
+  }
 
   const summary = {
-    totalSessions: 2,
-    totalEnergy: 88,
-    totalCost: 580,
+    totalSessions,
+    totalEnergy,
+    totalCost,
   };
-
-  const history = [
-    {
-      id: 1,
-      station: 'Central World – ชั้น B2',
-      type: 'AC',
-      date: '2025-10-7',
-      time: '09:45',
-      duration: '50 นาที',
-      energy: 47.5,
-      cost: 280,
-      status: 'completed',
-    },
-    {
-      id: 2,
-      station: 'Bangkok Hospital – อาคารจอด P2 EV Zone',
-      type: 'DC Fast',
-      date: '2025-10-7',
-      time: '15:45',
-      duration: '30 นาที',
-      energy: 40.5,
-      cost: 300,
-      status: 'completed',
-    },
-    {
-      id: 3,
-      station: 'ชาร์จไฟ – Central World – ชั้น B2',
-      date: '2025-10-7',
-      time: '09:45',
-      payment: 'PromptPay',
-      cost: 280,
-      status: 'paid',
-    },
-    {
-      id: 4,
-      station: 'Bangkok Hospital – อาคารจอด P2 EV Zone',
-      date: '2025-10-7',
-      time: '15:45',
-      payment: 'PromptPay',
-      cost: 300,
-      status: 'paid',
-    },
-  ];
-
-  const filteredHistory = filter === 'ทั้งหมด' ? history : history.filter(item => item.status === filter.toLowerCase());
 
   return (
     <div className="payment-container">
@@ -64,6 +107,17 @@ export default function UsageHistory() {
           <div className="payment-header">
             <h1>ประวัติการใช้งาน</h1>
             <p>สรุปการใช้งานและใบเสร็จของคุณ</p>
+          </div>
+          {/* Resolved user info for debugging/testing */}
+          <div style={{margin: '8px 0'}}>
+            <div style={{padding:8, background:'#f0f7ff', borderRadius:6, fontSize:14, color:'#07324a'}}>
+              <strong>Resolved user:</strong>{' '}
+              {effectiveUser ? (
+                <span>{effectiveUser.id} — {effectiveUser.email}{effectiveUser.name ? ` (${effectiveUser.name})` : ''}</span>
+              ) : (
+                <span style={{color:'#666'}}>None (not signed in)</span>
+              )}
+            </div>
           </div>
           <div className="summary-section">
             <h2 className="usage-history-subtitle">สรุปการใช้งาน</h2>
@@ -82,6 +136,16 @@ export default function UsageHistory() {
               </div>
             </div>
           </div>
+          {!user && (
+            <div className="no-user-note" style={{padding: '12px', background: '#fff6e6', borderRadius:6, margin: '12px 0'}}>
+              <strong>กรุณาเข้าสู่ระบบ</strong> เพื่อดูประวัติการใช้งานของคุณ.
+              <div style={{marginTop:6,fontSize:12,color:'#666'}}>
+                สำหรับการทดสอบ คุณสามารถตั้งค่าใน Console ของเบราว์เซอร์:
+                <pre style={{background:'#f4f4f4',padding:6,borderRadius:4,color:'#222'}}>{`localStorage.setItem('currentUser', JSON.stringify({ id: 1, email: 'user1@example.com', name: 'User One' }))`}</pre>
+                แล้วรีเฟรชหน้าเพื่อดูข้อมูลตัวอย่าง
+              </div>
+            </div>
+          )}
           <div className="filter-section">
             <h2 className="filter-label">ตัวกรอง</h2>
             <select
@@ -90,8 +154,8 @@ export default function UsageHistory() {
               className="filter-select"
             >
               <option value="ทั้งหมด">ทั้งหมด</option>
-              <option value="completed">ประวัติการใช้งาน</option>
-              <option value="paid">ประวัติการชำระเงิน</option>
+              <option value="การใช้งาน">ประวัติการใช้งาน</option>
+              <option value="การชำระเงิน">ประวัติการชำระเงิน</option>
             </select>
           </div>
           <div className="history-list">

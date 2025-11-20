@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../styles/Map.css';
-import { loadStations } from '../data/stations';
+import stationsList, { loadStations } from '../data/stations';
 import { useLanguage } from '../components/LanguageContext';
 
 // Ensure Leaflet uses the local marker assets provided by the package
@@ -34,32 +34,7 @@ const dcIcon = L.divIcon({
   popupAnchor: [0, -36]
 });
 
-// Thai name mapping for search
-const thaiNameMap = {
-  'สนามบินสุวรรณภูมิ': 'suvarnabhumi',
-  'ดอนเมือง': 'don-mueang',
-  'มหาวิทยาลัยกรุงเทพ': 'bangkok-university',
-  'สยาม': 'siam-square',
-  'ชัยชนะ': 'victory-monument',
-  'สีลม': 'silom-complex',
-  'เขาสาน': 'khao-san',
-  'เศรษฐีพลาซ่า': 'erawan-shrine',
-  'พัฒน์พระนคร': 'patpong',
-  'วัดอรุณ': 'wat-arun',
-  'จิมโทมป์': 'jim-thompson',
-  'เซนทรัล': 'central-world',
-  'พระแกรนด์': 'grand-palace',
-  'ลุมพินี': 'lumpini-park',
-  'สุขุมวิท': 'sukhumvit',
-  'เอมควอเทียร์': 'emquartier',
-  'สยามพารากอน': 'siam-paragon',
-  'เอ็มบีเค': 'mbk-center',
-  'ตั้ง21': 'terminal-21',
-  'อโศะ': 'asiatique',
-  'เซนทรัลชิดลม': 'central-chidlom',
-  'ตลาดจตุจักร': 'chatuchak-market',
-  'โรงพยาบาลกรุงเทพ': 'bangkok-hospital'
-};
+// Station data is provided by `stationsList` imported from data/stations.js
 
 export default function MapPage(){
   const { language, toggleLanguage, t } = useLanguage();
@@ -68,55 +43,40 @@ export default function MapPage(){
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedStation, setSelectedStation] = useState(null);
   const navigate = useNavigate();
+    const mapRef = useRef(null);
 
   useEffect(()=>{
     // initialize map
     const map = L.map('map').setView([13.736717,100.523186], 12);
+      // expose map so other handlers (dropdown) can pan/zoom
+      mapRef.current = map;
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
     }).addTo(map);
 
-    // sample markers with charger types and amenities
-    const markers = [
-      { id: 'central-world', name: 'Central World', lat:13.7466, lng:100.5390, type: 'AC', amenities: ['wifi', 'bathroom', 'restaurant', 'restroom'] },
-      { id: 'siam-paragon', name: 'Siam Paragon', lat:13.7460, lng:100.5345, type: 'DC', amenities: ['wifi', 'bathroom', 'shopping', 'restroom'] },
-      { id: 'mbk-center', name: 'MBK Center', lat:13.7469, lng:100.5291, type: 'AC', amenities: ['wifi', 'bathroom', 'shopping', 'restaurant', 'restroom'] },
-      { id: 'emquartier', name: 'EmQuartier', lat:13.7313, lng:100.5696, type: 'DC', amenities: ['wifi', 'shopping', 'restaurant', 'restroom'] },
-      { id: 'terminal-21', name: 'Terminal 21', lat:13.7384, lng:100.5601, type: 'AC', amenities: ['wifi', 'bathroom', 'shopping', 'restaurant', 'restroom'] },
-      { id: 'asiatique', name: 'Asiatique', lat:13.7204, lng:100.5134, type: 'DC', amenities: ['wifi', 'bathroom'] },
-      { id: 'chatuchak-market', name: 'Chatuchak Weekend Market', lat:13.7991, lng:100.5492, type: 'AC', amenities: ['bathroom', 'restaurant', 'restroom'] },
-      { id: 'lumpini-park', name: 'Lumpini Park', lat:13.7313, lng:100.5411, type: 'DC', amenities: ['wifi', 'bathroom'] },
-      { id: 'bangkok-hospital', name: 'Bangkok Hospital', lat:13.7229, lng:100.5289, type: 'AC', amenities: ['wifi', 'bathroom'] },
-      { id: 'grand-palace', name: 'Grand Palace', lat:13.7500, lng:100.4917, type: 'DC', amenities: ['bathroom'] },
-      { id: 'siam-square', name: 'Siam Square', lat:13.7456, lng:100.5347, type: 'AC', amenities: ['wifi', 'bathroom', 'shopping', 'restaurant', 'restroom'] },
-      { id: 'wat-arun', name: 'Wat Arun', lat:13.7437, lng:100.4889, type: 'DC', amenities: ['bathroom'] },
-      { id: 'jim-thompson', name: 'Jim Thompson House', lat:13.7504, lng:100.5279, type: 'AC', amenities: ['wifi'] },
-      { id: 'patpong', name: 'Patpong Night Market', lat:13.7286, lng:100.5347, type: 'DC', amenities: ['bathroom', 'restaurant'] },
-      { id: 'erawan-shrine', name: 'Erawan Shrine', lat:13.7438, lng:100.5394, type: 'AC', amenities: ['bathroom'] },
-      { id: 'khao-san', name: 'Khao San Road', lat:13.7589, lng:100.4972, type: 'DC', amenities: ['wifi', 'bathroom', 'restaurant', 'restroom'] },
-      { id: 'silom-complex', name: 'Silom Complex', lat:13.7229, lng:100.5172, type: 'AC', amenities: ['wifi', 'bathroom', 'restaurant', 'restroom'] },
-      { id: 'victory-monument', name: 'Victory Monument', lat:13.7627, lng:100.5371, type: 'DC', amenities: ['wifi', 'bathroom'] },
-      { id: 'central-chidlom', name: 'Central Chidlom', lat:13.7442, lng:100.5431, type: 'AC', amenities: ['wifi', 'bathroom', 'shopping', 'restaurant', 'restroom'] },
-      { id: 'sukhumvit', name: 'Sukhumvit Road', lat:13.7367, lng:100.5600, type: 'DC', amenities: ['wifi', 'bathroom'] },
-      { id: 'don-mueang', name: 'Don Mueang Airport', lat:13.9125, lng:100.6067, type: 'AC', amenities: ['wifi', 'bathroom', 'restaurant', 'restroom'] },
-      { id: 'suvarnabhumi', name: 'Suvarnabhumi Airport', lat:13.6811, lng:100.7472, type: 'DC', amenities: ['wifi', 'bathroom', 'shopping', 'restaurant', 'restroom'] },
-      { id: 'bangkok-university', name: 'Bangkok University', lat:13.7384, lng:100.5322, type: 'AC', amenities: ['wifi', 'bathroom'] }
-    ];
+    // Build markers from the imported stations list
+    const markers = (stationsList || []).map(s => ({
+      id: String(s.id),
+      name: s.name,
+      lat: s.latitude,
+      lng: s.longitude,
+      type: s.type === 'Both' ? 'Both' : (s.type === 'DC' ? 'DC' : 'AC'),
+      amenities: Array.isArray(s.amenities) ? s.amenities : (s.amenities ? [s.amenities] : [])
+    }));
 
-    const filteredMarkers = filter === 'all' ? markers : markers.filter(m => m.type === filter);
-
-    // Apply search filter by name (English + Thai)
-    const searchFiltered = searchQuery.trim() === '' 
-      ? filteredMarkers 
-      : filteredMarkers.filter(m => {
-          const query = searchQuery.toLowerCase();
-          const matchesEnglish = m.name.toLowerCase().includes(query);
-          const matchesThai = Object.entries(thaiNameMap).some(([thai, id]) => 
-            thai.includes(query) && m.id === id
-          );
-          return matchesEnglish || matchesThai;
+    const filteredMarkers = filter === 'all'
+      ? markers
+      : markers.filter(m => {
+          if (filter === 'AC') return m.type === 'AC' || m.type === 'Both';
+          if (filter === 'DC') return m.type === 'DC' || m.type === 'Both';
+          return true;
         });
+
+    // Apply search filter by station name
+    const searchFiltered = searchQuery.trim() === ''
+      ? filteredMarkers
+      : filteredMarkers.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()));
     
     // Apply amenity filter
     const amenityFiltered = selectedAmenities.length === 0
@@ -134,7 +94,7 @@ export default function MapPage(){
     // Prepare marker data with station info
     const markerData = amenityFiltered.map(m => ({
       ...m,
-      station: stations[m.id] || { name: m.name, available: 'N/A', power: 'N/A', amenities: 'N/A' }
+      station: stations[m.id] || { name: m.name, available: 'N/A', power: m.type, amenities: (m.amenities || []).join(', ') }
     }));
 
     // Clustering function: group markers that are within `pixelThreshold` of each other
@@ -171,7 +131,7 @@ export default function MapPage(){
         clusters.forEach(c => {
           if (c.items.length === 1) {
             const d = c.items[0].data;
-            const icon = d.type === 'AC' ? acIcon : dcIcon;
+            const icon = (d.type === 'AC' || d.type === 'Both') ? acIcon : dcIcon;
             const m = L.marker([d.lat, d.lng], { icon }).addTo(markerLayer);
             m.on('click', () => setSelectedStation({ ...d, ...d.station }));
             m.bindPopup(`
@@ -194,9 +154,9 @@ export default function MapPage(){
             const size = Math.min(80, 24 + count * 6);
             const fontSize = Math.max(12, Math.floor(size / 3));
 
-            // Count AC and DC in cluster
-            const acCount = c.items.filter(item => item.data.type === 'AC').length;
-            const dcCount = c.items.filter(item => item.data.type === 'DC').length;
+            // Count AC and DC in cluster (treat 'Both' as both)
+            const acCount = c.items.filter(item => item.data.type === 'AC' || item.data.type === 'Both').length;
+            const dcCount = c.items.filter(item => item.data.type === 'DC' || item.data.type === 'Both').length;
 
             let html;
             if (acCount > 0 && dcCount > 0) {
@@ -254,6 +214,35 @@ export default function MapPage(){
       map.remove();
     }
   }, [filter, searchQuery, selectedAmenities, t]);
+  // Handle selecting a station from the dropdown: pan/zoom to it and show details
+  const handleSelectStation = (e) => {
+    const id = e.target.value;
+    if (!id) {
+      setSelectedStation(null);
+      return;
+    }
+
+    const s = (stationsList || []).find(st => String(st.id) === String(id));
+    if (!s) return;
+
+    const lat = s.latitude;
+    const lng = s.longitude;
+    // set selected station details
+    setSelectedStation({ id: String(s.id), name: s.name, lat, lng, type: s.type, amenities: Array.isArray(s.amenities) ? s.amenities.join(', ') : (s.amenities || '') });
+
+    if (mapRef.current) {
+      try {
+        mapRef.current.setView([lat, lng], 16, { animate: true });
+        // open a small popup at the station
+        L.popup({ closeButton: true, autoClose: true })
+          .setLatLng([lat, lng])
+          .setContent(`<div style="font-weight:600">${s.name}</div>`)
+          .openOn(mapRef.current);
+      } catch (err) {
+        // ignore errors
+      }
+    }
+  };
 
   return (
     <div className="page-background">
@@ -265,16 +254,19 @@ export default function MapPage(){
         <div className="mb-6 max-w-md mx-auto">
           <div className="flex items-center bg-gray-100 rounded-full px-4 py-2 shadow-sm">
             <span className="text-gray-400 mr-3">🔍</span>
-            <input
-              type="text"
-              placeholder={t.searchPlaceholder || 'Search...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+            <select
+              value={selectedStation ? selectedStation.id : ''}
+              onChange={handleSelectStation}
               className="flex-1 bg-gray-100 outline-none text-gray-700 placeholder-gray-500"
-            />
-            {searchQuery && (
+            >
+              <option value="">{t.selectStationPlaceholder || 'เลือกสถานี...'}</option>
+              {(stationsList || []).map(s => (
+                <option key={s.id} value={String(s.id)}>{s.name}</option>
+              ))}
+            </select>
+            {selectedStation && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => { setSelectedStation(null); if (mapRef.current) mapRef.current.closePopup(); }}
                 className="text-gray-400 hover:text-gray-600 ml-2"
               >
                 ✕

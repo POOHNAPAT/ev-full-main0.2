@@ -1,7 +1,7 @@
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import LoginSignup from './components/LoginSignup'
-import Admin from './pages/Admin'
+import Admin from './pages/admin/Admin'
 import Logout from './pages/Logout'
 import MapPage from './pages/Map'
 import Profile from './pages/Profile'
@@ -15,6 +15,7 @@ import Contact from './pages/Contact'
 import { AuthProvider, useAuth } from './components/AuthContext'
 import { LanguageProvider, useLanguage } from './components/LanguageContext'
 import { FaSearch, FaUser } from 'react-icons/fa'
+import StationCheck from './pages/admin/StationCheck'
 
 function AppContent() {
   const { language, toggleLanguage, t } = useLanguage();
@@ -75,6 +76,7 @@ function AppContent() {
             <Route path="/reviews" element={<Reviews/>} />
             <Route path="/payment-methods" element={<PaymentMethods/>} />
             <Route path="/usage-history" element={<UsageHistory/>} />
+            <Route path="/admin/station-check" element={<StationCheck/>} />
             <Route path="/receipt/:id" element={<Receipt/>} />
             <Route path="/add-vehicle" element={<AddVehicle/>} />
             <Route path="/contact" element={<Contact/>} />
@@ -88,8 +90,6 @@ function AppContent() {
   );
 }
 
-import { useLocation } from 'react-router-dom';
-
 export default function App(){
   const location = useLocation();
   // ถ้าอยู่หน้า /admin ไม่ต้องใช้ AuthProvider
@@ -97,6 +97,14 @@ export default function App(){
     return (
       <LanguageProvider>
         <Admin />
+      </LanguageProvider>
+    );
+  }
+  // ให้หน้า station-check ของแอดมินไม่ต้องล็อกอิน
+  if (location.pathname === '/admin/station-check') {
+    return (
+      <LanguageProvider>
+        <StationCheck />
       </LanguageProvider>
     );
   }

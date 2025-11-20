@@ -19,9 +19,9 @@ import {
   History,
   Shield
 } from 'lucide-react';
-import MapPage from './Map';
-import '../styles/Map.css';
-import stationsData from '../data/stations';
+import MapPage from '../Map';
+import '../../styles/Map.css';
+import stationsData from '../../data/stations';
 
 // --- MOCK DATA (Offline Mode) ---
 const INITIAL_ADMINS = [
@@ -68,7 +68,9 @@ const Login = ({ onLogin }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (username === 'admin' && password === 'password') {
-      onLogin({ username, role: 'admin' });
+      const adminUser = { username, role: 'admin' };
+      localStorage.setItem('adminSession', JSON.stringify(adminUser));
+      onLogin(adminUser);
     } else {
       alert('Login Failed: Try username "admin" and password "password"');
     }
@@ -117,6 +119,18 @@ export default function App() {
   const [appUsers, setAppUsers] = useState(INITIAL_USERS);
   const [admins, setAdmins] = useState(INITIAL_ADMINS);
   const [payments, setPayments] = useState(INITIAL_PAYMENTS);
+
+  // Load admin session on mount
+  useEffect(() => {
+    const adminSession = localStorage.getItem('adminSession');
+    if (adminSession) {
+      try {
+        setUser(JSON.parse(adminSession));
+      } catch (e) {
+        localStorage.removeItem('adminSession');
+      }
+    }
+  }, []);
 
   // Simulation: Charging progress
   useEffect(() => {
@@ -172,7 +186,13 @@ export default function App() {
           <SidebarItem icon={<History size={20} />} text="ประวัติ & การเงิน" active={currentView === 'history'} onClick={() => setCurrentView('history')} />
         </nav>
         <div className="absolute bottom-0 w-64 p-4 border-t border-slate-700 bg-slate-900">
-          <button onClick={() => setUser(null)} className="flex items-center gap-2 text-red-400 hover:text-red-300 transition">
+          <button 
+            onClick={() => {
+              localStorage.removeItem('adminSession');
+              setUser(null);
+            }} 
+            className="flex items-center gap-2 text-red-400 hover:text-red-300 transition"
+          >
             <LogOut size={18} /> ออกจากระบบ
           </button>
         </div>
