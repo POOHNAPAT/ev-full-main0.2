@@ -9,6 +9,7 @@ export default function StationCheck() {
   const [stationSerial, setStationSerial] = useState(stations[0] ? stations[0].stationSerial : '');
   const [vehicles, setVehicles] = useState([]);
   const [history, setHistory] = useState([]);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     if (!selectedId) return;
@@ -16,6 +17,26 @@ export default function StationCheck() {
     const serial = s ? s.stationSerial : '';
     setStationSerial(serial);
   }, [selectedId]);
+
+  // Filter stations by name, stationSerial or id (case-insensitive)
+  const q = String(query || '').trim().toLowerCase();
+  const filteredStations = q
+    ? stations.filter((s) => {
+        return (
+          String(s.id).includes(q) ||
+          String(s.stationSerial).toLowerCase().includes(q) ||
+          String(s.name).toLowerCase().includes(q)
+        );
+      })
+    : stations;
+
+  // If query narrows to exactly one station, auto-select it for convenience
+  useEffect(() => {
+    if (q && filteredStations.length === 1) {
+      setSelectedId(String(filteredStations[0].id));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
 
   useEffect(() => {
     if (!stationSerial) {
@@ -87,29 +108,54 @@ export default function StationCheck() {
             }}>
               เลือกสถานีที่ต้องการจำลองเป็น:
             </label>
-            <select 
-              value={selectedId} 
-              onChange={(e) => setSelectedId(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                fontSize: '16px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '8px',
-                backgroundColor: 'white',
-                cursor: 'pointer',
-                transition: 'border-color 0.2s',
-                outline: 'none'
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-            >
-              {stations.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.stationSerial})
-                </option>
-              ))}
-            </select>
+            <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="ค้นหาชื่อหรือหมายเลขสถานี (เช่น 'cen' หรือ '001')"
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  fontSize: '14px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+              />
+
+              <select 
+                value={selectedId} 
+                onChange={(e) => setSelectedId(e.target.value)}
+                size={Math.min(6, filteredStations.length || 1)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  fontSize: '16px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.2s',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+              >
+                {filteredStations.length === 0 ? (
+                  <option value="">ไม่มีสถานีที่ตรงกับการค้นหา</option>
+                ) : (
+                  filteredStations.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.stationSerial})
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
           </div>
 
           <div style={{ 

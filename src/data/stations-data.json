@@ -1,0 +1,327 @@
+[
+  {
+    "id": 1,
+    "name": "Central World – ชั้น B2, กรุงเทพมหานคร",
+    "type": "AC",
+    "location": "กรุงเทพมหานคร",
+    "availablePorts": 4,
+    "allPorts": 6,
+    "pricePerUnit": 7.5,
+    "status": "available",
+    "latitude": 13.7461,
+    "longitude": 100.5394,
+    "amenities": [
+      "wifi",
+      "bathroom",
+      "restaurant",
+      "restroom"
+    ],
+    "stationSerial": "ST001"
+  },
+  {
+    "id": 2,
+    "name": "Mega Bangna – ลานจอดรถ, สมุทรปราการ",
+    "type": "Both",
+    "location": "สมุทรปราการ",
+    "availablePorts": 3,
+    "allPorts": 8,
+    "pricePerUnit": 8,
+    "status": "available",
+    "latitude": 13.6579,
+    "longitude": 100.6116,
+    "amenities": [
+      "wifi",
+      "shopping",
+      "restroom"
+    ],
+    "stationSerial": "ST002"
+  },
+  {
+    "id": 3,
+    "name": "Terminal 21 – พัทยา, ชลบุรี",
+    "type": "DC",
+    "location": "ชลบุรี",
+    "availablePorts": 1,
+    "allPorts": 4,
+    "pricePerUnit": 9,
+    "status": "busy",
+    "latitude": 12.9276,
+    "longitude": 100.8771,
+    "amenities": [
+      "restaurant",
+      "parking"
+    ],
+    "stationSerial": "ST003"
+  },
+  {
+    "id": 4,
+    "name": "หาดใหญ่ EV Hub, สงขลา",
+    "type": "AC",
+    "location": "สงขลา",
+    "availablePorts": 2,
+    "allPorts": 3,
+    "status": "available",
+    "latitude": 6.9993,
+    "longitude": 100.4734,
+    "amenities": [
+      "restroom",
+      "cafe"
+    ],
+    "stationSerial": "ST004"
+  },
+  {
+    "id": 5,
+    "name": "Airport Plaza – เชียงใหม่",
+    "type": "Both",
+    "location": "เชียงใหม่",
+    "availablePorts": 5,
+    "allPorts": 8,
+    "pricePerUnit": 7,
+    "status": "available",
+    "latitude": 18.7883,
+    "longitude": 98.9853,
+    "amenities": [
+      "wifi",
+      "shopping",
+      "bathroom"
+    ],
+    "stationSerial": "ST005"
+  },
+  {
+    "id": 6,
+    "name": "Central Festival – Phuket",
+    "type": "DC",
+    "location": "ภูเก็ต",
+    "availablePorts": 0,
+    "allPorts": 4,
+    "status": "busy",
+    "latitude": 7.8804,
+    "longitude": 98.3923,
+    "amenities": [
+      "restaurant",
+      "parking"
+    ],
+    "stationSerial": "ST006"
+  },
+  {
+    "id": 7,
+    "name": "วิทยาลัยเทคนิค ขอนแก่น EV",
+    "type": "AC",
+    "location": "ขอนแก่น",
+    "availablePorts": 2,
+    "allPorts": 2,
+    "status": "available",
+    "latitude": 16.438,
+    "longitude": 102.835,
+    "amenities": [
+      "restroom"
+    ],
+    "stationSerial": "ST007"
+  },
+  {
+    "id": 8,
+    "name": "โครงการเมืองใหม่ – นครราชสีมา",
+    "type": "Both",
+    "location": "นครราชสีมา",
+    "availablePorts": 6,
+    "allPorts": 10,
+    "status": "available",
+    "latitude": 14.9799,
+    "longitude": 102.0977,
+    "amenities": [
+      "wifi",
+      "cafe",
+      "restroom"
+    ],
+    "stationSerial": "ST008"
+  },
+  {
+    "id": 9,
+    "name": "เซ็นทรัล พลาซา นครศรี",
+    "type": "DC",
+    "location": "นครศรีธรรมราช",
+    "availablePorts": 2,
+    "allPorts": 5,
+    "status": "maintenance",
+    "latitude": 8.4316,
+    "longitude": 99.9693,
+    "amenities": [
+      "parking",
+      "shopping"
+    ],
+    "stationSerial": "ST009"
+  },
+  {
+    "id": 10,
+    "name": "บขส. เมือง – สระบุรี",
+    "type": "AC",
+    "location": "สระบุรี",
+    "availablePorts": 1,
+    "allPorts": 2,
+    "status": "available",
+    "latitude": 14.5209,
+    "longitude": 101.0158,
+    "amenities": [
+      "restroom",
+      "parking"
+    ],
+    "stationSerial": "ST010"
+  },
+  {
+    "id": 11,
+    "name": "จุดพักริมทาง มอเตอร์เวย์",
+    "type": "Both",
+    "location": "ปทุมธานี",
+    "availablePorts": 3,
+    "allPorts": 6,
+    "status": "available",
+    "latitude": 14.0209,
+    "longitude": 100.5386,
+    "amenities": [
+      "bathroom",
+      "shopping"
+    ],
+    "stationSerial": "ST011"
+  },
+  {
+    "id": 12,
+    "name": "สถานีรถไฟ เชียงราย",
+    "type": "AC",
+    "location": "เชียงราย",
+    "availablePorts": 2,
+    "allPorts": 2,
+    "status": "available",
+    "latitude": 19.9107,
+    "longitude": 99.84,
+    "amenities": [
+      "restroom",
+      "cafe"
+    ],
+    "stationSerial": "ST012"
+  },
+  {
+    "id": 13,
+    "name": "ห้างสรรพสินค้า นครปฐม",
+    "type": "DC",
+    "location": "นครปฐม",
+    "availablePorts": 1,
+    "allPorts": 3,
+    "status": "offline",
+    "latitude": 13.8198,
+    "longitude": 100.0448,
+    "amenities": [
+      "parking"
+    ],
+    "stationSerial": "ST013"
+  },
+  {
+    "id": 14,
+    "name": "จุดชมวิว เขาใหญ่",
+    "type": "AC",
+    "location": "นครราชสีมา",
+    "availablePorts": 2,
+    "allPorts": 4,
+    "status": "available",
+    "latitude": 14.4378,
+    "longitude": 101.3725,
+    "amenities": [
+      "restroom",
+      "restaurant"
+    ],
+    "stationSerial": "ST014"
+  },
+  {
+    "id": 15,
+    "name": "ตลาดน้ำโบราณ – สมุทรสงคราม",
+    "type": "Both",
+    "location": "สมุทรสงคราม",
+    "availablePorts": 4,
+    "allPorts": 4,
+    "status": "available",
+    "latitude": 13.4134,
+    "longitude": 100.0147,
+    "amenities": [
+      "shopping",
+      "restroom"
+    ],
+    "stationSerial": "ST015"
+  },
+  {
+    "id": 16,
+    "name": "โรงพยาบาล ภูเก็ต EV",
+    "type": "DC",
+    "location": "ภูเก็ต",
+    "availablePorts": 1,
+    "allPorts": 2,
+    "status": "busy",
+    "latitude": 7.8804,
+    "longitude": 98.3883,
+    "amenities": [
+      "bathroom"
+    ],
+    "stationSerial": "ST016"
+  },
+  {
+    "id": 17,
+    "name": "ห้างโลตัส นนทบุรี",
+    "type": "AC",
+    "location": "นนทบุรี",
+    "availablePorts": 3,
+    "allPorts": 5,
+    "status": "available",
+    "latitude": 13.8591,
+    "longitude": 100.49,
+    "amenities": [
+      "wifi",
+      "parking"
+    ],
+    "stationSerial": "ST017"
+  },
+  {
+    "id": 18,
+    "name": "จุดแวะเติมพลัง สุพรรณบุรี",
+    "type": "Both",
+    "location": "สุพรรณบุรี",
+    "availablePorts": 4,
+    "allPorts": 6,
+    "status": "available",
+    "latitude": 14.474,
+    "longitude": 100.123,
+    "amenities": [
+      "restroom",
+      "shopping"
+    ],
+    "stationSerial": "ST018"
+  },
+  {
+    "id": 19,
+    "name": "วิทยาลัยเทคโนโลยี ระยอง EV",
+    "type": "AC",
+    "location": "ระยอง",
+    "availablePorts": 1,
+    "allPorts": 2,
+    "status": "maintenance",
+    "latitude": 12.6819,
+    "longitude": 101.2553,
+    "amenities": [
+      "parking"
+    ],
+    "stationSerial": "ST019"
+  },
+  {
+    "id": 20,
+    "name": "ถนนคนเดิน – นครสวรรค์",
+    "type": "Both",
+    "location": "นครสวรรค์",
+    "availablePorts": 5,
+    "allPorts": 7,
+    "status": "available",
+    "latitude": 15.703,
+    "longitude": 100.1296,
+    "amenities": [
+      "shopping",
+      "cafe"
+    ],
+    "stationSerial": "ST020"
+  }
+]

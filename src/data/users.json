@@ -1,0 +1,21 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "user1@example.com",
+      "password": "1111",
+      "name": "User One",
+      "modelcar": "Tesla Model 3",
+      "status": "active",
+      "historyCookies": 1
+    }
+  ],
+  "Admins": [
+    {
+      "id": 1,
+      "username": "admin",
+      "name": "Super Admin",
+      "role": "super_admin"
+    }
+  ]
+}

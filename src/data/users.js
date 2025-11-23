@@ -1,29 +1,14 @@
-// Mock user data for demo authentication
-let users = [
-  {
-    id: 1,
-    email: "user1@example.com",
-    password: "1111",
-    name: "User One",
-    modelcar: "Tesla Model 3",
-    status: "active",
-    historyCookies: 1,
-  },
-];
+import data from './users.json';
 
-let Admins = [
-  { id: 1, 
-    username: "admin", 
-    name: "Super Admin", 
-    role: "super_admin" 
-  },
-];
-// Find a user by email
+// Initialize an in-memory copy of users so runtime code can mutate it if needed
+let users = Array.isArray(data.users) ? data.users.map(u => ({ ...u })) : [];
+
+const Admins = Array.isArray(data.Admins) ? data.Admins : [];
+
 export function findUserByEmail(email) {
   return users.find(u => u.email === email);
 }
 
-// Add a new user and return it
 export function addUser(email, password) {
   const nextId = users.length ? Math.max(...users.map(u => u.id)) + 1 : 1;
   const nameFromEmail = email.split('@')[0];
