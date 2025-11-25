@@ -146,10 +146,10 @@ export default function StationCheck() {
                 onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
               >
                 {filteredStations.length === 0 ? (
-                  <option value="">ไม่มีสถานีที่ตรงกับการค้นหา</option>
+                  <option key="no-results" value="">ไม่มีสถานีที่ตรงกับการค้นหา</option>
                 ) : (
                   filteredStations.map((s) => (
-                    <option key={s.id} value={s.id}>
+                    <option key={String(s.id)} value={String(s.id)}>
                       {s.name} ({s.stationSerial})
                     </option>
                   ))

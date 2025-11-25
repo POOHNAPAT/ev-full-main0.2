@@ -27,6 +27,11 @@ export default function Booking() {
   const [showQR, setShowQR] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  // QR Scanner modal state
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [scanResult, setScanResult] = useState(null);
+  const [scanning, setScanning] = useState(false);
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
@@ -257,6 +262,16 @@ export default function Booking() {
                 <QRCode value={`${id}-${startTime}-${endTime}`} />
               </div>
               <p className="qr-instruction">สแกน QR Code ที่ตู้ชาร์จเพื่อเริ่มใช้งาน</p>
+              <div style={{ marginTop: '1rem' }}>
+                <button
+                  onClick={() => setShowQRScanner(true)}
+                  className="btn btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 auto' }}
+                >
+                  <FaQrcode />
+                  สแกน QR Code ที่ตู้ชาร์จ
+                </button>
+              </div>
               <Link to="/" className="back-link">
                 <FaArrowLeft />
                 กลับไปหน้าแรก
@@ -264,6 +279,106 @@ export default function Booking() {
             </div>
           )}
         </div>
+
+        {/* QR Scanner Modal */}
+        {showQRScanner && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+            <div style={{ background: 'white', borderRadius: '12px', padding: '2rem', maxWidth: '500px', width: '90%', maxHeight: '90vh', overflow: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FaQrcode style={{ color: '#4f46e5' }} />
+                  สแกน QR Code
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowQRScanner(false);
+                    setScanResult(null);
+                    setScanning(false);
+                  }}
+                  style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#6b7280' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {!scanResult && !scanning && (
+                <div>
+                  <div style={{ background: '#f3f4f6', padding: '3rem', borderRadius: '8px', textAlign: 'center', marginBottom: '1rem' }}>
+                    <FaQrcode style={{ fontSize: '4rem', color: '#9ca3af', margin: '0 auto 1rem' }} />
+                    <p style={{ color: '#6b7280' }}>กดปุ่มด้านล่างเพื่อเริ่มสแกน</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setScanning(true);
+                      // Simulate scanning delay
+                      setTimeout(() => {
+                        setScanning(false);
+                        // Mock scan result with station data
+                        setScanResult({
+                          success: true,
+                          stationId: id,
+                          stationName: station.name,
+                          bookingId: `BK${Date.now()}`,
+                          timestamp: new Date().toLocaleString('th-TH')
+                        });
+                      }, 2000);
+                    }}
+                    style={{ width: '100%', background: '#4f46e5', color: 'white', padding: '0.75rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}
+                  >
+                    เริ่มสแกน
+                  </button>
+                </div>
+              )}
+
+              {scanning && (
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div style={{ border: '4px solid #e5e7eb', borderTop: '4px solid #4f46e5', borderRadius: '50%', width: '60px', height: '60px', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }}></div>
+                  <p style={{ color: '#6b7280' }}>กำลังสแกน QR Code...</p>
+                  <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+                </div>
+              )}
+
+              {scanResult && (
+                <div>
+                  <div style={{ background: scanResult.success ? '#d1fae5' : '#fee2e2', padding: '1.5rem', borderRadius: '8px', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      <FaCheckCircle style={{ color: scanResult.success ? '#10b981' : '#ef4444', fontSize: '1.5rem' }} />
+                      <h4 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: scanResult.success ? '#065f46' : '#991b1b' }}>
+                        {scanResult.success ? 'สแกนสำเร็จ!' : 'สแกนล้มเหลว'}
+                      </h4>
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: scanResult.success ? '#065f46' : '#991b1b' }}>
+                      <p><strong>สถานี:</strong> {scanResult.stationName}</p>
+                      <p><strong>Booking ID:</strong> {scanResult.bookingId}</p>
+                      <p><strong>เวลา:</strong> {scanResult.timestamp}</p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => {
+                        setScanResult(null);
+                        setScanning(false);
+                      }}
+                      style={{ flex: 1, background: '#f3f4f6', color: '#374151', padding: '0.75rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.95rem', fontWeight: '600' }}
+                    >
+                      สแกนอีกครั้ง
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowQRScanner(false);
+                        setScanResult(null);
+                        setScanning(false);
+                      }}
+                      style={{ flex: 1, background: '#4f46e5', color: 'white', padding: '0.75rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.95rem', fontWeight: '600' }}
+                    >
+                      เสร็จสิ้น
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -42,19 +42,6 @@ function AppContent() {
             <Link to="/" className="hover:underline transition duration-300 hover:text-blue-200">{t.home}</Link>
             <Link to="/map" className="hover:underline transition duration-300 hover:text-blue-200">{t.map}</Link>
             <Link to="/reviews" className="hover:underline transition duration-300 hover:text-blue-200">{t.reviews}</Link>
-            <div className="flex items-center space-x-1 bg-white text-blue-600 px-3 py-1 rounded-full">
-              <FaSearch className="text-sm" />
-              <input
-                type="text"
-                placeholder={t.searchAll}
-                className="bg-transparent text-blue-600 placeholder-blue-600 text-sm outline-none w-48"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    window.location.href = '/map';
-                  }
-                }}
-              />
-            </div>
             <Link to="/contact" className="hover:underline transition duration-300 hover:text-blue-200">{t.contact}</Link>
           <button onClick={toggleLanguage} className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
             {language === 'th' ? 'EN' : 'TH'}

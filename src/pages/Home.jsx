@@ -12,6 +12,10 @@ export default function Home() {
   const { user } = useAuth();
   const [approvedBookings, setApprovedBookings] = useState([]);
   const navigate = useNavigate();
+  
+  // Real-time charging status
+  const [currentSession, setCurrentSession] = useState(null);
+  const [chargingProgress, setChargingProgress] = useState(0);
 
   useEffect(() => {
     // Check for recent booking in localStorage
@@ -79,6 +83,81 @@ export default function Home() {
       window.removeEventListener('bookings-changed', onBookingsChanged);
       window.removeEventListener('storage', onStorage);
     };
+  }, [user]);
+
+  // Poll for current charging session
+  useEffect(() => {
+    if (!user) {
+      setCurrentSession(null);
+      return;
+    }
+
+    const checkCurrentSession = async () => {
+      try {
+        const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? 'http://localhost:4000'
+          : '';
+        
+        // Try loading from API
+        let historyData = null;
+        if (apiBase) {
+          try {
+            const response = await fetch(`${apiBase}/api/history`);
+            if (response.ok) {
+              historyData = await response.json();
+            }
+          } catch (e) {
+            console.warn('API fetch failed, checking localStorage', e);
+          }
+        }
+
+        // Fallback to localStorage
+        if (!historyData) {
+          const stored = localStorage.getItem('usageHistory');
+          if (stored) {
+            try {
+              historyData = JSON.parse(stored);
+            } catch (e) {
+              console.error('Failed to parse localStorage history', e);
+            }
+          }
+        }
+
+        if (!historyData) return;
+
+        const userEmail = String(user.email || '').toLowerCase();
+        const userId = String(user.id || '');
+
+        // Find active session (status 'charging' or 'active')
+        const sessions = historyData.sessions || [];
+        const activeSession = sessions.find(s => 
+          (String(s.userId) === userId || String(s.userEmail).toLowerCase() === userEmail) &&
+          (s.status === 'charging' || s.status === 'active')
+        );
+
+        if (activeSession) {
+          setCurrentSession(activeSession);
+
+          // Calculate progress based on time elapsed
+          const start = new Date(activeSession.startedAt || Date.now());
+          const now = new Date();
+          const elapsed = Math.max(0, now - start) / 1000 / 60; // minutes
+          const total = parseInt(activeSession.minutes) || 60;
+          const progress = Math.min(100, (elapsed / total) * 100);
+          setChargingProgress(Math.round(progress));
+        } else {
+          setCurrentSession(null);
+          setChargingProgress(0);
+        }
+      } catch (e) {
+        console.error('Error checking current session', e);
+      }
+    };
+
+    checkCurrentSession();
+    const interval = setInterval(checkCurrentSession, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(interval);
   }, [user]);
 
   const [showFeatures, setShowFeatures] = useState(false);
@@ -215,6 +294,43 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Real-time Charging Status */}
+      {currentSession && (
+        <section className="charging-status-section" style={{ margin: '2rem auto', maxWidth: '800px', padding: '1.5rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', color: 'white', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.8rem' }}>⚡</span>
+            กำลังชาร์จอยู่ในขณะนี้
+          </h3>
+          <div style={{ background: 'rgba(255,255,255,0.15)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <div>
+                <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>สถานี</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: '600' }}>{currentSession.station || 'N/A'}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>ประเภทหัวชาร์จ</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: '600' }}>{currentSession.type || 'N/A'}</div>
+              </div>
+            </div>
+            <div style={{ marginTop: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.9rem' }}>ความคืบหน้า</span>
+                <span style={{ fontSize: '0.9rem', fontWeight: '600' }}>{chargingProgress}%</span>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.3)', borderRadius: '8px', height: '12px', overflow: 'hidden' }}>
+                <div style={{ background: 'linear-gradient(90deg, #4ade80, #22c55e)', height: '100%', width: `${chargingProgress}%`, transition: 'width 0.5s ease' }}></div>
+              </div>
+              <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', opacity: 0.9 }}>
+                เวลาโดยประมาณ: {currentSession.duration || 'N/A'}
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: '0.85rem', opacity: 0.85, textAlign: 'center' }}>
+            ระบบจะอัพเดทสถานะอัตโนมัติทุก 5 วินาที
+          </div>
+        </section>
+      )}
 
       {/* Recent Booking Section */}
       {/* Approved Bookings (from admin confirmation) */}

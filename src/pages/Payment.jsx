@@ -120,6 +120,23 @@ export default function Payment() {
         const energy = Math.round(((mins / 60) * ratePerHour) * 10) / 10; // one decimal
         const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:4000' : '';
 
+        // Read saved payment method from localStorage
+        let paymentMethod = 'PromptPay'; // default
+        try {
+          const savedMethod = localStorage.getItem('paymentMethod');
+          if (savedMethod) {
+            if (savedMethod === 'credit') {
+              const cardData = localStorage.getItem('creditCard');
+              paymentMethod = cardData ? `บัตรเครดิต/เดบิต (${JSON.parse(cardData).number?.slice(-4) || 'xxxx'})` : 'บัตรเครดิต/เดบิต';
+            } else if (savedMethod === 'bank') {
+              const bank = localStorage.getItem('selectedBank');
+              paymentMethod = bank ? `โอนผ่านธนาคาร (${bank})` : 'โอนผ่านธนาคาร';
+            }
+          }
+        } catch (e) {
+          console.warn('Could not read payment method', e);
+        }
+
         // Prepare payload pieces
         const basePayload = {
           station: booking.stationName,
@@ -137,7 +154,7 @@ export default function Payment() {
           userEmail: booking.userEmail,
           bookingId: booking.id,
           paidAt: new Date().toISOString(),
-          paymentMethod: 'PromptPay'
+          paymentMethod
         };
 
         // Try to save both session & payment separately

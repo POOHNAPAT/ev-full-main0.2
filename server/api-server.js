@@ -326,6 +326,59 @@ app.post('/api/contacts', (req, res) => {
   }
 });
 
+// Refund payment endpoint
+app.post('/api/payments/:id/refund', (req, res) => {
+  const id = req.params.id;
+  const data = readJson(paymentsFile) || { initialHistory: [], paymentHistory: [] };
+  const paymentArr = Array.isArray(data.paymentHistory) ? data.paymentHistory : [];
+  const idx = paymentArr.findIndex(p => String(p.id) === String(id));
+  if (idx === -1) return res.status(404).json({ error: 'Payment not found' });
+  paymentArr[idx].status = 'refunded';
+  paymentArr[idx].refundedAt = new Date().toISOString();
+  data.paymentHistory = paymentArr;
+  try {
+    writeJson(paymentsFile, data);
+    res.json(paymentArr[idx]);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to write payments file' });
+  }
+});
+
+// Update admin endpoint
+app.put('/api/admins/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const body = req.body;
+  if (!body) return res.status(400).json({ error: 'Missing body' });
+  const data = readJson(usersFile) || {};
+  const admins = Array.isArray(data.Admins) ? data.Admins : [];
+  const idx = admins.findIndex(a => Number(a.id) === id);
+  if (idx === -1) return res.status(404).json({ error: 'Admin not found' });
+  admins[idx] = { ...admins[idx], ...body };
+  data.Admins = admins;
+  try {
+    writeJson(usersFile, data);
+    res.json(admins[idx]);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to write users file' });
+  }
+});
+
+// Delete user endpoint
+app.delete('/api/users/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const data = readJson(usersFile) || {};
+  const users = Array.isArray(data.users) ? data.users : [];
+  const filtered = users.filter(u => Number(u.id) !== id);
+  if (filtered.length === users.length) return res.status(404).json({ error: 'User not found' });
+  data.users = filtered;
+  try {
+    writeJson(usersFile, data);
+    res.json({ success: true, deletedId: id });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to write users file' });
+  }
+});
+
 app.put('/api/users/:id', (req, res) => {
   const id = Number(req.params.id);
   const body = req.body;

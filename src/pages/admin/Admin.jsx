@@ -1030,6 +1030,83 @@ const StationManagement = ({ stations, setStations }) => {
 };
 
 const QueueManagement = ({ bookings, setBookings, stations, users }) => {
+  // Edit time modal state
+  const [editingBooking, setEditingBooking] = useState(null);
+  const [editStart, setEditStart] = useState('');
+  const [editEnd, setEditEnd] = useState('');
+
+  const generateTimeSlots = (intervalMinutes = 15) => {
+    const slots = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += intervalMinutes) {
+        const hh = String(h).padStart(2, '0');
+        const mm = String(m).padStart(2, '0');
+        slots.push(`${hh}:${mm}`);
+      }
+    }
+    return slots;
+  };
+  const timeSlots = generateTimeSlots(15);
+
+  const openEdit = (b) => {
+    const rawTime = String(b.time || '').trim();
+    let start = b.startTime;
+    let end = b.endTime;
+    if ((!start || !end) && rawTime.includes('-')) {
+      const parts = rawTime.split('-');
+      start = start || parts[0].trim();
+      end = end || parts[1].trim();
+    }
+    setEditStart(start || '');
+    setEditEnd(end || '');
+    setEditingBooking(b);
+  };
+
+  const closeEdit = () => {
+    setEditingBooking(null);
+    setEditStart('');
+    setEditEnd('');
+  };
+
+  const saveEdit = async () => {
+    if (!editingBooking) return;
+    if (!editStart || !editEnd) { alert('กรุณาเลือกเวลาเริ่มและเวลาสิ้นสุด'); return; }
+    // simple ordering check
+    const toMinutes = (t) => { const [H,M] = String(t).split(':').map(Number); return (H||0)*60+(M||0); };
+    if (toMinutes(editEnd) <= toMinutes(editStart)) { alert('เวลาสิ้นสุดต้องมากกว่าเวลาเริ่ม'); return; }
+    const payload = {
+      startTime: editStart,
+      endTime: editEnd,
+      time: `${editStart}-${editEnd}`
+    };
+    const base = getApiBase();
+    let updated = null;
+    try {
+      if (base) {
+        const resp = await fetch(base + '/api/bookings/' + editingBooking.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (resp.ok) {
+          updated = await resp.json();
+        }
+      }
+    } catch (e) {
+      // ignore - fallback to local
+    }
+    if (!updated) {
+      updated = updateBooking({ ...editingBooking, ...payload });
+    }
+    if (updated) {
+      setBookings(prev => prev.map(x => Number(x.id) === Number(updated.id) ? { ...x, ...payload } : x));
+      window.dispatchEvent(new CustomEvent('bookings-changed', { detail: { action: 'update', booking: updated } }));
+      closeEdit();
+    } else {
+      alert('ไม่สามารถบันทึกการแก้ไขเวลาได้');
+    }
+  };
+
   const cancelBooking = (id) => {
     if(window.confirm('ยืนยันการยกเลิกคิวนี้?')) {
       const updated = bookings.map(b => b.id === id ? { ...b, status: 'cancelled' } : b);
@@ -1088,7 +1165,7 @@ const QueueManagement = ({ bookings, setBookings, stations, users }) => {
               <td className="p-4 flex gap-2">
                 {booking.status !== 'cancelled' && (
                   <>
-                    <button className="text-blue-600 hover:text-blue-800" title="เปลี่ยนเวลา"><Edit size={18} /></button>
+                    <button onClick={() => openEdit(booking)} className="text-blue-600 hover:text-blue-800" title="เปลี่ยนเวลา"><Edit size={18} /></button>
                     {booking.status === 'pending' && (
                       <button onClick={() => approveBooking(booking.id)} className="text-green-600 hover:text-green-800" title="อนุมัติ"><CheckCircle size={18} /></button>
                     )}
@@ -1100,6 +1177,36 @@ const QueueManagement = ({ bookings, setBookings, stations, users }) => {
           ))}
         </tbody>
       </table>
+      {editingBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={closeEdit}></div>
+          <div className="bg-white rounded-lg shadow-lg p-6 z-10 w-[360px] max-h-[90vh] overflow-y-auto">
+            <h4 className="text-lg font-semibold mb-4">แก้ไขเวลาการจอง #{editingBooking.id}</h4>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">เวลาเริ่ม</label>
+                <select value={editStart} onChange={e => {
+                  const v = e.target.value; setEditStart(v); if (!editEnd || toMinutes(editEnd) <= toMinutes(v)) { setEditEnd(timeSlots[Math.min(timeSlots.indexOf(v)+1, timeSlots.length-1)]); }
+                }} className="w-full border rounded px-3 py-2 text-sm">
+                  <option value="">เลือกเวลาเริ่ม</option>
+                  {timeSlots.map(ts => <option key={ts} value={ts}>{ts}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">เวลาสิ้นสุด</label>
+                <select value={editEnd} onChange={e => setEditEnd(e.target.value)} className="w-full border rounded px-3 py-2 text-sm">
+                  <option value="">เลือกเวลาสิ้นสุด</option>
+                  {timeSlots.map(ts => <option key={ts} value={ts} disabled={editStart && toMinutes(ts) <= toMinutes(editStart)}>{ts}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button onClick={saveEdit} className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">บันทึก</button>
+              <button onClick={closeEdit} className="flex-1 bg-gray-200 text-gray-700 py-2 rounded hover:bg-gray-300">ยกเลิก</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1111,10 +1218,27 @@ const HistoryView = ({ payments, setPayments }) => {
   const [searchType, setSearchType] = useState('all'); // all | id | stationSerial | stationName | plate
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const processRefund = (id) => {
-    if(window.confirm('ยืนยันการคืนเงิน? (จำลองระบบ)')) {
-      setPayments(payments.map(p => p.id === id ? { ...p, status: 'refunded' } : p));
-      alert('คืนเงินสำเร็จ (Mock)');
+  const processRefund = async (id) => {
+    if(!window.confirm('ยืนยันการคืนเงิน?')) return;
+    const base = getApiBase();
+    let updated = null;
+    try {
+      if (base) {
+        const resp = await fetch(base + `/api/payments/${id}/refund`, { method: 'POST' });
+        if (resp.ok) {
+          updated = await resp.json();
+        }
+      }
+    } catch (e) {
+      console.warn('API refund failed, using local fallback', e);
+    }
+    if (!updated) {
+      // Fallback: update local state only
+      setPayments(payments.map(p => p.id === id ? { ...p, status: 'refunded', refundedAt: new Date().toISOString() } : p));
+      alert('คืนเงินสำเร็จ (Local)');
+    } else {
+      setPayments(payments.map(p => p.id === id ? updated : p));
+      alert('คืนเงินสำเร็จ');
     }
   };
 
@@ -1327,6 +1451,70 @@ const HistoryView = ({ payments, setPayments }) => {
 };
 
 const UserManagement = ({ users, setUsers }) => {
+  const [editingUser, setEditingUser] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editCarModel, setEditCarModel] = useState('');
+
+  const openEditUser = (u) => {
+    setEditingUser(u);
+    setEditName(u.name || '');
+    setEditEmail(u.email || '');
+    setEditCarModel(u.carModel || '');
+  };
+
+  const closeEditUser = () => {
+    setEditingUser(null);
+    setEditName('');
+    setEditEmail('');
+    setEditCarModel('');
+  };
+
+  const saveEditUser = async () => {
+    if (!editingUser) return;
+    if (!editName || !editEmail) { alert('กรุณากรอกชื่อและอีเมล'); return; }
+    const payload = { name: editName, email: editEmail, carModel: editCarModel };
+    const base = getApiBase();
+    let updated = null;
+    try {
+      if (base) {
+        const resp = await fetch(base + `/api/users/${editingUser.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (resp.ok) updated = await resp.json();
+      }
+    } catch (e) {}
+    if (!updated) {
+      updated = updateUser({ ...editingUser, ...payload });
+    }
+    if (updated) {
+      setUsers(prev => prev.map(x => x.id === updated.id ? updated : x));
+      closeEditUser();
+    } else {
+      alert('ไม่สามารถบันทึกข้อมูลได้');
+    }
+  };
+
+  const deleteUser = async (id) => {
+    if (!window.confirm('ยืนยันการลบผู้ใช้นี้?')) return;
+    const base = getApiBase();
+    let success = false;
+    try {
+      if (base) {
+        const resp = await fetch(base + `/api/users/${id}`, { method: 'DELETE' });
+        if (resp.ok) success = true;
+      }
+    } catch (e) {}
+    if (success || !base) {
+      setUsers(prev => prev.filter(u => u.id !== id));
+      alert('ลบผู้ใช้สำเร็จ');
+    } else {
+      alert('ไม่สามารถลบผู้ใช้ได้');
+    }
+  };
+
   const toggleStatus = (id) => {
     const updated = users.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'banned' : 'active' } : u);
     setUsers(updated);
@@ -1336,7 +1524,6 @@ const UserManagement = ({ users, setUsers }) => {
       fetch(base + `/api/users/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userObj) })
         .then(res => { if (!res.ok) throw new Error('failed'); return res.json(); })
         .catch(() => {
-          // fallback to local storage update
           updateUser(userObj);
         });
     } else if (userObj) {
@@ -1394,10 +1581,13 @@ const UserManagement = ({ users, setUsers }) => {
                     <CheckCircle size={18} />
                   </button>
                 )}
+                <button onClick={() => openEditUser(u)} className="text-blue-600 hover:bg-blue-50 p-1 rounded" title="แก้ไข">
+                  <Edit size={18} />
+                </button>
                 <button onClick={() => toggleStatus(u.id)} className="text-gray-500 hover:bg-gray-100 p-1 rounded" title="ระงับ/ปลดระงับ">
                   <Power size={18} />
                 </button>
-                <button className="text-red-500 hover:bg-red-50 p-1 rounded" title="ลบ">
+                <button onClick={() => deleteUser(u.id)} className="text-red-500 hover:bg-red-50 p-1 rounded" title="ลบ">
                   <Trash2 size={18} />
                 </button>
               </td>
@@ -1405,12 +1595,80 @@ const UserManagement = ({ users, setUsers }) => {
           ))}
         </tbody>
       </table>
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={closeEditUser}></div>
+          <div className="bg-white rounded-lg shadow-lg p-6 z-10 w-[400px]">
+            <h4 className="text-lg font-semibold mb-4">แก้ไขข้อมูลผู้ใช้</h4>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">ชื่อ</label>
+                <input value={editName} onChange={e => setEditName(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">อีเมล</label>
+                <input value={editEmail} onChange={e => setEditEmail(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">รุ่นรถยนต์</label>
+                <input value={editCarModel} onChange={e => setEditCarModel(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button onClick={saveEditUser} className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">บันทึก</button>
+              <button onClick={closeEditUser} className="flex-1 bg-gray-200 text-gray-700 py-2 rounded hover:bg-gray-300">ยกเลิก</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 const AdminManagement = ({ admins, setAdmins }) => {
     const [newAdmin, setNewAdmin] = useState({ username: '', name: '', role: 'admin' });
+    const [editingAdmin, setEditingAdmin] = useState(null);
+    const [editUsername, setEditUsername] = useState('');
+    const [editName, setEditName] = useState('');
+    const [editRole, setEditRole] = useState('admin');
+
+    const openEditAdmin = (a) => {
+      setEditingAdmin(a);
+      setEditUsername(a.username || '');
+      setEditName(a.name || '');
+      setEditRole(a.role || 'admin');
+    };
+
+    const closeEditAdmin = () => {
+      setEditingAdmin(null);
+      setEditUsername('');
+      setEditName('');
+      setEditRole('admin');
+    };
+
+    const saveEditAdmin = async () => {
+      if (!editingAdmin) return;
+      if (!editUsername || !editName) { alert('กรุณากรอก Username และชื่อ'); return; }
+      const payload = { username: editUsername, name: editName, role: editRole };
+      const base = getApiBase();
+      let updated = null;
+      try {
+        if (base) {
+          const resp = await fetch(base + `/api/admins/${editingAdmin.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (resp.ok) updated = await resp.json();
+        }
+      } catch (e) {}
+      if (!updated) {
+        // fallback: update local state
+        updated = { ...editingAdmin, ...payload };
+      }
+      setAdmins(prev => prev.map(x => x.id === updated.id ? updated : x));
+      closeEditAdmin();
+    };
 
     const handleAdd = (e) => {
         e.preventDefault();
@@ -1472,9 +1730,12 @@ const AdminManagement = ({ admins, setAdmins }) => {
                                 <td className="p-4">{a.username}</td>
                                 <td className="p-4">{a.name}</td>
                                 <td className="p-4"><span className="bg-slate-100 px-2 py-1 rounded text-xs">{a.role}</span></td>
-                                <td className="p-4">
+                                <td className="p-4 flex gap-2">
                                     {a.role !== 'super_admin' && (
-                                        <button onClick={() => setAdmins(admins.filter(x => x.id !== a.id))} className="text-red-500 hover:underline text-sm">ลบ</button>
+                                        <>
+                                          <button onClick={() => openEditAdmin(a)} className="text-blue-600 hover:underline text-sm">แก้ไข</button>
+                                          <button onClick={() => setAdmins(admins.filter(x => x.id !== a.id))} className="text-red-500 hover:underline text-sm">ลบ</button>
+                                        </>
                                     )}
                                 </td>
                             </tr>
@@ -1482,6 +1743,35 @@ const AdminManagement = ({ admins, setAdmins }) => {
                     </tbody>
                 </table>
              </div>
+             {editingAdmin && (
+               <div className="fixed inset-0 z-50 flex items-center justify-center">
+                 <div className="absolute inset-0 bg-black/40" onClick={closeEditAdmin}></div>
+                 <div className="bg-white rounded-lg shadow-lg p-6 z-10 w-[400px]">
+                   <h4 className="text-lg font-semibold mb-4">แก้ไขข้อมูลผู้ดูแล</h4>
+                   <div className="space-y-3">
+                     <div>
+                       <label className="block text-sm font-medium mb-1">Username</label>
+                       <input value={editUsername} onChange={e => setEditUsername(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" />
+                     </div>
+                     <div>
+                       <label className="block text-sm font-medium mb-1">ชื่อ</label>
+                       <input value={editName} onChange={e => setEditName(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" />
+                     </div>
+                     <div>
+                       <label className="block text-sm font-medium mb-1">Role</label>
+                       <select value={editRole} onChange={e => setEditRole(e.target.value)} className="w-full border rounded px-3 py-2 text-sm">
+                         <option value="admin">Admin</option>
+                         <option value="super_admin">Super Admin</option>
+                       </select>
+                     </div>
+                   </div>
+                   <div className="flex gap-2 mt-6">
+                     <button onClick={saveEditAdmin} className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">บันทึก</button>
+                     <button onClick={closeEditAdmin} className="flex-1 bg-gray-200 text-gray-700 py-2 rounded hover:bg-gray-300">ยกเลิก</button>
+                   </div>
+                 </div>
+               </div>
+             )}
         </div>
     );
 };

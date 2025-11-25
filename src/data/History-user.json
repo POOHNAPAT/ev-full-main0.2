@@ -299,6 +299,22 @@
       "userId": 5,
       "vehicleId": "V-ST020-20",
       "plate": "กท-1020"
+    },
+    {
+      "id": "h-021",
+      "station": "TestStation",
+      "stationSerial": "",
+      "type": "AC",
+      "date": "2025-11-25",
+      "time": "10:00",
+      "duration": "30 นาที",
+      "energy": 20,
+      "cost": 50,
+      "status": "completed",
+      "userId": 9999,
+      "userEmail": "",
+      "bookingId": null,
+      "paidAt": "2025-11-25T22:31:18.360Z"
     }
   ],
   "paymentHistory": [
