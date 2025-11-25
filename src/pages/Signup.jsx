@@ -13,7 +13,13 @@ export default function Signup(){
     e.preventDefault();
     setError('');
     try{
-      await signup(email, password);
+      const normalizedEmail = String(email || '').trim().toLowerCase();
+      const created = await signup(normalizedEmail, password);
+      if (created && created.status === 'pending') {
+        // show friendly message and don't log in
+        setError('คำร้องสมัครสมาชิกถูกส่งเรียบร้อย รอการอนุมัติจากผู้ดูแลระบบ');
+        return;
+      }
       navigate('/');
     }catch(err){
       setError(err.message);

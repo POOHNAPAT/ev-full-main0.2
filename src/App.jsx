@@ -8,6 +8,7 @@ import Profile from './pages/Profile'
 import Booking from './pages/Booking'
 import Reviews from './pages/Reviews'
 import PaymentMethods from './pages/PaymentMethods'
+import Payment from './pages/Payment'
 import UsageHistory from './pages/UsageHistory'
 import Receipt from './pages/Receipt'
 import AddVehicle from './pages/AddVehicle'
@@ -20,14 +21,18 @@ import StationCheck from './pages/admin/StationCheck'
 function AppContent() {
   const { language, toggleLanguage, t } = useLanguage();
   const { user, loading, authLoading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
-  if (!user) {
-    return <LoginSignup initialIsLogin={true} />;
-  }
+  // If the current route is the login or signup page, render the LoginSignup component
+  // full-screen without the main navbar/footer.
+  if (location.pathname === '/login') return <LoginSignup initialIsLogin={true} />;
+  if (location.pathname === '/signup') return <LoginSignup initialIsLogin={false} />;
+  // Allow public access to Home and other public pages even when not authenticated.
+  // Protected routes (like booking/profile) handle redirects themselves.
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -54,12 +59,21 @@ function AppContent() {
           <button onClick={toggleLanguage} className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
             {language === 'th' ? 'EN' : 'TH'}
           </button>
-          <Link to="/profile" className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
-            <FaUser className="text-lg" />
-          </Link>
-          <Link to="/logout" className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
-            ออกจากระบบ
-          </Link>
+          {user ? (
+            <>
+              <Link to="/profile" className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
+                <FaUser className="text-lg" />
+              </Link>
+              <Link to="/logout" className="ml-3 hover:underline transition duration-300 hover:text-blue-200">
+                ออกจากระบบ
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="ml-3 bg-white text-blue-600 px-3 py-1 rounded hover:bg-blue-50">เข้าสู่ระบบ</Link>
+              <Link to="/signup" className="ml-3 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">สมัครสมาชิก</Link>
+            </>
+          )}
         </nav>
       </header>
 
@@ -73,6 +87,7 @@ function AppContent() {
             <Route path="/map" element={<MapPage/>} />
             <Route path="/profile" element={<Profile/>} />
             <Route path="/booking/:id" element={<Booking/>} />
+            <Route path="/payment/:bookingId" element={<Payment/>} />
             <Route path="/reviews" element={<Reviews/>} />
             <Route path="/payment-methods" element={<PaymentMethods/>} />
             <Route path="/usage-history" element={<UsageHistory/>} />

@@ -6,8 +6,28 @@
       "password": "1111",
       "name": "User One",
       "modelcar": "Tesla Model 3",
+      "telephone": "123-456-7890",
       "status": "active",
       "historyCookies": 1
+    },
+    {
+      "email": "ddd@gmail.com",
+      "password": "ddd",
+      "status": "active",
+      "id": 2,
+      "name": "",
+      "carModel": ""
+    },
+    {
+      "email": "dddd@gmail.com",
+      "password": "ddd",
+      "status": "active",
+      "id": 3,
+      "name": "",
+      "carModel": "",
+      "modelcar": "",
+      "telephone": "",
+      "historyCookies": 0
     }
   ],
   "Admins": [

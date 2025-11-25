@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../components/AuthContext';
+import { addBooking } from '../data/bookings';
 import { FaCalendarAlt, FaClock, FaBolt, FaWifi, FaCoffee, FaRestroom, FaShieldAlt, FaUtensils, FaShoppingCart, FaMapMarkerAlt, FaCheckCircle, FaEdit, FaQrcode, FaArrowLeft } from 'react-icons/fa';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
@@ -23,15 +25,57 @@ export default function Booking() {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [showQR, setShowQR] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
   const handleBook = () => {
+    if (!user) {
+      // remember to redirect back after login
+      try { sessionStorage.setItem('allowLogin', '1'); sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search); } catch (e) {}
+      navigate('/login');
+      return;
+    }
+    
+    // Check if station has available ports (use availablePorts from stations-data.json)
+    const availablePorts = Number(station.availablePorts || 0);
+    if (availablePorts <= 0) {
+      alert('สถานีนี้เต็มแล้ว ไม่สามารถจองได้ในขณะนี้ กรุณาเลือกสถานีอื่น');
+      return;
+    }
+    
     if (startTime && endTime) {
       setStep('confirm');
     }
+  };
+
+  // Time slot helpers: generate select options instead of free typing
+  const generateTimeSlots = (intervalMinutes = 30) => {
+    const slots = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += intervalMinutes) {
+        const hh = String(h).padStart(2, '0');
+        const mm = String(m).padStart(2, '0');
+        slots.push(`${hh}:${mm}`);
+      }
+    }
+    return slots;
+  };
+
+  const slots = generateTimeSlots(15);
+  const timeToMinutes = (t) => {
+    if (!t) return 0;
+    const [hh, mm] = String(t).split(':').map(Number);
+    return hh * 60 + (mm || 0);
+  };
+
+  const findNextSlot = (t) => {
+    const i = slots.indexOf(t);
+    if (i === -1) return slots[0];
+    return slots[Math.min(i + 1, slots.length - 1)];
   };
 
   const handleConfirmBooking = async () => {
@@ -42,21 +86,34 @@ export default function Booking() {
         startTime,
         endTime,
         date: '28 พฤศจิกายน 2568',
-        timestamp: new Date(),
-        status: 'confirmed'
+        timestamp: new Date().toISOString(),
+        status: 'pending',
+        userEmail: (user && user.email) || '',
+        userId: (user && user.id) || null
       };
-      // For demo purposes, we'll simulate saving to Firebase
-      // In production, uncomment the line below:
-      // await addDoc(collection(db, 'bookings'), bookingData);
-      console.log('Booking data:', bookingData);
+      // Try to POST to API if available, otherwise fallback to local storage
+      let created = null;
+      try {
+        const base = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+        const resp = await fetch(base + '/api/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bookingData) });
+        if (resp.ok) {
+          created = await resp.json();
+          console.log('Created booking via API:', created);
+        } else {
+          console.warn('API /api/bookings returned', resp.status);
+        }
+      } catch (e) {
+        console.warn('API not available, falling back to local storage for bookings');
+      }
 
-      // Save to localStorage for demo purposes
-      localStorage.setItem('recentBooking', JSON.stringify(bookingData));
-
-      // Decrement available spots
-      decrementAvailable(id);
-
-      setShowQR(true);
+      if (!created) {
+        created = addBooking(bookingData);
+        console.log('Created booking (pending, local):', created);
+      }
+      // inform user and wait for admin approval
+      alert('คำร้องการจองถูกส่งแล้ว รอการอนุมัติจากผู้ดูแลระบบ');
+      // keep on the page or redirect to home
+      navigate('/');
     } catch (error) {
       console.error('Error saving booking:', error);
       alert('เกิดข้อผิดพลาดในการบันทึกการจอง กรุณาลองใหม่อีกครั้ง');
@@ -92,21 +149,36 @@ export default function Booking() {
               <div className="time-selection">
                 <div className="time-group">
                   <label className="time-label">เวลาเริ่ม:</label>
-                  <input
-                    type="time"
+                  <select
                     value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setStartTime(v);
+                      // if endTime is not set or <= start, advance endTime to next slot
+                      if (!endTime || timeToMinutes(endTime) <= timeToMinutes(v)) {
+                        setEndTime(findNextSlot(v));
+                      }
+                    }}
                     className="time-input"
-                  />
+                  >
+                    <option value="">เลือกเวลาเริ่ม</option>
+                    {slots.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="time-group">
                   <label className="time-label">เวลาสิ้นสุด:</label>
-                  <input
-                    type="time"
+                  <select
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
                     className="time-input"
-                  />
+                  >
+                    <option value="">เลือกเวลาสิ้นสุด</option>
+                    {slots.map(s => (
+                      <option key={s} value={s} disabled={startTime && timeToMinutes(s) <= timeToMinutes(startTime)}>{s}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -115,7 +187,13 @@ export default function Booking() {
                   <FaBolt className="details-title-icon" />
                   ข้อมูลจุดชาร์จ
                 </h3>
-                <p className="details-item">จำนวนจุดว่าง: <span className="font-medium text-green-600">{station.available}</span></p>
+                <p className="details-item">
+                  จำนวนจุดว่าง: 
+                  <span className={`font-medium ${Number(station.availablePorts || 0) > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {station.availablePorts || 0}
+                  </span>
+                  {Number(station.availablePorts || 0) <= 0 && <span className="text-xs text-red-600 ml-2">(เต็ม)</span>}
+                </p>
                 <p className="details-item">กำลังไฟ: <span className="font-medium">{station.power}</span></p>
                 <p className="details-item">สิ่งอำนวยความสะดวก: {station.amenities}</p>
               </div>
@@ -123,10 +201,10 @@ export default function Booking() {
               <button
                 onClick={handleBook}
                 className="book-button"
-                disabled={!startTime || !endTime}
+                disabled={!startTime || !endTime || timeToMinutes(endTime) <= timeToMinutes(startTime) || Number(station.availablePorts || 0) <= 0}
               >
                 <FaCheckCircle />
-                จองเลย
+                {Number(station.availablePorts || 0) <= 0 ? 'สถานีเต็ม' : 'จองเลย'}
               </button>
             </div>
           ) : (
@@ -143,7 +221,7 @@ export default function Booking() {
                 </p>
                 <p className="confirmation-detail">
                   <FaBolt className="confirmation-detail-icon bolt" />
-                  จุดชาร์จ: {station.available}, {station.power}
+                  จุดชาร์จ: {station.availablePorts || 0}, {station.power}
                 </p>
                 <p className="confirmation-detail">
                   <FaMapMarkerAlt className="confirmation-detail-icon marker" />

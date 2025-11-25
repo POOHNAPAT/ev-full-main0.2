@@ -1,15 +1,19 @@
 /* Contact Page Styling */
 
 .contact-container {
-  min-height: 100vh; /* กำหนดความสูงขั้นต่ำให้หน้า Contact page เต็มหน้าจอ */
-  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff); /* ตั้งสีพื้นหลังเป็นการไล่สี */
-  padding: 2rem 0; /* เพิ่มระยะห่างบนและล่างสำหรับพื้นที่ */
+  min-height: 100vh; /* full viewport height */
+  width: 100vw; /* ensure full-bleed across the viewport */
+  margin: 0; /* remove outer gaps */
+  padding: 3.5rem 0; /* vertical spacing for content */
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #e6f0ff 0%, #f3f7ff 40%, #eef2ff 100%);
+  background-attachment: fixed; /* keep background covering viewport */
 }
 
 .contact-content {
-  max-width: 72rem; /* จำกัดความกว้างของเนื้อหาในหน้า Contact */
-  margin: 0 auto; /* จัดตำแหน่งเนื้อหาให้อยู่กลางหน้าจอ */
-  padding: 1.5rem; /* เพิ่มระยะห่างภายใน */
+  max-width: 72rem; /* content width stays constrained for readability */
+  margin: 0 auto; /* centered content while background is full-bleed */
+  padding: 1.5rem;
 }
 
 .contact-header {

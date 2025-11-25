@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import '../styles/LoginSignup.css';
 import { FaGoogle, FaFacebookF } from 'react-icons/fa';
@@ -14,6 +14,7 @@ function LoginSignup({ initialIsLogin = true }) {
   const [error, setError] = useState('');
   const { login, signup, clearAuthUser } = useAuth();
   const navigate = useNavigate();
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
 
   const handleAdminClick = (e) => {
     e.preventDefault();
@@ -30,6 +31,11 @@ function LoginSignup({ initialIsLogin = true }) {
       confirmPassword: ''
     });
     setError('');
+    try {
+      const ok = sessionStorage.getItem('allowLogin');
+      const redirect = sessionStorage.getItem('redirectAfterLogin');
+      if (ok && redirect) setRedirectAfterLogin(redirect);
+    } catch (e) {}
   }, [initialIsLogin]);
 
   const handleInputChange = (e) => {
@@ -46,13 +52,35 @@ function LoginSignup({ initialIsLogin = true }) {
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
+        // after successful login, redirect back if requested
+        try {
+          const redirect = sessionStorage.getItem('redirectAfterLogin');
+          const allow = sessionStorage.getItem('allowLogin');
+          if (allow && redirect) {
+            sessionStorage.removeItem('allowLogin');
+            sessionStorage.removeItem('redirectAfterLogin');
+            navigate(redirect);
+            return;
+          }
+        } catch (e) {}
         navigate('/');
       } else {
         if (formData.password !== formData.confirmPassword) {
           setError('Passwords do not match');
           return;
         }
-        await signup(formData.email, formData.password);
+        const created = await signup(formData.email, formData.password);
+        // After registration, signup now auto-logs in the user. Redirect accordingly.
+        try {
+          const redirect = sessionStorage.getItem('redirectAfterLogin');
+          const allow = sessionStorage.getItem('allowLogin');
+          if (allow && redirect) {
+            sessionStorage.removeItem('allowLogin');
+            sessionStorage.removeItem('redirectAfterLogin');
+            navigate(redirect);
+            return;
+          }
+        } catch (e) {}
         navigate('/');
       }
     } catch (err) {
@@ -71,7 +99,10 @@ function LoginSignup({ initialIsLogin = true }) {
   };
 
   return (
-    <div className="login-wrapper">
+    <div className="login-wrapper" style={{ minHeight: '100vh' }}>
+      <div style={{ position: 'absolute', left: 16, top: 16, zIndex: 60 }}>
+        <Link to="/" className="back-home-button bg-white text-blue-600 px-3 py-1 rounded shadow">กลับหน้าหลัก</Link>
+      </div>
       <a className="admin-button top-right" href="/admin" onClick={handleAdminClick}>
         Admin
       </a>

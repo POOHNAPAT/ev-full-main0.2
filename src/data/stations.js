@@ -30,10 +30,12 @@ export function loadStations() {
     map[String(s.id)] = {
       id: s.id,
       name: s.name,
-      available: s.availablePorts,
+      availablePorts: s.availablePorts,
+      available: s.availablePorts, // keep for backwards compatibility
       power: s.type,
       amenities: Array.isArray(s.amenities) ? s.amenities.join(', ') : s.amenities,
-      stationSerial: s.stationSerial
+      stationSerial: s.stationSerial,
+      pricePerUnit: s.pricePerUnit || 7.5
     };
   });
   return map;

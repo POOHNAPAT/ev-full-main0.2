@@ -1,17 +1,100 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "../components/LanguageContext";
 import "../styles/Home.css";
+import { loadStations } from '../data/stations';
+import { useAuth } from '../components/AuthContext';
+import { loadBookings, updateBooking } from '../data/bookings';
 
 export default function Home() {
   const { t } = useLanguage();
   const [recentBooking, setRecentBooking] = useState(null);
+  const { user } = useAuth();
+  const [approvedBookings, setApprovedBookings] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check for recent booking in localStorage
     const booking = localStorage.getItem("recentBooking");
     if (booking) {
       setRecentBooking(JSON.parse(booking));
+    }
+  }, []);
+
+  // load approved bookings for current user
+  const loadUserApprovedBookings = async () => {
+    try {
+      if (!user) {
+        setApprovedBookings([]);
+        return;
+      }
+
+      let all = [];
+      
+      // Try to load from API server first
+      try {
+        const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? 'http://localhost:4000'
+          : '';
+        if (apiBase) {
+          const response = await fetch(apiBase + '/api/bookings');
+          if (response.ok) {
+            all = await response.json();
+            console.log('Loaded bookings from API:', all);
+          }
+        }
+      } catch (apiError) {
+        console.warn('Failed to load from API, falling back to localStorage', apiError);
+      }
+
+      // Fallback to localStorage if API failed or returned empty
+      if (!all || all.length === 0) {
+        all = loadBookings();
+        console.log('Loaded bookings from localStorage:', all);
+      }
+
+      const email = String(user.email || '').toLowerCase();
+      const uid = String(user.id || '');
+      const matches = (all || []).filter(b => String(b.status).toLowerCase() === 'approved' && (
+        (b.userId && String(b.userId) === uid) || (b.userEmail && String(b.userEmail).toLowerCase() === email)
+      ));
+      setApprovedBookings(matches);
+      console.log('Filtered approved bookings for user:', matches);
+    } catch (e) {
+      console.error('Error loading bookings:', e);
+      setApprovedBookings([]);
+    }
+  };
+
+  useEffect(() => {
+    loadUserApprovedBookings();
+    const onBookingsChanged = () => loadUserApprovedBookings();
+    window.addEventListener('bookings-changed', onBookingsChanged);
+    const onStorage = (e) => {
+      if (!e || !e.key) return;
+      if (e.key === 'app_bookings_v1') loadUserApprovedBookings();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('bookings-changed', onBookingsChanged);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [user]);
+
+  const [showFeatures, setShowFeatures] = useState(false);
+
+  const [stationsList, setStationsList] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  useEffect(() => {
+    try {
+      const map = loadStations();
+      const arr = Object.values(map || {});
+      // sort by available desc then by name
+      arr.sort((a, b) => (Number(b.available || 0) - Number(a.available || 0)) || String(a.name).localeCompare(b.name));
+      setStationsList(arr);
+    } catch (e) {
+      // ignore
     }
   }, []);
 
@@ -35,11 +118,18 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="search-container">
+        <div className="search-container" style={{ position: 'relative' }}>
           <input
             aria-label="ค้นหาสถานีชาร์จ"
             placeholder={t.searchPlaceholder}
             className="search-input"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setShowFeatures(true);
+            }}
+            onFocus={() => setShowFeatures(true)}
+            onBlur={() => setTimeout(() => setShowFeatures(false), 160)}
             onKeyPress={(e) => {
               if (e.key === "Enter") {
                 // Navigate to map page when Enter is pressed
@@ -50,7 +140,33 @@ export default function Home() {
           <Link to="/map" className="search-button">
             {t.bookButton}
           </Link>
+
+          {/* Suggestions dropdown when the user types */}
+          {showFeatures && searchTerm.trim() !== "" && stationsList.length > 0 && (
+            <div className="search-suggestions">
+              <div className="suggestion-scroll">
+                {stationsList
+                  .filter(s => String(s.name).toLowerCase().includes(String(searchTerm).toLowerCase()))
+                  .slice(0, 20)
+                  .map(s => (
+                    <div
+                      key={s.id}
+                      className="suggestion-item"
+                      onMouseDown={() => navigate(`/booking/${s.id}`)}
+                    >
+                      <div className="suggestion-icon">🔍</div>
+                      <div className="suggestion-text">
+                        <div className="suggestion-title">{s.name}</div>
+                        <div className="suggestion-sub">ว่าง: {s.available} • {s.power}</div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Featured stations hidden; using dropdown filtered by typed input */}
       </section>
 
       {/* Main Heading */}
@@ -101,6 +217,66 @@ export default function Home() {
       </section>
 
       {/* Recent Booking Section */}
+      {/* Approved Bookings (from admin confirmation) */}
+      {approvedBookings && approvedBookings.length > 0 && (
+        <section className="approved-booking-section">
+          <div className="approved-booking-card">
+            <h3 className="approved-booking-title">การจองที่ได้รับการอนุมัติ</h3>
+            <div className="approved-list">
+              {approvedBookings.map(b => (
+                <div key={b.id} className="approved-item">
+                  <div className="approved-info">
+                    <div className="approved-station">{b.stationName}</div>
+                    <div className="approved-meta">{b.date} • {b.startTime} - {b.endTime}</div>
+                  </div>
+                  <div className="approved-qr">
+                    <img alt="QR code" src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(JSON.stringify({ bookingId: b.id, stationId: b.stationId, userId: b.userId, email: b.userEmail }))}`} />
+                  </div>
+                  <div className="approved-actions">
+                    <button className="complete-charge-button" onClick={async () => {
+                      try {
+                        const completedData = { ...b, status: 'completed', completedAt: new Date().toISOString() };
+                        
+                        // Try to update via API first
+                        let updated = null;
+                        try {
+                          const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                            ? 'http://localhost:4000'
+                            : '';
+                          if (apiBase) {
+                            const response = await fetch(`${apiBase}/api/bookings/${b.id}`, {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ status: 'completed', completedAt: new Date().toISOString() })
+                            });
+                            if (response.ok) {
+                              updated = await response.json();
+                              console.log('Updated booking via API:', updated);
+                            }
+                          }
+                        } catch (apiError) {
+                          console.warn('Failed to update via API, using localStorage', apiError);
+                        }
+                        
+                        // Fallback to localStorage if API failed
+                        if (!updated) {
+                          updated = updateBooking(completedData);
+                        }
+                        
+                        // Navigate to payment page
+                        navigate(`/payment/${b.id}`);
+                      } catch (e) {
+                        console.error('Error completing charge', e);
+                        alert('ไม่สามารถทำเครื่องหมายการชาร์จเสร็จสิ้นได้');
+                      }
+                    }}>ชาร์จเสร็จสิ้น</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
       {recentBooking && (
         <section className="recent-booking-section">
           <div className="recent-booking-card">

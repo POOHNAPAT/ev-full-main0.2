@@ -4,7 +4,7 @@
     "name": "Central World – ชั้น B2, กรุงเทพมหานคร",
     "type": "AC",
     "location": "กรุงเทพมหานคร",
-    "availablePorts": 4,
+    "availablePorts": 1,
     "allPorts": 6,
     "pricePerUnit": 7.5,
     "status": "available",
@@ -61,6 +61,7 @@
     "availablePorts": 2,
     "allPorts": 3,
     "status": "available",
+    "pricePerUnit": 7.5,
     "latitude": 6.9993,
     "longitude": 100.4734,
     "amenities": [
@@ -74,7 +75,7 @@
     "name": "Airport Plaza – เชียงใหม่",
     "type": "Both",
     "location": "เชียงใหม่",
-    "availablePorts": 5,
+    "availablePorts": 3,
     "allPorts": 8,
     "pricePerUnit": 7,
     "status": "available",
@@ -95,6 +96,7 @@
     "availablePorts": 0,
     "allPorts": 4,
     "status": "busy",
+    "pricePerUnit": 9,
     "latitude": 7.8804,
     "longitude": 98.3923,
     "amenities": [
@@ -111,6 +113,7 @@
     "availablePorts": 2,
     "allPorts": 2,
     "status": "available",
+    "pricePerUnit": 7.5,
     "latitude": 16.438,
     "longitude": 102.835,
     "amenities": [
@@ -123,9 +126,10 @@
     "name": "โครงการเมืองใหม่ – นครราชสีมา",
     "type": "Both",
     "location": "นครราชสีมา",
-    "availablePorts": 6,
+    "availablePorts": 5,
     "allPorts": 10,
     "status": "available",
+    "pricePerUnit": 8,
     "latitude": 14.9799,
     "longitude": 102.0977,
     "amenities": [
@@ -143,6 +147,7 @@
     "availablePorts": 2,
     "allPorts": 5,
     "status": "maintenance",
+    "pricePerUnit": 9,
     "latitude": 8.4316,
     "longitude": 99.9693,
     "amenities": [
@@ -159,6 +164,7 @@
     "availablePorts": 1,
     "allPorts": 2,
     "status": "available",
+    "pricePerUnit": 7.5,
     "latitude": 14.5209,
     "longitude": 101.0158,
     "amenities": [
@@ -172,9 +178,10 @@
     "name": "จุดพักริมทาง มอเตอร์เวย์",
     "type": "Both",
     "location": "ปทุมธานี",
-    "availablePorts": 3,
+    "availablePorts": 2,
     "allPorts": 6,
     "status": "available",
+    "pricePerUnit": 8,
     "latitude": 14.0209,
     "longitude": 100.5386,
     "amenities": [
@@ -188,9 +195,10 @@
     "name": "สถานีรถไฟ เชียงราย",
     "type": "AC",
     "location": "เชียงราย",
-    "availablePorts": 2,
+    "availablePorts": 1,
     "allPorts": 2,
     "status": "available",
+    "pricePerUnit": 7.5,
     "latitude": 19.9107,
     "longitude": 99.84,
     "amenities": [
@@ -207,6 +215,7 @@
     "availablePorts": 1,
     "allPorts": 3,
     "status": "offline",
+    "pricePerUnit": 9,
     "latitude": 13.8198,
     "longitude": 100.0448,
     "amenities": [
@@ -222,6 +231,7 @@
     "availablePorts": 2,
     "allPorts": 4,
     "status": "available",
+    "pricePerUnit": 7.5,
     "latitude": 14.4378,
     "longitude": 101.3725,
     "amenities": [
@@ -235,9 +245,10 @@
     "name": "ตลาดน้ำโบราณ – สมุทรสงคราม",
     "type": "Both",
     "location": "สมุทรสงคราม",
-    "availablePorts": 4,
+    "availablePorts": 3,
     "allPorts": 4,
     "status": "available",
+    "pricePerUnit": 8,
     "latitude": 13.4134,
     "longitude": 100.0147,
     "amenities": [
@@ -254,6 +265,7 @@
     "availablePorts": 1,
     "allPorts": 2,
     "status": "busy",
+    "pricePerUnit": 9,
     "latitude": 7.8804,
     "longitude": 98.3883,
     "amenities": [
@@ -269,6 +281,7 @@
     "availablePorts": 3,
     "allPorts": 5,
     "status": "available",
+    "pricePerUnit": 7.5,
     "latitude": 13.8591,
     "longitude": 100.49,
     "amenities": [
@@ -285,6 +298,7 @@
     "availablePorts": 4,
     "allPorts": 6,
     "status": "available",
+    "pricePerUnit": 8,
     "latitude": 14.474,
     "longitude": 100.123,
     "amenities": [
@@ -301,6 +315,7 @@
     "availablePorts": 1,
     "allPorts": 2,
     "status": "maintenance",
+    "pricePerUnit": 7.5,
     "latitude": 12.6819,
     "longitude": 101.2553,
     "amenities": [
@@ -316,6 +331,7 @@
     "availablePorts": 5,
     "allPorts": 7,
     "status": "available",
+    "pricePerUnit": 8,
     "latitude": 15.703,
     "longitude": 100.1296,
     "amenities": [
@@ -323,5 +339,19 @@
       "cafe"
     ],
     "stationSerial": "ST020"
+  },
+  {
+    "name": "สุกี้ ตี๋น้อย",
+    "type": "AC",
+    "location": "สุกี้ตี๋น้อย",
+    "availablePorts": 1,
+    "allPorts": 1,
+    "status": "available",
+    "pricePerUnit": 7.5,
+    "latitude": 13.858058,
+    "longitude": 100.5846528,
+    "amenities": [
+      "กากากาากากาก"
+    ]
   }
 ]

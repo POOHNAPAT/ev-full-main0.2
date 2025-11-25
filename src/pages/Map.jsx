@@ -139,7 +139,7 @@ export default function MapPage(){
                 <b style="font-size: 16px; color: #333;">${d.name}</b><br/>
                 <span style="color: #666; font-size: 14px;">${d.type} ${t.evCharger || 'Charger'}</span><br/>
                 <div style="margin: 8px 0; font-size: 13px;">
-                  <div><b>${t.availableLabel}:</b> <span style="color: #22c55e;">${d.station.available}</span></div>
+                  <div><b>${t.availableLabel}:</b> <span style="color: #22c55e;">${d.station.availablePorts || d.station.available || 0}</span></div>
                   <div><b>${t.powerLabel}:</b> ${d.station.power}</div>
                   <div><b>${t.amenitiesLabel}:</b> ${d.station.amenities}</div>
                 </div>
@@ -391,7 +391,7 @@ export default function MapPage(){
               <h4 className="text-xl font-semibold mb-2 text-blue-600">{selectedStation.name}</h4>
               <div className="space-y-2 text-gray-700">
                 <p><span className="font-medium">{t.typeLabel}:</span> {selectedStation.type} {t.evCharger}</p>
-                <p><span className="font-medium">{t.availableLabel}:</span> <span className="text-green-600 font-semibold">{selectedStation.available}</span></p>
+                <p><span className="font-medium">{t.availableLabel}:</span> <span className="text-green-600 font-semibold">{selectedStation.availablePorts || selectedStation.available || 0}</span></p>
                 <p><span className="font-medium">{t.powerLabel}:</span> {selectedStation.power}</p>
                 <p><span className="font-medium">{t.amenitiesLabel}:</span> {selectedStation.amenities}</p>
               </div>

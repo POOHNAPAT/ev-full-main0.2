@@ -23,8 +23,12 @@ import MapPage from '../Map';
 import '../../styles/Map.css';
 import stationsDataRaw from '../../data/stations-data.json';
 // keep JSON imports as fallbacks for environments without the API server
-import usersData from '../../data/users.json';
+// prefer the runtime users module so in-memory/localStorage signups appear for admin
+import usersData, { updateUser } from '../../data/users';
 import rawPaymentHistory from '../../data/History-user.json';
+import { loadBookings, updateBooking } from '../../data/bookings';
+import { loadStations, decrementAvailable } from '../../data/stations';
+import { loadContacts, updateContact, deleteContact } from '../../data/contacts';
 
 // Helper to compute API base URL in a more robust way
 const getApiBase = () => {
@@ -45,6 +49,9 @@ const IMPORTED_STATIONS = (Array.isArray(stationsDataRaw) ? stationsDataRaw : []
   type: s.type ?? 'DC 50kW',
   // keep a price field for compatibility (default 0)
   price: s.price ?? 0,
+  // Include availablePorts and allPorts from JSON
+  availablePorts: s.availablePorts ?? 0,
+  allPorts: s.allPorts ?? 0,
   currentSession: s.status === 'busy' ? (s.currentSession ?? { user: 'Auto', percent: 30 }) : (s.currentSession ?? null)
 }));
 
@@ -85,6 +92,9 @@ const Login = ({ onLogin }) => {
     <div className="flex items-center justify-center h-screen bg-slate-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-96">
         <h2 className="text-2xl font-bold text-center mb-6 text-blue-600">EV Admin Login</h2>
+        <div className="text-center mb-4">
+          <Link to="/login" className="inline-block bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-300">กลับไปหน้า Login</Link>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Username</label>
@@ -113,6 +123,195 @@ const Login = ({ onLogin }) => {
   );
 };
 
+const PendingBookings = ({ bookings, setBookings, stations, setStations, addToast }) => {
+  const pending = Array.isArray(bookings) ? bookings.filter(b => String(b.status).toLowerCase() === 'pending') : [];
+  const [confirmTarget, setConfirmTarget] = React.useState(null);
+  const [isProcessing, setIsProcessing] = React.useState(false);
+
+  const openConfirm = (b) => {
+    setConfirmTarget(b);
+  };
+
+  const closeConfirm = () => {
+    setConfirmTarget(null);
+  };
+
+  const doApprove = async () => {
+    if (!confirmTarget) return;
+    setIsProcessing(true);
+    const b = confirmTarget;
+    const base = getApiBase();
+    let updated = null;
+    try {
+      // Try server-side update first
+      if (base) {
+        const resp = await fetch(base + '/api/bookings/' + b.id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'approved', approvedAt: new Date().toISOString() }) });
+        if (resp.ok) {
+          updated = await resp.json();
+        }
+      }
+    } catch (e) {
+      console.warn('API booking update failed, will fallback to local', e);
+    }
+
+    try {
+      // If server couldn't update, fallback to local update
+      if (!updated) {
+        updated = updateBooking({ ...b, status: 'approved', approvedAt: new Date().toISOString() });
+      }
+
+      // Decrement station availability: try server endpoint first
+      let remaining = null;
+      try {
+        if (base) {
+          const sresp = await fetch(base + '/api/stations/' + b.stationId + '/decrement', { method: 'PUT' });
+          if (sresp.ok) {
+            const d = await sresp.json();
+            remaining = d.availablePorts;
+          }
+        }
+      } catch (e) {
+        console.warn('Station decrement API failed, will fallback', e);
+      }
+
+      // Fallback decrement locally
+      if (remaining === null) {
+        try {
+          decrementAvailable(b.stationId);
+          const updatedMap = loadStations();
+          const st = updatedMap[String(b.stationId)];
+          remaining = st ? Number(st.available || st.availablePorts || 0) : null;
+        } catch (e) {
+          remaining = null;
+        }
+      }
+      // update stations state in UI to reflect change (server or local)
+      if (remaining !== null) {
+        setStations(prev => prev.map(s => (String(s.id) === String(b.stationId) ? { ...s, availablePorts: remaining } : s)));
+      }
+
+      // Update bookings state
+      if (updated) {
+        setBookings(prev => prev.map(x => Number(x.id) === Number(updated.id) ? updated : x));
+      }
+
+      addToast && addToast('อนุมัติการจองเรียบร้อย', 'success', 3000);
+      // Optionally show remaining in a brief toast
+      if (remaining !== null) addToast && addToast(`ช่องว่างคงเหลือ: ${remaining}`, 'success', 3000);
+    } catch (err) {
+      console.error('Approve error', err);
+      addToast && addToast('เกิดข้อผิดพลาด', 'error', 3000);
+    } finally {
+      setIsProcessing(false);
+      closeConfirm();
+    }
+  };
+
+  const handleReject = async (b) => {
+    if (!window.confirm('ยืนยันการปฏิเสธการจองนี้?')) return;
+    const base = getApiBase();
+    let updated = null;
+    try {
+      if (base) {
+        const resp = await fetch(base + '/api/bookings/' + b.id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'rejected', rejectedAt: new Date().toISOString() }) });
+        if (resp.ok) updated = await resp.json();
+      }
+    } catch (e) {
+      console.warn('API reject failed, fallback to local', e);
+    }
+    if (!updated) {
+      updated = updateBooking({ ...b, status: 'rejected', rejectedAt: new Date().toISOString() });
+    }
+    if (updated) {
+      setBookings(prev => prev.map(x => Number(x.id) === Number(updated.id) ? updated : x));
+      addToast && addToast('ปฏิเสธการจองแล้ว', 'success', 2000);
+    } else {
+      addToast && addToast('ไม่สามารถปฏิเสธได้', 'error', 3000);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+      <h3 className="text-lg font-semibold mb-4">รายการจองที่รอการอนุมัติ</h3>
+      {pending.length === 0 ? (
+        <p className="text-gray-500">ไม่มีคำร้องการจองที่รออยู่</p>
+      ) : (
+        <div className="space-y-3">
+          {pending.map(b => {
+            // Get station name from stations array by stationId
+            const station = stations.find(s => String(s.id) === String(b.stationId));
+            const stationName = station?.name || b.stationName || 'ไม่ทราบชื่อสถานี';
+            
+            return (
+              <div key={b.id} className="p-4 border rounded-lg flex justify-between items-start bg-slate-50">
+                  <div>
+                    <div className="font-semibold">{stationName} <span className="text-sm text-gray-500">(ID: {b.stationId})</span></div>
+                    <div className="text-sm text-gray-600">ผู้จอง: {b.userEmail || 'ไม่ระบุ'}</div>
+                    <div className="text-sm text-gray-600 mt-1">วันที่: {b.date} • เวลา: {b.startTime} - {b.endTime}</div>
+                    <div className="text-xs text-gray-500 mt-1">ส่งเมื่อ: {new Date(b.timestamp).toLocaleString()}</div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button onClick={() => openConfirm(b)} className="px-3 py-1 rounded bg-green-600 text-white text-sm">Approve</button>
+                    <button onClick={() => handleReject(b)} className="px-3 py-1 rounded bg-red-600 text-white text-sm">Reject</button>
+                  </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Confirmation modal */}
+      {confirmTarget && (() => {
+        const station = stations.find(s => String(s.id) === String(confirmTarget.stationId));
+        const stationName = station?.name || confirmTarget.stationName || 'ไม่ทราบชื่อสถานี';
+        
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black opacity-40" onClick={closeConfirm}></div>
+            <div className="bg-white rounded-lg shadow-lg p-6 z-10 w-96">
+              <h4 className="text-lg font-semibold mb-2">ยืนยันการอนุมัติการจอง</h4>
+              <p className="text-sm text-gray-700">สถานี: <strong>{stationName}</strong></p>
+              <p className="text-sm text-gray-700">เวลาที่จอง: {confirmTarget.startTime} - {confirmTarget.endTime}</p>
+            {
+              (() => {
+                const st = stations.find(s => String(s.id) === String(confirmTarget.stationId));
+                const current = st ? Number(st.availablePorts || st.available || 0) : null;
+                const predicted = current !== null ? Math.max(0, current - 1) : null;
+                const isFull = current !== null && current <= 0;
+                return (
+                  <>
+                    <p className={`mt-3 text-sm ${isFull ? 'text-red-600 font-semibold' : 'text-gray-700'}`}>
+                      ช่องว่างปัจจุบัน: {current !== null ? current : 'ไม่ทราบ'} — หลังอนุมัติจะเหลือ: {predicted !== null ? predicted : 'ไม่ทราบ'}
+                    </p>
+                    {isFull && (
+                      <p className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded">⚠️ สถานีนี้เต็มแล้ว ไม่สามารถอนุมัติการจองได้</p>
+                    )}
+                  </>
+                );
+              })()
+            }
+            <div className="mt-4 flex items-center justify-between">
+              <button onClick={closeConfirm} className="px-4 py-2 rounded bg-gray-200">ยกเลิก</button>
+              <button 
+                onClick={doApprove} 
+                disabled={isProcessing || (() => {
+                  const st = stations.find(s => String(s.id) === String(confirmTarget.stationId));
+                  const current = st ? Number(st.availablePorts || st.available || 0) : null;
+                  return current !== null && current <= 0;
+                })()} 
+                className="px-4 py-2 rounded bg-green-600 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? 'กำลังประมวลผล...' : 'ยืนยันอนุมัติ'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+      })()}
+    </div>
+  );
+};
+
 // 2. Main Application
 export default function App() {
   const [user, setUser] = useState(null);
@@ -130,6 +329,7 @@ export default function App() {
   // App States (start empty and load from API on mount; keep imports as fallbacks)
   const [stations, setStations] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [contacts, setContacts] = useState([]);
   const [appUsers, setAppUsers] = useState([]);
   const [admins, setAdmins] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -174,7 +374,9 @@ export default function App() {
       fetchJson(base + '/api/stations', IMPORTED_STATIONS),
       fetchJson(base + '/api/users', usersData),
       fetchJson(base + '/api/payments', rawPaymentHistory),
-    ]).then(([stationsRes, usersRes, paymentsRes]) => {
+      fetchJson(base + '/api/bookings', loadBookings()),
+      fetchJson(base + '/api/contacts', loadContacts()),
+    ]).then(([stationsRes, usersRes, paymentsRes, bookingsRes, contactsRes]) => {
       // stations: normalize raw stations (latitude/longitude) into UI shape (lat/lng)
       const rawArr = Array.isArray(stationsRes) ? stationsRes : (Array.isArray(stationsRes?.stations) ? stationsRes.stations : stationsDataRaw || IMPORTED_STATIONS);
       const sUI = (Array.isArray(rawArr) ? rawArr : IMPORTED_STATIONS).map(raw => ({
@@ -186,6 +388,8 @@ export default function App() {
         status: raw.status === 'busy' ? 'charging' : raw.status === 'offline' ? 'maintenance' : (raw.status || 'available'),
         type: raw.type ?? 'AC',
         price: raw.pricePerUnit ?? raw.price ?? 0,
+        availablePorts: raw.availablePorts ?? 0,
+        allPorts: raw.allPorts ?? 0,
         currentSession: raw.status === 'busy' ? (raw.currentSession ?? { user: 'Auto', percent: 30 }) : (raw.currentSession ?? null)
       }));
       setStations(sUI);
@@ -198,6 +402,20 @@ export default function App() {
 
       // payments
       setPayments(normalizePayments(paymentsRes));
+      // bookings: try API result first (bookingsRes), fallback to local
+      try {
+        const bk = Array.isArray(bookingsRes) ? bookingsRes : loadBookings();
+        setBookings(Array.isArray(bk) ? bk : []);
+      } catch (e) {
+        setBookings([]);
+      }
+      // contacts
+      try {
+        const cs = Array.isArray(contactsRes) ? contactsRes : loadContacts();
+        setContacts(Array.isArray(cs) ? cs : []);
+      } catch (e) {
+        setContacts([]);
+      }
     }).catch((err) => {
       // if Promise.all itself fails (unlikely with fetchJson), ensure we have sensible fallbacks
       setStations(IMPORTED_STATIONS);
@@ -206,8 +424,62 @@ export default function App() {
       const inAdmins = Array.isArray(usersData?.Admins) ? usersData.Admins : (Array.isArray(usersData?.admins) ? usersData.admins : []);
       setAdmins(inAdmins.map(a => ({ id: a.id, username: a.username, name: a.name, role: a.role || 'admin', ...a })));
       setPayments(normalizePayments(rawPaymentHistory));
+      try {
+        const bk = loadBookings();
+        setBookings(Array.isArray(bk) ? bk : []);
+      } catch (e) {
+        setBookings([]);
+      }
+      try {
+        const cs = loadContacts();
+        setContacts(Array.isArray(cs) ? cs : []);
+      } catch (e) {
+        setContacts([]);
+      }
       console.warn('Admin data load fallback used', err);
     });
+  }, []);
+
+  // Listen for booking changes made elsewhere in the app (localStorage-backed)
+  useEffect(() => {
+    const handler = () => {
+      try {
+        const bk = loadBookings();
+        setBookings(Array.isArray(bk) ? bk : []);
+        addToast && addToast('Bookings updated', 'success', 2500);
+      } catch (e) {
+        // ignore
+      }
+    };
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('bookings-changed', handler);
+      const storageHandler = (ev) => { if (ev.key === 'app_bookings_v1') handler(); };
+      window.addEventListener('storage', storageHandler);
+      return () => {
+        window.removeEventListener('bookings-changed', handler);
+        window.removeEventListener('storage', storageHandler);
+      };
+    }
+  }, []);
+
+  // Listen for contacts changes
+  useEffect(() => {
+    const handler = () => {
+      try {
+        const cs = loadContacts();
+        setContacts(Array.isArray(cs) ? cs : []);
+        addToast && addToast('Contacts updated', 'success', 2000);
+      } catch (e) {}
+    };
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('contacts-changed', handler);
+      const storageHandler = (ev) => { if (ev.key === 'app_contacts_v1') handler(); };
+      window.addEventListener('storage', storageHandler);
+      return () => {
+        window.removeEventListener('contacts-changed', handler);
+        window.removeEventListener('storage', storageHandler);
+      };
+    }
   }, []);
 
   // Load admin session on mount
@@ -221,6 +493,12 @@ export default function App() {
       }
     }
   }, []);
+
+  // Allow admin to stop a charging session immediately from the dashboard
+  const stopCharging = (id) => {
+    if (!window.confirm('ต้องการหยุดการชาร์จฉุกเฉินสำหรับสถานีนี้ทันทีหรือไม่?')) return;
+    setStations(prev => prev.map(s => s.id === id ? { ...s, status: 'available', currentSession: null } : s));
+  };
 
   // Simulation: Charging progress
   useEffect(() => {
@@ -247,12 +525,14 @@ export default function App() {
 
   const renderContent = () => {
     switch(currentView) {
-      case 'dashboard': return <Dashboard stations={stations} bookings={bookings} payments={payments} />;
+      case 'dashboard': return <Dashboard stations={stations} bookings={bookings} payments={payments} stopCharging={stopCharging} />;
       case 'map': return <MapPage stations={stations} />;
+      case 'queue': return <PendingBookings bookings={bookings} setBookings={setBookings} stations={stations} setStations={setStations} addToast={addToast} />;
       case 'stations': return <StationManagement stations={stations} setStations={setStations} />;
       case 'users': return <UserManagement users={appUsers} setUsers={setAppUsers} />;
       case 'admins': return <AdminManagement admins={admins} setAdmins={setAdmins} />;
       case 'history': return <HistoryView payments={payments} setPayments={setPayments} />;
+      case 'reports': return <ReportsView stations={stations} bookings={bookings} payments={payments} contacts={contacts} />;
       default: return <Dashboard stations={stations} bookings={bookings} payments={payments} />;
     }
   };
@@ -281,10 +561,13 @@ export default function App() {
         <nav className="mt-6 px-4 space-y-2">
           <SidebarItem icon={<Settings size={20} />} text="ภาพรวม (Dashboard)" active={currentView === 'dashboard'} onClick={() => setCurrentView('dashboard')} />
           <SidebarItem icon={<MapPin size={20} />} text="ค้นหาตู้ชาร์จ (Map)" active={currentView === 'map'} onClick={() => setCurrentView('map')} />
+          <SidebarItem icon={<Calendar size={20} />} text="รายการจอง (Pending)" active={currentView === 'queue'} onClick={() => setCurrentView('queue')} badge={bookings.filter(b => String(b.status).toLowerCase() === 'pending').length} />
+          <SidebarItem icon={<Calendar size={20} />} text="รายงาน (Reports)" active={currentView === 'reports'} onClick={() => setCurrentView('reports')} />
           <SidebarItem icon={<Power size={20} />} text="จัดการตู้ชาร์จ" active={currentView === 'stations'} onClick={() => setCurrentView('stations')} />
           <SidebarItem icon={<Users size={20} />} text="สมาชิก (Users)" active={currentView === 'users'} onClick={() => setCurrentView('users')} />
           <SidebarItem icon={<Shield size={20} />} text="ผู้ดูแล (Admins)" active={currentView === 'admins'} onClick={() => setCurrentView('admins')} />
           <SidebarItem icon={<History size={20} />} text="ประวัติ & การเงิน" active={currentView === 'history'} onClick={() => setCurrentView('history')} />
+
         </nav>
         <div className="absolute bottom-0 w-64 p-4 border-t border-slate-700 bg-slate-900">
           <button 
@@ -329,21 +612,26 @@ export default function App() {
   );
 }
 
-const SidebarItem = ({ icon, text, active, onClick }) => (
+const SidebarItem = ({ icon, text, active, onClick, badge }) => (
   <button 
     onClick={onClick}
-    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+    className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors ${
       active ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'
     }`}
   >
-    {icon}
-    <span className="text-sm font-medium">{text}</span>
+    <div className="flex items-center gap-3">
+      {icon}
+      <span className="text-sm font-medium">{text}</span>
+    </div>
+    {badge ? (
+      <div className="ml-2 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500 text-white">{badge}</div>
+    ) : null}
   </button>
 );
 
 // --- SUB-VIEWS ---
 
-const Dashboard = ({ stations, bookings, payments }) => {
+const Dashboard = ({ stations, bookings, payments, stopCharging }) => {
   const available = stations.filter(s => s.status === 'available').length;
   const charging = stations.filter(s => s.status === 'charging').length;
   // Compute revenue from payment history: treat 'paid' or 'completed' as collected
@@ -391,6 +679,9 @@ const Dashboard = ({ stations, bookings, payments }) => {
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
                     <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style={{ width: `${station.currentSession?.percent}%` }}></div>
                   </div>
+                  <div className="mt-2 text-right">
+                    <button onClick={() => stopCharging && stopCharging(station.id)} className="text-xs text-red-600 underline mt-1 hover:text-red-800">หยุดทันที</button>
+                  </div>
                 </div>
               </div>
             ))
@@ -418,7 +709,9 @@ const StatCard = ({ title, value, icon, color, meta }) => (
 
 const StationManagement = ({ stations, setStations }) => {
   const [isAdding, setIsAdding] = useState(false);
-  const [newStation, setNewStation] = useState({ name: '', type: 'AC', location: '', availablePorts: 1, allPorts: 1, status: 'available', latitude: '', longitude: '', amenities: '' });
+  const [editingStation, setEditingStation] = useState(null);
+  const [newStation, setNewStation] = useState({ name: '', type: 'AC', location: '', availablePorts: 1, allPorts: 1, status: 'available', latitude: '', longitude: '', amenities: [] });
+  const [amenityInput, setAmenityInput] = useState('');
 
   const zeroPad = (n, width = 3) => String(n).padStart(width, '0');
 
@@ -461,7 +754,9 @@ const StationManagement = ({ stations, setStations }) => {
 
   const handleAdd = (e) => {
     e.preventDefault();
-    const amenitiesArr = String(newStation.amenities || '').split(',').map(x => x.trim()).filter(Boolean);
+    const amenitiesArr = Array.isArray(newStation.amenities)
+      ? newStation.amenities
+      : String(newStation.amenities || '').split(',').map(x => x.trim()).filter(Boolean);
     const payload = {
       name: newStation.name,
       type: newStation.type,
@@ -491,12 +786,39 @@ const StationManagement = ({ stations, setStations }) => {
       // fallback: in-memory create and generate stationSerial
       const id = Math.max(0, ...stations.map(s => s.id || 0)) + 1;
       const serial = `ST${zeroPad(id)}`;
-      const created = { ...payload, id, stationSerial: serial };
+        const created = { ...payload, id, stationSerial: serial };
       const uiStation = mapRawToUI(created);
       setStations(prev => [...prev, uiStation]);
       setIsAdding(false);
-      setNewStation({ name: '', type: 'AC', location: '', availablePorts: 1, allPorts: 1, status: 'available', latitude: '', longitude: '', amenities: '' });
+        setNewStation({ name: '', type: 'AC', location: '', availablePorts: 1, allPorts: 1, status: 'available', latitude: '', longitude: '', amenities: [] });
     });
+  };
+
+  // amenity helpers
+  const addAmenity = (value) => {
+    const v = String(value || '').trim().replace(/,$/, '');
+    if (!v) return;
+    setNewStation(ns => {
+      const arr = Array.isArray(ns.amenities) ? ns.amenities.slice() : [];
+      if (!arr.includes(v)) arr.push(v);
+      return { ...ns, amenities: arr };
+    });
+    setAmenityInput('');
+  };
+
+  const removeAmenity = (value) => {
+    setNewStation(ns => ({ ...ns, amenities: (Array.isArray(ns.amenities) ? ns.amenities.filter(a => a !== value) : []) }));
+  };
+
+  const handleAmenityKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const raw = amenityInput;
+      if (raw) {
+        // split by commas in case user pasted multiple
+        raw.split(',').map(x => x.trim()).filter(Boolean).forEach(addAmenity);
+      }
+    }
   };
 
   return (
@@ -531,13 +853,114 @@ const StationManagement = ({ stations, setStations }) => {
             <input required type="number" step="any" placeholder="Latitude" className="border p-2 rounded" value={newStation.latitude} onChange={e => setNewStation({...newStation, latitude: e.target.value})} />
             <input required type="number" step="any" placeholder="Longitude" className="border p-2 rounded" value={newStation.longitude} onChange={e => setNewStation({...newStation, longitude: e.target.value})} />
 
-            <input placeholder="สิ่งอำนวยความสะดวก (comma-separated)" className="border p-2 rounded col-span-2" value={newStation.amenities} onChange={e => setNewStation({...newStation, amenities: e.target.value})} />
+            <div className="col-span-2">
+              <label className="block text-sm text-gray-600 mb-2">สิ่งอำนวยความสะดวก</label>
+              <div className="flex flex-wrap gap-2 items-center border rounded p-2">
+                {(Array.isArray(newStation.amenities) ? newStation.amenities : []).map(a => (
+                  <span key={a} className="inline-flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-sm">
+                    {a}
+                    <button type="button" onClick={() => removeAmenity(a)} className="ml-2 text-blue-500 hover:text-blue-700">✕</button>
+                  </span>
+                ))}
+                <input
+                  type="text"
+                  placeholder="พิมพ์แล้วกด comma หรือ Enter เพื่อเพิ่ม"
+                  className="flex-1 min-w-[160px] p-1 outline-none"
+                  value={amenityInput}
+                  onChange={e => setAmenityInput(e.target.value)}
+                  onKeyDown={handleAmenityKeyDown}
+                  onBlur={() => { if (amenityInput) { amenityInput.split(',').map(x => x.trim()).filter(Boolean).forEach(addAmenity); } }}
+                />
+                <button type="button" onClick={() => { if (amenityInput) { amenityInput.split(',').map(x => x.trim()).filter(Boolean).forEach(addAmenity); } }} className="ml-2 bg-green-600 text-white px-3 py-1 rounded text-sm">เพิ่ม</button>
+              </div>
+            </div>
 
             <div className="flex gap-2 col-span-2">
               <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded flex-1">บันทึก</button>
               <button type="button" onClick={() => setIsAdding(false)} className="bg-gray-300 text-gray-700 px-4 py-2 rounded">ยกเลิก</button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Edit Station Modal */}
+      {editingStation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-40" onClick={() => setEditingStation(null)}></div>
+          <div className="bg-white rounded-lg shadow-lg p-6 z-10 w-96 max-h-[90vh] overflow-y-auto">
+            <h4 className="text-lg font-semibold mb-4">แก้ไขสถานี: {editingStation.name}</h4>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ช่องว่างที่ใช้ได้</label>
+                <input 
+                  type="number" 
+                  min="0"
+                  max={editingStation.allPorts || 999}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  value={editingStation.availablePorts}
+                  onChange={(e) => setEditingStation({...editingStation, availablePorts: Number(e.target.value)})}
+                />
+                <p className="text-xs text-gray-500 mt-1">จำนวนช่องที่พร้อมใช้งาน (ต้องไม่เกิน {editingStation.allPorts})</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">จำนวนช่องทั้งหมด</label>
+                <input 
+                  type="number" 
+                  min="1"
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  value={editingStation.allPorts}
+                  onChange={(e) => setEditingStation({...editingStation, allPorts: Number(e.target.value)})}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">สถานะ</label>
+                <select 
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  value={editingStation.status}
+                  onChange={(e) => setEditingStation({...editingStation, status: e.target.value})}
+                >
+                  <option value="available">พร้อมใช้งาน</option>
+                  <option value="maintenance">ปิดปรับปรุง</option>
+                  <option value="charging">กำลังชาร์จ</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <button 
+                onClick={() => {
+                  // Update station in state
+                  setStations(stations.map(s => s.id === editingStation.id ? editingStation : s));
+                  
+                  // Try to update via API
+                  const base = getApiBase();
+                  if (base) {
+                    fetch(base + '/api/stations/' + editingStation.id, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(editingStation)
+                    }).catch(() => {
+                      console.warn('API update failed, using local state only');
+                    });
+                  }
+                  
+                  setEditingStation(null);
+                }}
+                className="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                บันทึก
+              </button>
+              <button 
+                onClick={() => setEditingStation(null)}
+                className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+              >
+                ยกเลิก
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -569,7 +992,22 @@ const StationManagement = ({ stations, setStations }) => {
                </div>
             )}
 
+            <div className="text-sm text-gray-600 mb-3">
+              <div className="flex justify-between py-1">
+                <span>ช่องว่าง:</span>
+                <span className={`font-semibold ${station.availablePorts > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {station.availablePorts} / {station.allPorts}
+                </span>
+              </div>
+            </div>
+
             <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
+              <button 
+                onClick={() => setEditingStation(station)}
+                className="flex-1 py-2 px-3 rounded text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200 flex items-center justify-center gap-1"
+              >
+                <Edit size={16} /> แก้ไข
+              </button>
               <button 
                 onClick={() => toggleStatus(station.id)}
                 className={`flex-1 py-2 px-3 rounded text-sm font-medium transition ${
@@ -578,15 +1016,12 @@ const StationManagement = ({ stations, setStations }) => {
                   : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
                 }`}
               >
-                {station.status === 'maintenance' ? 'เปิดใช้งาน' : 'ปิดปรับปรุง'}
+                {station.status === 'maintenance' ? 'เปิด' : 'ปิด'}
               </button>
               <button onClick={() => handleDelete(station.id)} className="p-2 bg-red-50 text-red-600 rounded hover:bg-red-100">
                 <Trash2 size={18} />
               </button>
             </div>
-            <button className="w-full mt-2 py-2 text-blue-600 text-sm hover:bg-blue-50 rounded">
-              ดูประวัติการใช้งาน
-            </button>
           </div>
         ))}
       </div>
@@ -597,7 +1032,24 @@ const StationManagement = ({ stations, setStations }) => {
 const QueueManagement = ({ bookings, setBookings, stations, users }) => {
   const cancelBooking = (id) => {
     if(window.confirm('ยืนยันการยกเลิกคิวนี้?')) {
-      setBookings(bookings.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
+      const updated = bookings.map(b => b.id === id ? { ...b, status: 'cancelled' } : b);
+      setBookings(updated);
+      const obj = updated.find(x => x.id === id);
+      if (obj) updateBooking(obj);
+    }
+  };
+
+  const approveBooking = (id) => {
+    if(window.confirm('อนุมัติการจองนี้และเริ่มหักจำนวนช่องว่างใช่หรือไม่?')) {
+      const updated = bookings.map(b => b.id === id ? { ...b, status: 'confirmed' } : b);
+      setBookings(updated);
+      const obj = updated.find(x => x.id === id);
+      if (obj) {
+        // persist
+        updateBooking(obj);
+        // decrement station availability
+        try { decrementAvailable(obj.stationId); } catch (e) {}
+      }
     }
   };
 
@@ -637,6 +1089,9 @@ const QueueManagement = ({ bookings, setBookings, stations, users }) => {
                 {booking.status !== 'cancelled' && (
                   <>
                     <button className="text-blue-600 hover:text-blue-800" title="เปลี่ยนเวลา"><Edit size={18} /></button>
+                    {booking.status === 'pending' && (
+                      <button onClick={() => approveBooking(booking.id)} className="text-green-600 hover:text-green-800" title="อนุมัติ"><CheckCircle size={18} /></button>
+                    )}
                     <button onClick={() => cancelBooking(booking.id)} className="text-red-600 hover:text-red-800" title="ยกเลิก"><XCircle size={18} /></button>
                   </>
                 )}
@@ -873,11 +1328,36 @@ const HistoryView = ({ payments, setPayments }) => {
 
 const UserManagement = ({ users, setUsers }) => {
   const toggleStatus = (id) => {
-    setUsers(users.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'banned' : 'active' } : u));
+    const updated = users.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'banned' : 'active' } : u);
+    setUsers(updated);
+    const userObj = updated.find(u => u.id === id);
+    const base = getApiBase();
+    if (base && userObj) {
+      fetch(base + `/api/users/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userObj) })
+        .then(res => { if (!res.ok) throw new Error('failed'); return res.json(); })
+        .catch(() => {
+          // fallback to local storage update
+          updateUser(userObj);
+        });
+    } else if (userObj) {
+      updateUser(userObj);
+    }
   };
 
   const approveUser = (id) => {
-    setUsers(users.map(u => u.id === id ? { ...u, status: 'active' } : u));
+    const updated = users.map(u => u.id === id ? { ...u, status: 'active' } : u);
+    setUsers(updated);
+    const userObj = updated.find(u => u.id === id);
+    const base = getApiBase();
+    if (base && userObj) {
+      fetch(base + `/api/users/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userObj) })
+        .then(res => { if (!res.ok) throw new Error('failed'); return res.json(); })
+        .catch(() => {
+          updateUser(userObj);
+        });
+    } else if (userObj) {
+      updateUser(userObj);
+    }
   };
 
   return (
@@ -1004,4 +1484,95 @@ const AdminManagement = ({ admins, setAdmins }) => {
              </div>
         </div>
     );
+};
+
+const ReportsView = ({ stations = [], bookings = [], payments = [], contacts = [] }) => {
+  const totalStations = stations.length;
+  const totalBookings = bookings.length;
+  const pendingBookings = bookings.filter(b => String(b.status || '').toLowerCase() === 'pending').length;
+  const revenue = payments.reduce((acc, p) => {
+    const st = String(p.status || '').toLowerCase();
+    if (st === 'paid' || st === 'completed') return acc + (Number(p.amount || p.cost || 0));
+    return acc;
+  }, 0);
+
+  const markResolved = (id) => {
+    const updated = { id, status: 'resolved' };
+    try { updateContact(updated); } catch (e) { console.warn(e); }
+    // refresh list
+    try { const cs = loadContacts(); if (Array.isArray(cs)) contacts = cs; } catch (e) {}
+    window.location.reload();
+  };
+
+  const removeMessage = (id) => {
+    try { deleteContact(id); } catch (e) { console.warn(e); }
+    window.location.reload();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <StatCard title="รายได้ที่เก็บได้" value={`฿${revenue.toLocaleString()}`} icon={<DollarSign size={24} className="text-green-500" />} color="bg-green-50" />
+        <StatCard title="สถานีทั้งหมด" value={`${totalStations}`} icon={<MapPin size={24} className="text-blue-500" />} color="bg-blue-50" />
+        <StatCard title="การจองทั้งหมด" value={`${totalBookings}`} icon={<Calendar size={24} className="text-purple-500" />} color="bg-purple-50" />
+        <StatCard title="รอดำเนินการ" value={`${pendingBookings}`} icon={<svg width="20" height="20"><circle cx="10" cy="10" r="9" stroke="#f59e0b" strokeWidth="1.5" fill="none" /></svg>} color="bg-yellow-50" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-lg font-semibold mb-4">ข้อความจากหน้า Contact</h3>
+          {contacts.length === 0 ? (
+            <p className="text-gray-500">ยังไม่มีข้อความจากผู้ใช้งาน</p>
+          ) : (
+            <ul className="space-y-3">
+              {contacts.map(c => (
+                <li key={c.id} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium">{c.name} <span className="text-xs text-gray-500">({c.email})</span></div>
+                      <div className="text-sm text-gray-600">{c.subject}</div>
+                      <div className="text-sm text-gray-700 mt-2">{c.message}</div>
+                      <div className="text-xs text-gray-400 mt-2">ส่งเมื่อ: {new Date(c.timestamp).toLocaleString()}</div>
+                    </div>
+                    <div className="flex flex-col gap-2 ml-4">
+                      <button onClick={() => markResolved(c.id)} className="text-green-600 text-sm">ทำเครื่องหมายว่าอ่านแล้ว</button>
+                      <button onClick={() => removeMessage(c.id)} className="text-red-500 text-sm">ลบ</button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:col-span-2">
+          <h3 className="text-lg font-semibold mb-4">สรุปการจองล่าสุด</h3>
+          <div className="overflow-auto">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="p-3 text-sm text-gray-600">ID</th>
+                  <th className="p-3 text-sm text-gray-600">ผู้ใช้</th>
+                  <th className="p-3 text-sm text-gray-600">สถานี</th>
+                  <th className="p-3 text-sm text-gray-600">เวลา</th>
+                  <th className="p-3 text-sm text-gray-600">สถานะ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {bookings.slice(0, 12).map(b => (
+                  <tr key={b.id}>
+                    <td className="p-3 text-sm">#{b.id}</td>
+                    <td className="p-3 text-sm">{b.userEmail || b.userId || '-'}</td>
+                    <td className="p-3 text-sm">{b.stationName || b.stationId || '-'}</td>
+                    <td className="p-3 text-sm">{b.startTime || b.time || '-'}</td>
+                    <td className="p-3 text-sm">{String(b.status || '').toUpperCase()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
