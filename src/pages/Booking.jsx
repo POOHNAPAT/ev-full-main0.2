@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/AuthContext';
-import { addBooking } from '../data/bookings';
 import { FaCalendarAlt, FaClock, FaBolt, FaWifi, FaCoffee, FaRestroom, FaShieldAlt, FaUtensils, FaShoppingCart, FaMapMarkerAlt, FaCheckCircle, FaEdit, FaQrcode, FaArrowLeft } from 'react-icons/fa';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { firebaseConfig } from '../firebaseConfig';
-import { loadStations, decrementAvailable } from '../data/stations';
 import '../styles/Booking.css';
 
 // Simple QR code component (placeholder)
@@ -19,14 +17,38 @@ const QRCode = ({ value }) => (
 
 export default function Booking() {
   const { id } = useParams();
-  const stations = loadStations();
-  const station = stations[id] || { name: id, available: 'N/A', power: 'N/A', amenities: 'N/A' };
+  const [stations, setStations] = useState([]);
+  const [station, setStation] = useState(null);
   const [step, setStep] = useState('select');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [showQR, setShowQR] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  // Load stations from API
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+        const response = await fetch(apiBase + '/api/stations');
+        if (!response.ok) {
+          throw new Error('Failed to fetch stations');
+        }
+        const data = await response.json();
+        setStations(Array.isArray(data) ? data : []);
+        
+        // Find the station by id
+        const foundStation = (Array.isArray(data) ? data : []).find(s => String(s.id) === String(id) || String(s.stationSerial) === String(id));
+        setStation(foundStation || { id, name: id, available: 'N/A', power: 'N/A', amenities: 'N/A' });
+      } catch (error) {
+        console.error('Error fetching stations:', error);
+        setStation({ id, name: id, available: 'N/A', power: 'N/A', amenities: 'N/A' });
+      }
+    };
+    
+    fetchStations();
+  }, [id]);
   
   // QR Scanner modal state
   const [showQRScanner, setShowQRScanner] = useState(false);
@@ -96,28 +118,24 @@ export default function Booking() {
         userEmail: (user && user.email) || '',
         userId: (user && user.id) || null
       };
-      // Try to POST to API if available, otherwise fallback to local storage
-      let created = null;
-      try {
-        const base = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
-        const resp = await fetch(base + '/api/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bookingData) });
-        if (resp.ok) {
-          created = await resp.json();
-          console.log('Created booking via API:', created);
-        } else {
-          console.warn('API /api/bookings returned', resp.status);
-        }
-      } catch (e) {
-        console.warn('API not available, falling back to local storage for bookings');
+      
+      // POST to API only
+      const base = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+      const resp = await fetch(base + '/api/bookings', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify(bookingData) 
+      });
+      
+      if (!resp.ok) {
+        throw new Error('Failed to create booking');
       }
-
-      if (!created) {
-        created = addBooking(bookingData);
-        console.log('Created booking (pending, local):', created);
-      }
+      
+      const created = await resp.json();
+      console.log('Created booking via API:', created);
+      
       // inform user and wait for admin approval
       alert('คำร้องการจองถูกส่งแล้ว รอการอนุมัติจากผู้ดูแลระบบ');
-      // keep on the page or redirect to home
       navigate('/');
     } catch (error) {
       console.error('Error saving booking:', error);
@@ -134,16 +152,18 @@ export default function Booking() {
             <h1 className="booking-title">จองจุดชาร์จ</h1>
           </div>
 
-          <div className="station-info">
-            <FaMapMarkerAlt className="station-info-icon" />
-            <div className="station-details">
-              <p className="station-name">สถานี: {station.name}</p>
-              <p className="station-date">
-                <FaCalendarAlt className="station-date-icon" />
-                วันที่ 28 พฤศจิกายน 2568
-              </p>
+          {station && (
+            <div className="station-info">
+              <FaMapMarkerAlt className="station-info-icon" />
+              <div className="station-details">
+                <p className="station-name">สถานี: {station.name}</p>
+                <p className="station-date">
+                  <FaCalendarAlt className="station-date-icon" />
+                  วันที่ 28 พฤศจิกายน 2568
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           {step === 'select' ? (
             <div className="booking-section">

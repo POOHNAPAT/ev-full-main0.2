@@ -35,7 +35,22 @@
       "id": 1,
       "username": "admin",
       "name": "Super Admin",
+      "password": "password",
       "role": "super_admin"
+    },
+    {
+      "username": "กไกไฟก",
+      "name": "ไฟกไฟกหฟไก",
+      "role": "admin",
+      "password": "BcO?EZNi*-",
+      "id": 1764141698816
+    },
+    {
+      "username": "dwadwad",
+      "name": "wdadsaw",
+      "role": "admin",
+      "password": "N$Jb(u>Jiq",
+      "id": 1764144723205
     }
   ]
 }

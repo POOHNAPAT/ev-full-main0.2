@@ -16,9 +16,14 @@ const contactsFile = path.join(dataDir, 'contacts.json');
 
 function readJson(filePath) {
   try {
+    if (!fs.existsSync(filePath)) {
+      console.error(`File does not exist: ${filePath}`);
+      return null;
+    }
     const raw = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(raw);
   } catch (e) {
+    console.error(`Error reading JSON file ${filePath}:`, e.message);
     return null;
   }
 }
@@ -29,8 +34,55 @@ function writeJson(filePath, data) {
 
 app.get('/api/stations', (req, res) => {
   const data = readJson(stationsFile);
-  if (data == null) return res.status(500).json({ error: 'Failed to read stations file' });
-  res.json(Array.isArray(data) ? data : data);
+  if (data == null) {
+    console.error('Failed to read stations file:', stationsFile);
+    return res.status(200).json([]);
+  }
+  res.json(Array.isArray(data) ? data : []);
+});
+
+// Return all users (file-backed)
+app.get('/api/users', (req, res) => {
+  const data = readJson(usersFile);
+  if (!data) {
+    console.error('Failed to read users file:', usersFile);
+    return res.status(200).json([]);
+  }
+  const users = Array.isArray(data.users) ? data.users : [];
+  res.json(users);
+});
+
+// Return payment history entries
+app.get('/api/payments', (req, res) => {
+  const data = readJson(paymentsFile);
+  if (!data) {
+    console.error('Failed to read payments file:', paymentsFile);
+    return res.status(200).json([]);
+  }
+  const payments = Array.isArray(data.paymentHistory) ? data.paymentHistory : [];
+  res.json(payments);
+});
+
+// Return admins list (from users file)
+app.get('/api/admins', (req, res) => {
+  const data = readJson(usersFile);
+  if (!data) {
+    console.error('Failed to read users file for admins:', usersFile);
+    return res.status(200).json([]);
+  }
+  const admins = Array.isArray(data.Admins) ? data.Admins : (Array.isArray(data.admins) ? data.admins : []);
+  res.json(admins);
+});
+
+// Return combined history (initial sessions + payment history)
+app.get('/api/history', (req, res) => {
+  const data = readJson(paymentsFile);
+  if (!data) {
+    console.error('Failed to read history file:', paymentsFile);
+    return res.status(200).json({ initialHistory: [], paymentHistory: [] });
+  }
+  // return the whole object so callers can inspect both arrays
+  res.json(data);
 });
 
 // Helper to compute energy by type & minutes
@@ -326,7 +378,73 @@ app.post('/api/contacts', (req, res) => {
   }
 });
 
-// Refund payment endpoint
+// Update contact (mark as resolved)
+app.put('/api/contacts/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const body = req.body;
+  if (!body) return res.status(400).json({ error: 'Missing body' });
+  const data = readJson(contactsFile) || [];
+  const arr = Array.isArray(data) ? data : [];
+  const idx = arr.findIndex(c => Number(c.id) === id);
+  if (idx === -1) return res.status(404).json({ error: 'Contact not found' });
+  arr[idx] = { ...arr[idx], ...body };
+  try {
+    writeJson(contactsFile, arr);
+    res.json(arr[idx]);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to write contacts file' });
+  }
+});
+
+// Delete contact
+app.delete('/api/contacts/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const data = readJson(contactsFile) || [];
+  const arr = Array.isArray(data) ? data : [];
+  const filtered = arr.filter(c => Number(c.id) !== id);
+  if (filtered.length === arr.length) {
+    return res.status(404).json({ error: 'Contact not found' });
+  }
+  try {
+    writeJson(contactsFile, filtered);
+    res.json({ success: true, message: 'Contact deleted' });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to write contacts file' });
+  }
+});
+
+// User request refund endpoint (sets status to refund_requested)
+app.post('/api/payments/:id/request-refund', (req, res) => {
+  const id = req.params.id;
+  const { userId, reason } = req.body || {};
+  const data = readJson(paymentsFile) || { initialHistory: [], paymentHistory: [] };
+  const paymentArr = Array.isArray(data.paymentHistory) ? data.paymentHistory : [];
+  const idx = paymentArr.findIndex(p => String(p.id) === String(id));
+  if (idx === -1) return res.status(404).json({ error: 'Payment not found' });
+  
+  // Check if already refunded or requested
+  if (paymentArr[idx].status === 'refunded') {
+    return res.status(400).json({ error: 'Payment already refunded' });
+  }
+  if (paymentArr[idx].status === 'refund_requested') {
+    return res.status(400).json({ error: 'Refund already requested' });
+  }
+  
+  paymentArr[idx].status = 'refund_requested';
+  paymentArr[idx].refundRequestedAt = new Date().toISOString();
+  paymentArr[idx].refundRequestedBy = userId;
+  paymentArr[idx].refundReason = reason || 'User requested refund';
+  data.paymentHistory = paymentArr;
+  
+  try {
+    writeJson(paymentsFile, data);
+    res.json(paymentArr[idx]);
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to write payments file' });
+  }
+});
+
+// Refund payment endpoint (Admin approves refund)
 app.post('/api/payments/:id/refund', (req, res) => {
   const id = req.params.id;
   const data = readJson(paymentsFile) || { initialHistory: [], paymentHistory: [] };

@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "../components/LanguageContext";
 import "../styles/Home.css";
-import { loadStations } from '../data/stations';
 import { useAuth } from '../components/AuthContext';
-import { loadBookings, updateBooking } from '../data/bookings';
 
 export default function Home() {
   const { t } = useLanguage();
@@ -33,29 +31,16 @@ export default function Home() {
         return;
       }
 
-      let all = [];
+      const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
       
-      // Try to load from API server first
-      try {
-        const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-          ? 'http://localhost:4000'
-          : '';
-        if (apiBase) {
-          const response = await fetch(apiBase + '/api/bookings');
-          if (response.ok) {
-            all = await response.json();
-            console.log('Loaded bookings from API:', all);
-          }
-        }
-      } catch (apiError) {
-        console.warn('Failed to load from API, falling back to localStorage', apiError);
+      // Load from API only
+      const response = await fetch(apiBase + '/api/bookings');
+      if (!response.ok) {
+        throw new Error('Failed to fetch bookings');
       }
-
-      // Fallback to localStorage if API failed or returned empty
-      if (!all || all.length === 0) {
-        all = loadBookings();
-        console.log('Loaded bookings from localStorage:', all);
-      }
+      
+      const all = await response.json();
+      console.log('Loaded bookings from API:', all);
 
       const email = String(user.email || '').toLowerCase();
       const uid = String(user.id || '');
@@ -94,35 +79,15 @@ export default function Home() {
 
     const checkCurrentSession = async () => {
       try {
-        const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-          ? 'http://localhost:4000'
-          : '';
+        const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
         
-        // Try loading from API
-        let historyData = null;
-        if (apiBase) {
-          try {
-            const response = await fetch(`${apiBase}/api/history`);
-            if (response.ok) {
-              historyData = await response.json();
-            }
-          } catch (e) {
-            console.warn('API fetch failed, checking localStorage', e);
-          }
+        // Load from API only
+        const response = await fetch(`${apiBase}/api/history`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch history');
         }
-
-        // Fallback to localStorage
-        if (!historyData) {
-          const stored = localStorage.getItem('usageHistory');
-          if (stored) {
-            try {
-              historyData = JSON.parse(stored);
-            } catch (e) {
-              console.error('Failed to parse localStorage history', e);
-            }
-          }
-        }
-
+        
+        const historyData = await response.json();
         if (!historyData) return;
 
         const userEmail = String(user.email || '').toLowerCase();
@@ -370,17 +335,12 @@ export default function Home() {
                               console.log('Updated booking via API:', updated);
                             }
                           }
+                          // Navigate to payment page
+                          navigate(`/payment/${b.id}`);
                         } catch (apiError) {
-                          console.warn('Failed to update via API, using localStorage', apiError);
+                          console.error('Failed to update booking:', apiError);
+                          alert('ไม่สามารถอัพเดทการจองได้');
                         }
-                        
-                        // Fallback to localStorage if API failed
-                        if (!updated) {
-                          updated = updateBooking(completedData);
-                        }
-                        
-                        // Navigate to payment page
-                        navigate(`/payment/${b.id}`);
                       } catch (e) {
                         console.error('Error completing charge', e);
                         alert('ไม่สามารถทำเครื่องหมายการชาร์จเสร็จสิ้นได้');
@@ -394,7 +354,7 @@ export default function Home() {
         </section>
       )}
       {recentBooking && (
-        <section className="recent-booking-section">
+          <section className="recent-booking-section">
           <div className="recent-booking-card">
             <h3 className="recent-booking-title">การจองล่าสุด</h3>
             <div className="recent-booking-details">

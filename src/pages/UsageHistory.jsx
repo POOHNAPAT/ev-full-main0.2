@@ -10,6 +10,7 @@ export default function UsageHistory() {
   const [filter, setFilter] = useState('ทั้งหมด');
   const [stationSerial, setStationSerial] = useState('ทั้งหมด');
   const [historyList, setHistoryList] = useState([]);
+  const [refundingId, setRefundingId] = useState(null);
 
   const { user } = useAuth();
   // If AuthContext doesn't provide a user (e.g. during testing), fall back
@@ -100,6 +101,54 @@ export default function UsageHistory() {
     totalCost,
   };
 
+  const handleRefundRequest = async (item) => {
+    if (!item.id) {
+      alert('ไม่สามารถขอคืนเงินได้ เนื่องจากไม่พบข้อมูลรายการ');
+      return;
+    }
+
+    const confirmRefund = window.confirm(
+      `คุณต้องการขอคืนเงินสำหรับรายการนี้ใช่หรือไม่?\n\n` +
+      `สถานี: ${item.station}\n` +
+      `วันที่: ${item.date} ${item.time}\n` +
+      `จำนวนเงิน: ฿${item.cost} บาท\n\n` +
+      `หมายเหตุ: คำขอจะถูกส่งไปยังแอดมินเพื่อพิจารณา`
+    );
+
+    if (!confirmRefund) return;
+
+    setRefundingId(item.id);
+
+    try {
+      const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+      const response = await fetch(`${apiBase}/api/payments/${item.id}/request-refund`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: effectiveUser?.id,
+          reason: 'User requested refund'
+        })
+      });
+
+      if (response.ok) {
+        alert('✓ ส่งคำขอคืนเงินสำเร็จ\n\nแอดมินจะตรวจสอบและดำเนินการภายใน 1-3 วันทำการ');
+        // Update local state
+        setHistoryList(historyList.map(h => 
+          h.id === item.id 
+            ? { ...h, status: 'refund_requested', refundRequestedAt: new Date().toISOString() }
+            : h
+        ));
+      } else {
+        throw new Error('Failed to request refund');
+      }
+    } catch (error) {
+      console.error('Refund request error:', error);
+      alert('⚠ ไม่สามารถส่งคำขอได้ในขณะนี้\n\nกรุณาลองใหม่อีกครั้งหรือติดต่อแอดมิน');
+    } finally {
+      setRefundingId(null);
+    }
+  };
+
   return (
     <div className="payment-container">
       <div className="payment-content">
@@ -179,16 +228,55 @@ export default function UsageHistory() {
                       <p className="history-meta">{item.payment}</p>
                     )}
                     {item.status === 'paid' && (
-                      <span className="history-status">
+                      <span className="history-status" style={{backgroundColor: '#22c55e'}}>
                         ชำระเงินแล้ว
+                      </span>
+                    )}
+                    {item.status === 'refund_requested' && (
+                      <span className="history-status" style={{backgroundColor: '#f59e0b'}}>
+                        ⏳ รอการคืนเงิน
+                      </span>
+                    )}
+                    {item.status === 'refunded' && (
+                      <span className="history-status" style={{backgroundColor: '#6b7280'}}>
+                        ✓ คืนเงินแล้ว
                       </span>
                     )}
                   </div>
                   <div className="history-cost">
                     <div>฿ {item.cost} บาท</div>
-                    {item.status === 'paid' && (
-                      <Link to={`/receipt/${item.id}`} className="receipt-button">ใบเสร็จ</Link>
-                    )}
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px'}}>
+                      {item.status === 'paid' && (
+                        <>
+                          <Link to={`/receipt/${item.id}`} className="receipt-button">
+                            📄 ใบเสร็จ
+                          </Link>
+                          <button
+                            onClick={() => handleRefundRequest(item)}
+                            disabled={refundingId === item.id}
+                            className="receipt-button"
+                            style={{
+                              backgroundColor: '#ef4444',
+                              border: 'none',
+                              cursor: refundingId === item.id ? 'wait' : 'pointer',
+                              opacity: refundingId === item.id ? 0.6 : 1
+                            }}
+                          >
+                            {refundingId === item.id ? '⏳ กำลังส่ง...' : '💰 ขอคืนเงิน'}
+                          </button>
+                        </>
+                      )}
+                      {item.status === 'refund_requested' && (
+                        <span style={{fontSize: '12px', color: '#f59e0b', fontWeight: 600}}>
+                          รอแอดมินอนุมัติ
+                        </span>
+                      )}
+                      {item.status === 'refunded' && item.refundedAt && (
+                        <span style={{fontSize: '11px', color: '#6b7280'}}>
+                          คืนเงินเมื่อ: {new Date(item.refundedAt).toLocaleDateString('th-TH')}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

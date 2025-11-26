@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { findUserByEmail, addUser } from '../data/users';
 
 const AuthContext = createContext();
 
@@ -25,31 +24,20 @@ export function AuthProvider({ children }){
 
       const cleanEmail = String(email || '').trim().toLowerCase();
 
-      const getApiBase = () => {
-        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') return 'http://localhost:4000';
-        if (import.meta?.env?.DEV) return 'http://localhost:4000';
-        return '';
-      };
+      const base = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
 
-      const base = getApiBase();
-
-      // Try server-side lookup first when available
+      // Fetch users from API
       let foundUser = null;
-      if (base) {
-        try {
-          const res = await fetch(base + '/api/users');
-          if (res.ok) {
-            const data = await res.json();
-            const list = Array.isArray(data.users) ? data.users : (Array.isArray(data) ? data : []);
-            foundUser = list.find(u => String(u.email || '').trim().toLowerCase() === cleanEmail);
-          }
-        } catch (e) {
-          // server unreachable — fall back to local
+      try {
+        const res = await fetch(base + '/api/users');
+        if (!res.ok) {
+          throw new Error('Failed to fetch users from API');
         }
-      }
-
-      if (!foundUser) {
-        foundUser = findUserByEmail(cleanEmail);
+        const data = await res.json();
+        const list = Array.isArray(data.users) ? data.users : (Array.isArray(data) ? data : []);
+        foundUser = list.find(u => String(u.email || '').trim().toLowerCase() === cleanEmail);
+      } catch (e) {
+        throw new Error('Unable to connect to server. Please try again later.');
       }
 
       if (!foundUser) {
@@ -80,57 +68,42 @@ export function AuthProvider({ children }){
       await new Promise(resolve => setTimeout(resolve, 500));
       const cleanEmail = String(email || '').trim().toLowerCase();
 
-      // If API server is available (dev/local), try to create via API so it writes to users.json
-      const getApiBase = () => {
-        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') return 'http://localhost:4000';
-        if (import.meta?.env?.DEV) return 'http://localhost:4000';
-        return '';
-      };
+      // Create user via API
+      const base = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
 
-      const base = getApiBase();
-
-      // First check local copy to prevent duplicates quickly
-      const existingUser = findUserByEmail(cleanEmail);
-      if (existingUser) throw new Error('User already exists with this email');
-
-      if (base) {
-        try {
-          // fetch current users to check duplicates on server
-          const listRes = await fetch(base + '/api/users');
-          if (listRes.ok) {
-            const listData = await listRes.json();
-            const serverUsers = Array.isArray(listData.users) ? listData.users : (Array.isArray(listData) ? listData : []);
-            if (serverUsers.find(u => String(u.email || '').trim().toLowerCase() === cleanEmail)) {
-              throw new Error('User already exists with this email');
-            }
-          }
-        } catch (e) {
-          // ignore and fall through to POST attempt
+      try {
+        // fetch current users to check duplicates on server
+        const listRes = await fetch(base + '/api/users');
+        if (!listRes.ok) {
+          throw new Error('Failed to fetch users from API');
+        }
+        const listData = await listRes.json();
+        const serverUsers = Array.isArray(listData.users) ? listData.users : (Array.isArray(listData) ? listData : []);
+        if (serverUsers.find(u => String(u.email || '').trim().toLowerCase() === cleanEmail)) {
+          throw new Error('User already exists with this email');
         }
 
-        try {
-          const payload = { email: cleanEmail, password, status: 'active' };
-          const res = await fetch(base + '/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-          if (res.ok) {
-            const created = await res.json();
-            // auto-login newly created user
-            const userData = { id: created.id, email: created.email, name: created.name };
-            setUser(userData);
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            return created;
-          }
-        } catch (e) {
-          // server not reachable — fall back to local
+        // Create new user
+        const payload = { email: cleanEmail, password, status: 'active' };
+        const res = await fetch(base + '/api/users', { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' }, 
+          body: JSON.stringify(payload) 
+        });
+        
+        if (!res.ok) {
+          throw new Error('Failed to create user');
         }
+        
+        const created = await res.json();
+        // auto-login newly created user
+        const userData = { id: created.id, email: created.email, name: created.name };
+        setUser(userData);
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        return created;
+      } catch (e) {
+        throw new Error(e.message || 'Unable to connect to server. Please try again later.');
       }
-
-      // fallback: add to local storage backed users module
-      const newUser = addUser(cleanEmail, password);
-      // addUser now creates active users by default; auto-login
-      const userData = { id: newUser.id, email: newUser.email, name: newUser.name };
-      setUser(userData);
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      return newUser;
     } finally {
       setAuthLoading(false);
     }

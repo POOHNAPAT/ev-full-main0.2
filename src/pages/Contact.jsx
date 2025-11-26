@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaPaperPlane, FaCheckCircle, FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaUser, FaAt, FaTag, FaComment } from 'react-icons/fa';
 import { useLanguage } from '../components/LanguageContext';
 import emailjs from '@emailjs/browser';
-import { addContact } from '../data/contacts';
 import '../styles/Contact.css';
 
 export default function Contact() {
@@ -27,19 +26,21 @@ export default function Contact() {
     e.preventDefault();
 
     try {
-      // persist the contact submission locally (and make it available to admin)
-      try {
-        addContact({ name: formData.name, email: formData.email, subject: formData.subject, message: formData.message });
-      } catch (err) {
-        console.warn('Could not persist contact locally', err);
-      }
-
-      // Try to POST to API if available
-      try {
-        const base = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
-        await fetch(base + '/api/contacts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: formData.name, email: formData.email, subject: formData.subject, message: formData.message }) });
-      } catch (err) {
-        // ignore API errors — we already saved locally
+      // POST to API only
+      const base = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+      const response = await fetch(base + '/api/contacts', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ 
+          name: formData.name, 
+          email: formData.email, 
+          subject: formData.subject, 
+          message: formData.message 
+        }) 
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit contact');
       }
 
       const templateParams = {

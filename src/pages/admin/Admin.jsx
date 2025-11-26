@@ -21,71 +21,41 @@ import {
 } from 'lucide-react';
 import MapPage from '../Map';
 import '../../styles/Map.css';
-import stationsDataRaw from '../../data/stations-data.json';
-// keep JSON imports as fallbacks for environments without the API server
-// prefer the runtime users module so in-memory/localStorage signups appear for admin
-import usersData, { updateUser } from '../../data/users';
-import rawPaymentHistory from '../../data/History-user.json';
-import { loadBookings, updateBooking } from '../../data/bookings';
-import { loadStations, decrementAvailable } from '../../data/stations';
-import { loadContacts, updateContact, deleteContact } from '../../data/contacts';
+// All data will be loaded from API - no local imports needed
 
-// Helper to compute API base URL in a more robust way
+// Helper to compute API base URL
 const getApiBase = () => {
-  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') return 'http://localhost:4000';
-  if (import.meta?.env?.DEV) return 'http://localhost:4000';
-  return '';
+  return import.meta.env.VITE_API_BASE || 'http://localhost:4000';
 };
-// Load station list from centralized `src/data/stations-data.json` and adapt shape
-const IMPORTED_STATIONS = (Array.isArray(stationsDataRaw) ? stationsDataRaw : []).map(s => ({
-  id: s.id,
-  stationSerial: s.stationSerial ?? s.id ?? '',
-  name: s.name,
-  // admin UI expects `lat`/`lng`
-  lat: s.latitude ?? s.lat ?? 0,
-  lng: s.longitude ?? s.lng ?? 0,
-  // Map statuses to the statuses used in admin UI
-  status: s.status === 'busy' ? 'charging' : s.status === 'offline' ? 'maintenance' : (s.status || 'available'),
-  type: s.type ?? 'DC 50kW',
-  // keep a price field for compatibility (default 0)
-  price: s.price ?? 0,
-  // Include availablePorts and allPorts from JSON
-  availablePorts: s.availablePorts ?? 0,
-  allPorts: s.allPorts ?? 0,
-  currentSession: s.status === 'busy' ? (s.currentSession ?? { user: 'Auto', percent: 30 }) : (s.currentSession ?? null)
-}));
-
-// Build a top-level station label map (stationSerial -> name) for normalizing incoming data
-const STATION_LABEL_MAP = (() => {
-  const m = {};
-  if (Array.isArray(IMPORTED_STATIONS)) {
-    IMPORTED_STATIONS.forEach(s => {
-      const key = String(s.stationSerial ?? s.id ?? s.name ?? '').trim();
-      if (!key) return;
-      m[key] = s.name || s.stationSerial || s.id || key;
-    });
-  }
-  return m;
-})();
 
 // Note: bookings JSON not present in data folder — start with an empty bookings array.
 
 // --- COMPONENTS ---
 
 // 1. Login Component
-const Login = ({ onLogin }) => {
+const Login = ({ onLogin, admins = [] }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'password') {
-      const adminUser = { username, role: 'admin' };
+
+    // Prefer using admins loaded from JSON / API. Fallback to legacy hardcoded check if admins not available yet.
+    let matched = null;
+    if (Array.isArray(admins) && admins.length > 0) {
+      matched = admins.find(a => String(a.username || '') === String(username) && String(a.password || '') === String(password));
+    } else {
+      if (username === 'admin' && password === 'password') matched = { username, role: 'admin', name: 'Super Admin' };
+    }
+
+    if (matched) {
+      const adminUser = { username: matched.username, role: matched.role || 'admin', name: matched.name || matched.username, id: matched.id || Date.now() };
       localStorage.setItem('adminSession', JSON.stringify(adminUser));
       onLogin(adminUser);
-    } else {
-      alert('Login Failed: Try username "admin" and password "password"');
+      return;
     }
+
+    alert('Login Failed: กรุณาตรวจสอบ username และ password');
   };
 
   return (
@@ -334,8 +304,23 @@ export default function App() {
   const [admins, setAdmins] = useState([]);
   const [payments, setPayments] = useState([]);
 
+  // Helper: build station label map from stations array
+  const buildStationLabelMap = (stationsArr) => {
+    const map = {};
+    if (Array.isArray(stationsArr)) {
+      stationsArr.forEach(s => {
+        const serial = String(s.stationSerial || s.id || '').trim();
+        if (serial) {
+          map[serial] = s.name || s.stationSerial || s.id || '';
+        }
+      });
+    }
+    return map;
+  };
+
   // Helper: normalize payments like earlier logic
-  const normalizePayments = (input) => {
+  const normalizePayments = (input, stationsArr = []) => {
+    const STATION_LABEL_MAP = buildStationLabelMap(stationsArr);
     const arr = Array.isArray(input)
       ? input
       : (Array.isArray(input?.paymentHistory) ? input.paymentHistory : (Array.isArray(input?.initialHistory) ? input.initialHistory : []));
@@ -358,28 +343,34 @@ export default function App() {
   });
 
   useEffect(() => {
-    // Try API first; if API not available, fall back to static imports
+    // Load all data from API only
     const base = getApiBase();
 
-    const fetchJson = (url, fallback) => fetch(url)
-      .then(res => { if (!res.ok) throw new Error('bad response'); return res.json(); })
-      .then(d => { setApiAvailable(true); return d; })
+    const fetchJson = (url) => fetch(url)
+      .then(res => { 
+        if (!res.ok) throw new Error(`HTTP ${res.status}`); 
+        return res.json(); 
+      })
+      .then(d => { 
+        setApiAvailable(true); 
+        return d; 
+      })
       .catch((err) => {
         setApiAvailable(false);
-        addToast('API not available — using local fallback data');
-        return fallback;
+        addToast(`API Error: ${err.message}`);
+        throw err;
       });
 
     Promise.all([
-      fetchJson(base + '/api/stations', IMPORTED_STATIONS),
-      fetchJson(base + '/api/users', usersData),
-      fetchJson(base + '/api/payments', rawPaymentHistory),
-      fetchJson(base + '/api/bookings', loadBookings()),
-      fetchJson(base + '/api/contacts', loadContacts()),
+      fetchJson(base + '/api/stations'),
+      fetchJson(base + '/api/users'),
+      fetchJson(base + '/api/payments'),
+      fetchJson(base + '/api/bookings'),
+      fetchJson(base + '/api/contacts'),
     ]).then(([stationsRes, usersRes, paymentsRes, bookingsRes, contactsRes]) => {
       // stations: normalize raw stations (latitude/longitude) into UI shape (lat/lng)
-      const rawArr = Array.isArray(stationsRes) ? stationsRes : (Array.isArray(stationsRes?.stations) ? stationsRes.stations : stationsDataRaw || IMPORTED_STATIONS);
-      const sUI = (Array.isArray(rawArr) ? rawArr : IMPORTED_STATIONS).map(raw => ({
+      const rawArr = Array.isArray(stationsRes) ? stationsRes : (Array.isArray(stationsRes?.stations) ? stationsRes.stations : []);
+      const sUI = (Array.isArray(rawArr) ? rawArr : []).map(raw => ({
         id: raw.id,
         stationSerial: raw.stationSerial ?? raw.id ?? '',
         name: raw.name,
@@ -398,88 +389,40 @@ export default function App() {
       const uSource = Array.isArray(usersRes?.users) ? usersRes.users : (Array.isArray(usersRes) ? usersRes : []);
       setAppUsers(uSource.map(normalizeUser));
       const aSource = Array.isArray(usersRes?.Admins) ? usersRes.Admins : (Array.isArray(usersRes?.admins) ? usersRes.admins : []);
-      setAdmins(aSource.map(a => ({ id: a.id, username: a.username, name: a.name, role: a.role || 'admin', ...a })));
+      // Also include any users from the users list that have role 'admin'
+      const adminsFromUsers = (Array.isArray(uSource) ? uSource : []).filter(u => String(u.role || '').toLowerCase() === 'admin').map(u => ({ id: u.id, username: (u.email ? String(u.email).split('@')[0] : (u.username || u.name || u.id)), name: u.name || u.username || '', role: 'admin', ...u }));
+      const combined = [
+        ...aSource.map(a => ({ id: a.id, username: a.username, name: a.name, role: a.role || 'admin', ...a })),
+        ...adminsFromUsers
+      ];
+      // dedupe by id or username
+      const seen = new Set();
+      const dedup = [];
+      combined.forEach(x => {
+        const key = x.id != null ? String(x.id) : String(x.username || x.name || '');
+        if (!seen.has(key)) { seen.add(key); dedup.push(x); }
+      });
+      setAdmins(dedup);
 
-      // payments
-      setPayments(normalizePayments(paymentsRes));
-      // bookings: try API result first (bookingsRes), fallback to local
-      try {
-        const bk = Array.isArray(bookingsRes) ? bookingsRes : loadBookings();
-        setBookings(Array.isArray(bk) ? bk : []);
-      } catch (e) {
-        setBookings([]);
-      }
+      // payments - pass stations array for label mapping
+      setPayments(normalizePayments(paymentsRes, sUI));
+      // bookings
+      const bk = Array.isArray(bookingsRes) ? bookingsRes : [];
+      setBookings(bk);
       // contacts
-      try {
-        const cs = Array.isArray(contactsRes) ? contactsRes : loadContacts();
-        setContacts(Array.isArray(cs) ? cs : []);
-      } catch (e) {
-        setContacts([]);
-      }
+      const cs = Array.isArray(contactsRes) ? contactsRes : [];
+      setContacts(cs);
     }).catch((err) => {
-      // if Promise.all itself fails (unlikely with fetchJson), ensure we have sensible fallbacks
-      setStations(IMPORTED_STATIONS);
-      const inUsers = Array.isArray(usersData?.users) ? usersData.users : (Array.isArray(usersData) ? usersData : []);
-      setAppUsers(inUsers.map(normalizeUser));
-      const inAdmins = Array.isArray(usersData?.Admins) ? usersData.Admins : (Array.isArray(usersData?.admins) ? usersData.admins : []);
-      setAdmins(inAdmins.map(a => ({ id: a.id, username: a.username, name: a.name, role: a.role || 'admin', ...a })));
-      setPayments(normalizePayments(rawPaymentHistory));
-      try {
-        const bk = loadBookings();
-        setBookings(Array.isArray(bk) ? bk : []);
-      } catch (e) {
-        setBookings([]);
-      }
-      try {
-        const cs = loadContacts();
-        setContacts(Array.isArray(cs) ? cs : []);
-      } catch (e) {
-        setContacts([]);
-      }
-      console.warn('Admin data load fallback used', err);
+      // if API fails completely, show error and set empty data
+      console.error('Failed to load data from API:', err);
+      addToast('ไม่สามารถโหลดข้อมูลจาก API ได้ กรุณาตรวจสอบการเชื่อมต่อ');
+      setStations([]);
+      setAppUsers([]);
+      setAdmins([]);
+      setPayments([]);
+      setBookings([]);
+      setContacts([]);
     });
-  }, []);
-
-  // Listen for booking changes made elsewhere in the app (localStorage-backed)
-  useEffect(() => {
-    const handler = () => {
-      try {
-        const bk = loadBookings();
-        setBookings(Array.isArray(bk) ? bk : []);
-        addToast && addToast('Bookings updated', 'success', 2500);
-      } catch (e) {
-        // ignore
-      }
-    };
-    if (typeof window !== 'undefined' && window.addEventListener) {
-      window.addEventListener('bookings-changed', handler);
-      const storageHandler = (ev) => { if (ev.key === 'app_bookings_v1') handler(); };
-      window.addEventListener('storage', storageHandler);
-      return () => {
-        window.removeEventListener('bookings-changed', handler);
-        window.removeEventListener('storage', storageHandler);
-      };
-    }
-  }, []);
-
-  // Listen for contacts changes
-  useEffect(() => {
-    const handler = () => {
-      try {
-        const cs = loadContacts();
-        setContacts(Array.isArray(cs) ? cs : []);
-        addToast && addToast('Contacts updated', 'success', 2000);
-      } catch (e) {}
-    };
-    if (typeof window !== 'undefined' && window.addEventListener) {
-      window.addEventListener('contacts-changed', handler);
-      const storageHandler = (ev) => { if (ev.key === 'app_contacts_v1') handler(); };
-      window.addEventListener('storage', storageHandler);
-      return () => {
-        window.removeEventListener('contacts-changed', handler);
-        window.removeEventListener('storage', storageHandler);
-      };
-    }
   }, []);
 
   // Load admin session on mount
@@ -520,7 +463,7 @@ export default function App() {
   }, []);
 
   if (!user) {
-    return <Login onLogin={setUser} />;
+    return <Login onLogin={setUser} admins={admins} />;
   }
 
   const renderContent = () => {
@@ -529,10 +472,10 @@ export default function App() {
       case 'map': return <MapPage stations={stations} />;
       case 'queue': return <PendingBookings bookings={bookings} setBookings={setBookings} stations={stations} setStations={setStations} addToast={addToast} />;
       case 'stations': return <StationManagement stations={stations} setStations={setStations} />;
-      case 'users': return <UserManagement users={appUsers} setUsers={setAppUsers} />;
-      case 'admins': return <AdminManagement admins={admins} setAdmins={setAdmins} />;
-      case 'history': return <HistoryView payments={payments} setPayments={setPayments} />;
-      case 'reports': return <ReportsView stations={stations} bookings={bookings} payments={payments} contacts={contacts} />;
+      case 'users': return <UserManagement users={appUsers} setUsers={setAppUsers} addToast={addToast} admins={admins} setAdmins={setAdmins} />;
+      case 'admins': return <AdminManagement admins={admins} setAdmins={setAdmins} addToast={addToast} />;
+      case 'history': return <HistoryView payments={payments} setPayments={setPayments} stations={stations} />;
+      case 'reports': return <ReportsView stations={stations} bookings={bookings} payments={payments} contacts={contacts} setContacts={setContacts} />;
       default: return <Dashboard stations={stations} bookings={bookings} payments={payments} />;
     }
   };
@@ -710,7 +653,7 @@ const StatCard = ({ title, value, icon, color, meta }) => (
 const StationManagement = ({ stations, setStations }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingStation, setEditingStation] = useState(null);
-  const [newStation, setNewStation] = useState({ name: '', type: 'AC', location: '', availablePorts: 1, allPorts: 1, status: 'available', latitude: '', longitude: '', amenities: [] });
+  const [newStation, setNewStation] = useState({ name: '', type: 'AC', location: '', availablePorts: '', allPorts: '', status: 'available', latitude: '', longitude: '', amenities: [] });
   const [amenityInput, setAmenityInput] = useState('');
 
   const zeroPad = (n, width = 3) => String(n).padStart(width, '0');
@@ -780,7 +723,7 @@ const StationManagement = ({ stations, setStations }) => {
       const uiStation = mapRawToUI(created);
       setStations(prev => [...prev, uiStation]);
       setIsAdding(false);
-      setNewStation({ name: '', type: 'AC', location: '', availablePorts: 1, allPorts: 1, status: 'available', latitude: '', longitude: '', amenities: '' });
+      setNewStation({ name: '', type: 'AC', location: '', availablePorts: '', allPorts: '', status: 'available', latitude: '', longitude: '', amenities: '' });
     }).catch(() => {
       addToast('ไม่สามารถเชื่อมต่อ API — บันทึกไว้ในหน่วยความจำเท่านั้น', 'error');
       // fallback: in-memory create and generate stationSerial
@@ -790,7 +733,7 @@ const StationManagement = ({ stations, setStations }) => {
       const uiStation = mapRawToUI(created);
       setStations(prev => [...prev, uiStation]);
       setIsAdding(false);
-        setNewStation({ name: '', type: 'AC', location: '', availablePorts: 1, allPorts: 1, status: 'available', latitude: '', longitude: '', amenities: [] });
+        setNewStation({ name: '', type: 'AC', location: '', availablePorts: '', allPorts: '', status: 'available', latitude: '', longitude: '', amenities: [] });
     });
   };
 
@@ -821,6 +764,43 @@ const StationManagement = ({ stations, setStations }) => {
     }
   };
 
+  // Extract lat/lng from Google Maps URL
+  const extractLatLngFromUrl = (url) => {
+    try {
+      // Pattern 1: @lat,lng,zoom format
+      const pattern1 = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+      const match1 = url.match(pattern1);
+      if (match1) {
+        return { lat: match1[1], lng: match1[2] };
+      }
+      
+      // Pattern 2: !3d format (sometimes used in Google Maps)
+      const pattern2 = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/;
+      const match2 = url.match(pattern2);
+      if (match2) {
+        return { lat: match2[1], lng: match2[2] };
+      }
+      
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const handleGoogleMapsUrl = (url) => {
+    const coords = extractLatLngFromUrl(url);
+    if (coords) {
+      setNewStation({
+        ...newStation,
+        latitude: coords.lat,
+        longitude: coords.lng
+      });
+      alert(`✓ ดึงพิกัดสำเร็จ!\nLatitude: ${coords.lat}\nLongitude: ${coords.lng}`);
+    } else {
+      alert('ไม่สามารถดึงพิกัดจาก URL นี้ได้\nกรุณาตรวจสอบ URL อีกครั้ง');
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-end mb-4">
@@ -841,17 +821,34 @@ const StationManagement = ({ stations, setStations }) => {
             </select>
 
             <input required placeholder="ที่ตั้ง (location)" className="border p-2 rounded" value={newStation.location} onChange={e => setNewStation({...newStation, location: e.target.value})} />
-            <input required type="number" placeholder="ช่องว่างที่ใช้ได้ (availablePorts)" className="border p-2 rounded" value={newStation.availablePorts} onChange={e => setNewStation({...newStation, availablePorts: Number(e.target.value)})} />
+            <input required type="number" placeholder="จำนวนเครื่องทั้งหมด" className="border p-2 rounded" value={newStation.allPorts} onChange={e => setNewStation({...newStation, allPorts: Number(e.target.value)})} />
 
-            <input required type="number" placeholder="จำนวนช่องทั้งหมด (allPorts)" className="border p-2 rounded" value={newStation.allPorts} onChange={e => setNewStation({...newStation, allPorts: Number(e.target.value)})} />
             <select className="border p-2 rounded" value={newStation.status} onChange={e => setNewStation({...newStation, status: e.target.value})}>
               <option value="available">available</option>
               <option value="maintenance">maintenance</option>
               <option value="charging">charging</option>
             </select>
 
-            <input required type="number" step="any" placeholder="Latitude" className="border p-2 rounded" value={newStation.latitude} onChange={e => setNewStation({...newStation, latitude: e.target.value})} />
-            <input required type="number" step="any" placeholder="Longitude" className="border p-2 rounded" value={newStation.longitude} onChange={e => setNewStation({...newStation, longitude: e.target.value})} />
+            <div className="col-span-2">
+              <label className="block text-sm text-gray-600 mb-2">วาง Google Maps URL เพื่อดึงพิกัดอัตโนมัติ</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="วาง Google Maps URL ที่นี่ (เช่น https://www.google.com/maps/place/...)"
+                  className="border p-2 rounded flex-1"
+                  onPaste={(e) => {
+                    setTimeout(() => {
+                      handleGoogleMapsUrl(e.target.value);
+                      e.target.value = '';
+                    }, 100);
+                  }}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">วาง URL จาก Google Maps แล้วระบบจะดึงพิกัดให้อัตโนมัติ</p>
+            </div>
+
+            <input required type="number" step="any" placeholder="Latitude" className="border p-2 rounded bg-gray-50" value={newStation.latitude} onChange={e => setNewStation({...newStation, latitude: e.target.value})} />
+            <input required type="number" step="any" placeholder="Longitude" className="border p-2 rounded bg-gray-50" value={newStation.longitude} onChange={e => setNewStation({...newStation, longitude: e.target.value})} />
 
             <div className="col-span-2">
               <label className="block text-sm text-gray-600 mb-2">สิ่งอำนวยความสะดวก</label>
@@ -1211,7 +1208,7 @@ const QueueManagement = ({ bookings, setBookings, stations, users }) => {
   );
 };
 
-const HistoryView = ({ payments, setPayments }) => {
+const HistoryView = ({ payments, setPayments, stations }) => {
   const [filter, setFilter] = useState('all');
   const [stationSelected, setStationSelected] = useState('ทั้งหมด');
   const [qSearch, setQSearch] = useState('');
@@ -1250,8 +1247,8 @@ const HistoryView = ({ payments, setPayments }) => {
   const stationOptions = (() => {
     const map = new Map();
 
-    if (Array.isArray(IMPORTED_STATIONS)) {
-      IMPORTED_STATIONS.forEach(s => {
+    if (Array.isArray(stations)) {
+      stations.forEach(s => {
         const key = String(s.stationSerial ?? s.id ?? s.name ?? '').trim();
         if (!key) return;
         const label = s.name || s.stationSerial || s.id || key;
@@ -1280,8 +1277,8 @@ const HistoryView = ({ payments, setPayments }) => {
   // Build a quick lookup map from stationSerial -> station name (from imported stations)
   const stationLabelMap = (() => {
     const m = {};
-    if (Array.isArray(IMPORTED_STATIONS)) {
-      IMPORTED_STATIONS.forEach(s => {
+    if (Array.isArray(stations)) {
+      stations.forEach(s => {
         const key = String(s.stationSerial ?? s.name ?? '').trim();
         if (!key) return;
         m[key] = s.name || s.stationSerial || key;
@@ -1450,11 +1447,12 @@ const HistoryView = ({ payments, setPayments }) => {
   );
 };
 
-const UserManagement = ({ users, setUsers }) => {
+const UserManagement = ({ users, setUsers, addToast, admins, setAdmins }) => {
   const [editingUser, setEditingUser] = useState(null);
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editCarModel, setEditCarModel] = useState('');
+  
 
   const openEditUser = (u) => {
     setEditingUser(u);
@@ -1514,6 +1512,8 @@ const UserManagement = ({ users, setUsers }) => {
       alert('ไม่สามารถลบผู้ใช้ได้');
     }
   };
+
+  
 
   const toggleStatus = (id) => {
     const updated = users.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'banned' : 'active' } : u);
@@ -1595,6 +1595,7 @@ const UserManagement = ({ users, setUsers }) => {
           ))}
         </tbody>
       </table>
+      
       {editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={closeEditUser}></div>
@@ -1625,8 +1626,9 @@ const UserManagement = ({ users, setUsers }) => {
   );
 };
 
-const AdminManagement = ({ admins, setAdmins }) => {
+const AdminManagement = ({ admins, setAdmins, addToast }) => {
     const [newAdmin, setNewAdmin] = useState({ username: '', name: '', role: 'admin' });
+    const [lastGeneratedPassword, setLastGeneratedPassword] = useState('');
     const [editingAdmin, setEditingAdmin] = useState(null);
     const [editUsername, setEditUsername] = useState('');
     const [editName, setEditName] = useState('');
@@ -1670,9 +1672,17 @@ const AdminManagement = ({ admins, setAdmins }) => {
       closeEditAdmin();
     };
 
+    const generateRandomPassword = (len = 10) => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+=<>?';
+      let out = '';
+      for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+      return out;
+    };
+
     const handleAdd = (e) => {
         e.preventDefault();
-      const payload = { ...newAdmin };
+      const generated = generateRandomPassword(10);
+      const payload = { ...newAdmin, password: generated };
       const base = getApiBase();
       fetch(base + '/api/admins', {
         method: 'POST',
@@ -1682,12 +1692,14 @@ const AdminManagement = ({ admins, setAdmins }) => {
         addToast('ผู้ดูแลถูกบันทึกไปยังเซิร์ฟเวอร์', 'success');
         setAdmins(prev => [...prev, created]);
         setNewAdmin({ username: '', name: '', role: 'admin' });
+        setLastGeneratedPassword(created.password || generated);
       }).catch(() => {
         addToast('ไม่สามารถเชื่อมต่อ API — บันทึกผู้ดูแลไว้ในหน่วยความจำเท่านั้น', 'error');
         // fallback: in-memory
         const created = { ...payload, id: Date.now() };
         setAdmins(prev => [...prev, created]);
         setNewAdmin({ username: '', name: '', role: 'admin' });
+        setLastGeneratedPassword(created.password || generated);
       });
     };
 
@@ -1712,6 +1724,20 @@ const AdminManagement = ({ admins, setAdmins }) => {
                     />
                     <button type="submit" className="bg-blue-600 text-white px-6 rounded hover:bg-blue-700">เพิ่ม</button>
                 </form>
+                  {lastGeneratedPassword && (
+                    <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded flex items-center gap-3">
+                      <div className="flex-1 text-sm">
+                        <div className="text-xs text-gray-600">รหัสผ่านที่สร้างขึ้น (โปรดบันทึกไว้)</div>
+                        <div className="font-mono font-semibold text-lg">{lastGeneratedPassword}</div>
+                      </div>
+                      <div>
+                        <button onClick={async () => {
+                          try { await navigator.clipboard.writeText(lastGeneratedPassword); addToast && addToast('คัดลอกรหัสผ่านแล้ว', 'success', 2000); }
+                          catch (e) { addToast && addToast('ไม่สามารถคัดลอกรหัสผ่าน', 'error', 2000); }
+                        }} className="bg-blue-600 text-white px-3 py-1 rounded">คัดลอก</button>
+                      </div>
+                    </div>
+                  )}
              </div>
 
              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
@@ -1776,7 +1802,7 @@ const AdminManagement = ({ admins, setAdmins }) => {
     );
 };
 
-const ReportsView = ({ stations = [], bookings = [], payments = [], contacts = [] }) => {
+const ReportsView = ({ stations = [], bookings = [], payments = [], contacts = [], setContacts }) => {
   const totalStations = stations.length;
   const totalBookings = bookings.length;
   const pendingBookings = bookings.filter(b => String(b.status || '').toLowerCase() === 'pending').length;
@@ -1786,17 +1812,42 @@ const ReportsView = ({ stations = [], bookings = [], payments = [], contacts = [
     return acc;
   }, 0);
 
-  const markResolved = (id) => {
-    const updated = { id, status: 'resolved' };
-    try { updateContact(updated); } catch (e) { console.warn(e); }
-    // refresh list
-    try { const cs = loadContacts(); if (Array.isArray(cs)) contacts = cs; } catch (e) {}
-    window.location.reload();
+  const markResolved = async (id) => {
+    if (!window.confirm('ทำเครื่องหมายว่าอ่านแล้ว?')) return;
+    const base = getApiBase();
+    try {
+      const response = await fetch(`${base}/api/contacts/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'resolved' })
+      });
+      if (response.ok) {
+        setContacts(contacts.map(c => c.id === id ? { ...c, status: 'resolved' } : c));
+        alert('✓ ทำเครื่องหมายว่าอ่านแล้ว');
+      }
+    } catch (e) {
+      console.warn('Failed to mark as resolved:', e);
+      alert('⚠ ไม่สามารถอัพเดทได้');
+    }
   };
 
-  const removeMessage = (id) => {
-    try { deleteContact(id); } catch (e) { console.warn(e); }
-    window.location.reload();
+  const removeMessage = async (id) => {
+    if (!window.confirm('ยืนยันการลบข้อความนี้?')) return;
+    const base = getApiBase();
+    try {
+      const response = await fetch(`${base}/api/contacts/${id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        setContacts(contacts.filter(c => c.id !== id));
+        alert('✓ ลบข้อความสำเร็จ');
+      } else {
+        throw new Error('Failed to delete');
+      }
+    } catch (e) {
+      console.warn('Failed to delete contact:', e);
+      alert('⚠ ไม่สามารถลบได้');
+    }
   };
 
   return (

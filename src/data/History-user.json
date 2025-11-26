@@ -315,6 +315,38 @@
       "userEmail": "",
       "bookingId": null,
       "paidAt": "2025-11-25T22:31:18.360Z"
+    },
+    {
+      "id": "h-022",
+      "station": "Mega Bangna – ลานจอดรถ, สมุทรปราการ",
+      "stationSerial": "2",
+      "type": "AC",
+      "date": "28 พฤศจิกายน 2568",
+      "time": "02:15",
+      "duration": "120 นาที",
+      "energy": 80,
+      "cost": 640,
+      "status": "completed",
+      "userId": 2,
+      "userEmail": "ddd@gmail.com",
+      "bookingId": 7,
+      "paidAt": "2025-11-26T07:02:19.633Z"
+    },
+    {
+      "id": "h-023",
+      "station": "Airport Plaza – เชียงใหม่",
+      "stationSerial": "5",
+      "type": "AC",
+      "date": "28 พฤศจิกายน 2568",
+      "time": "01:00",
+      "duration": "120 นาที",
+      "energy": 80,
+      "cost": 560,
+      "status": "completed",
+      "userId": 2,
+      "userEmail": "ddd@gmail.com",
+      "bookingId": 9,
+      "paidAt": "2025-11-26T08:17:55.428Z"
     }
   ],
   "paymentHistory": [
@@ -577,6 +609,32 @@
       "userId": 5,
       "vehicleId": "V-ST020-20",
       "plate": "กท-1020"
+    },
+    {
+      "id": "p-021",
+      "station": "Mega Bangna – ลานจอดรถ, สมุทรปราการ",
+      "stationSerial": "2",
+      "date": "28 พฤศจิกายน 2568",
+      "time": "02:15",
+      "payment": "PromptPay",
+      "cost": 640,
+      "status": "paid",
+      "userId": 2,
+      "userEmail": "ddd@gmail.com",
+      "bookingId": 7
+    },
+    {
+      "id": "p-022",
+      "station": "Airport Plaza – เชียงใหม่",
+      "stationSerial": "5",
+      "date": "28 พฤศจิกายน 2568",
+      "time": "01:00",
+      "payment": "PromptPay",
+      "cost": 560,
+      "status": "paid",
+      "userId": 2,
+      "userEmail": "ddd@gmail.com",
+      "bookingId": 9
     }
   ]
 }

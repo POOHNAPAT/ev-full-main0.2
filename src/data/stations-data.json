@@ -75,7 +75,7 @@
     "name": "Airport Plaza – เชียงใหม่",
     "type": "Both",
     "location": "เชียงใหม่",
-    "availablePorts": 3,
+    "availablePorts": 2,
     "allPorts": 8,
     "pricePerUnit": 7,
     "status": "available",
@@ -312,23 +312,27 @@
     "name": "วิทยาลัยเทคโนโลยี ระยอง EV",
     "type": "AC",
     "location": "ระยอง",
-    "availablePorts": 1,
+    "availablePorts": 2,
     "allPorts": 2,
-    "status": "maintenance",
+    "status": "available",
     "pricePerUnit": 7.5,
     "latitude": 12.6819,
     "longitude": 101.2553,
     "amenities": [
       "parking"
     ],
-    "stationSerial": "ST019"
+    "stationSerial": "ST019",
+    "lat": 12.6819,
+    "lng": 101.2553,
+    "price": 7.5,
+    "currentSession": null
   },
   {
     "id": 20,
     "name": "ถนนคนเดิน – นครสวรรค์",
     "type": "Both",
     "location": "นครสวรรค์",
-    "availablePorts": 5,
+    "availablePorts": 7,
     "allPorts": 7,
     "status": "available",
     "pricePerUnit": 8,
@@ -338,7 +342,11 @@
       "shopping",
       "cafe"
     ],
-    "stationSerial": "ST020"
+    "stationSerial": "ST020",
+    "lat": 15.703,
+    "lng": 100.1296,
+    "price": 8,
+    "currentSession": null
   },
   {
     "name": "สุกี้ ตี๋น้อย",
@@ -353,5 +361,24 @@
     "amenities": [
       "กากากาากากาก"
     ]
+  },
+  {
+    "name": "กไฟกไฟ",
+    "type": "AC",
+    "location": "กไฟกหฟไกฟไกหฟไ",
+    "availablePorts": 5,
+    "allPorts": 5,
+    "status": "available",
+    "latitude": 13.8675794,
+    "longitude": 100.5907893,
+    "amenities": [
+      "กไฟกไฟ"
+    ],
+    "id": 21,
+    "stationSerial": "ST021",
+    "lat": 13.8675794,
+    "lng": 100.5907893,
+    "price": 0,
+    "currentSession": null
   }
 ]

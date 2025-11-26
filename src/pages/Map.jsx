@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../styles/Map.css';
-import stationsList, { loadStations } from '../data/stations';
 import { useLanguage } from '../components/LanguageContext';
 
 // Ensure Leaflet uses the local marker assets provided by the package
@@ -34,18 +33,39 @@ const dcIcon = L.divIcon({
   popupAnchor: [0, -36]
 });
 
-// Station data is provided by `stationsList` imported from data/stations.js
-
 export default function MapPage(){
   const { language, toggleLanguage, t } = useLanguage();
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedStation, setSelectedStation] = useState(null);
+  const [stationsList, setStationsList] = useState([]);
   const navigate = useNavigate();
-    const mapRef = useRef(null);
+  const mapRef = useRef(null);
+  
+  // Load stations from API
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+        const response = await fetch(apiBase + '/api/stations');
+        if (!response.ok) {
+          throw new Error('Failed to fetch stations');
+        }
+        const data = await response.json();
+        setStationsList(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error fetching stations:', error);
+        setStationsList([]);
+      }
+    };
+    
+    fetchStations();
+  }, []);
 
   useEffect(()=>{
+    if (!stationsList || stationsList.length === 0) return; // Wait for stations to load
+    
     // initialize map
     const map = L.map('map').setView([13.736717,100.523186], 12);
       // expose map so other handlers (dropdown) can pan/zoom
@@ -62,7 +82,11 @@ export default function MapPage(){
       lat: s.latitude,
       lng: s.longitude,
       type: s.type === 'Both' ? 'Both' : (s.type === 'DC' ? 'DC' : 'AC'),
-      amenities: Array.isArray(s.amenities) ? s.amenities : (s.amenities ? [s.amenities] : [])
+      amenities: Array.isArray(s.amenities) ? s.amenities : (s.amenities ? [s.amenities] : []),
+      availablePorts: s.availablePorts || 0,
+      allPorts: s.allPorts || 0,
+      status: s.status || 'available',
+      location: s.location || ''
     }));
 
     const filteredMarkers = filter === 'all'
@@ -85,16 +109,22 @@ export default function MapPage(){
           selectedAmenities.every(amenity => m.amenities.includes(amenity))
         );
 
-    // Load station details from localStorage or default
-    const stations = loadStations();
-
     // Layer to hold all marker layers so we can clear easily
     const markerLayer = L.layerGroup().addTo(map);
 
     // Prepare marker data with station info
     const markerData = amenityFiltered.map(m => ({
       ...m,
-      station: stations[m.id] || { name: m.name, available: 'N/A', power: m.type, amenities: (m.amenities || []).join(', ') }
+      station: { 
+        name: m.name, 
+        availablePorts: m.availablePorts, 
+        allPorts: m.allPorts,
+        available: m.availablePorts, 
+        power: m.type, 
+        amenities: (m.amenities || []).join(', '),
+        status: m.status,
+        location: m.location
+      }
     }));
 
     // Clustering function: group markers that are within `pixelThreshold` of each other
@@ -135,15 +165,17 @@ export default function MapPage(){
             const m = L.marker([d.lat, d.lng], { icon }).addTo(markerLayer);
             m.on('click', () => setSelectedStation({ ...d, ...d.station }));
             m.bindPopup(`
-              <div style="max-width: 250px; font-family: Arial, sans-serif;">
+              <div style="max-width: 280px; font-family: Arial, sans-serif;">
                 <b style="font-size: 16px; color: #333;">${d.name}</b><br/>
+                <span style="color: #666; font-size: 13px;">📍 ${d.location || 'ไม่ระบุ'}</span><br/>
                 <span style="color: #666; font-size: 14px;">${d.type} ${t.evCharger || 'Charger'}</span><br/>
                 <div style="margin: 8px 0; font-size: 13px;">
-                  <div><b>${t.availableLabel}:</b> <span style="color: #22c55e;">${d.station.availablePorts || d.station.available || 0}</span></div>
-                  <div><b>${t.powerLabel}:</b> ${d.station.power}</div>
-                  <div><b>${t.amenitiesLabel}:</b> ${d.station.amenities}</div>
+                  <div style="margin: 4px 0;"><b>สถานะ:</b> <span style="color: ${d.status === 'available' ? '#22c55e' : d.status === 'maintenance' ? '#ef4444' : '#f59e0b'};">${d.status === 'available' ? '✓ พร้อมใช้งาน' : d.status === 'maintenance' ? '⚠ ปิดปรับปรุง' : '⏳ กำลังชาร์จ'}</span></div>
+                  <div style="margin: 4px 0;"><b>${t.availableLabel || 'ช่องว่าง'}:</b> <span style="color: #22c55e; font-weight: bold;">${d.availablePorts} / ${d.allPorts}</span></div>
+                  <div style="margin: 4px 0;"><b>${t.powerLabel || 'ประเภท'}:</b> ${d.station.power}</div>
+                  <div style="margin: 4px 0;"><b>${t.amenitiesLabel || 'สิ่งอำนวยความสะดวก'}:</b> ${d.station.amenities || 'ไม่มี'}</div>
                 </div>
-                <button onclick="window.location.href='/booking/${d.id}'" style="background: #2563eb; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">${t.bookButton || t.bookThisStation || 'Book'}</button>
+                <button onclick="window.location.href='/booking/${d.id}'" style="background: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; margin-top: 8px; width: 100%;">${t.bookButton || t.bookThisStation || 'จองเลย'}</button>
               </div>
             `);
           } else {
@@ -213,7 +245,7 @@ export default function MapPage(){
       map.off('moveend zoomend', renderClusters);
       map.remove();
     }
-  }, [filter, searchQuery, selectedAmenities, t]);
+  }, [stationsList, filter, searchQuery, selectedAmenities, t]);
   // Handle selecting a station from the dropdown: pan/zoom to it and show details
   const handleSelectStation = (e) => {
     const id = e.target.value;
@@ -228,7 +260,19 @@ export default function MapPage(){
     const lat = s.latitude;
     const lng = s.longitude;
     // set selected station details
-    setSelectedStation({ id: String(s.id), name: s.name, lat, lng, type: s.type, amenities: Array.isArray(s.amenities) ? s.amenities.join(', ') : (s.amenities || '') });
+    setSelectedStation({ 
+      id: String(s.id), 
+      name: s.name, 
+      lat, 
+      lng, 
+      type: s.type, 
+      amenities: Array.isArray(s.amenities) ? s.amenities.join(', ') : (s.amenities || ''),
+      availablePorts: s.availablePorts || 0,
+      allPorts: s.allPorts || 0,
+      power: s.type,
+      status: s.status || 'available',
+      location: s.location || ''
+    });
 
     if (mapRef.current) {
       try {
@@ -362,9 +406,10 @@ export default function MapPage(){
             onClick={() => setFilter('DC')}
             className={`filter-button ${
               filter === 'DC'
-                ? 'bg-red-600 text-white shadow-lg'
+                ? 'text-white shadow-lg'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
+            style={filter === 'DC' ? {backgroundColor: '#EBA823'} : {}}
           >
             ⚡ DC Fast Charger
           </button>
@@ -385,15 +430,47 @@ export default function MapPage(){
 
       {selectedStation && (
         <div className="bg-white rounded-2xl shadow-xl p-6 mt-6">
-          <h3 className="text-2xl font-bold mb-4 text-gray-800">{t.stationDetails}</h3>
+          <h3 className="text-2xl font-bold mb-4 text-gray-800">{t.stationDetails || 'รายละเอียดสถานี'}</h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="text-xl font-semibold mb-2 text-blue-600">{selectedStation.name}</h4>
-              <div className="space-y-2 text-gray-700">
-                <p><span className="font-medium">{t.typeLabel}:</span> {selectedStation.type} {t.evCharger}</p>
-                <p><span className="font-medium">{t.availableLabel}:</span> <span className="text-green-600 font-semibold">{selectedStation.availablePorts || selectedStation.available || 0}</span></p>
-                <p><span className="font-medium">{t.powerLabel}:</span> {selectedStation.power}</p>
-                <p><span className="font-medium">{t.amenitiesLabel}:</span> {selectedStation.amenities}</p>
+              <h4 className="text-xl font-semibold mb-3 text-blue-600">{selectedStation.name}</h4>
+              <div className="space-y-3 text-gray-700">
+                <p className="flex items-center gap-2">
+                  <span className="font-medium">📍 ที่ตั้ง:</span> 
+                  <span>{selectedStation.location || 'ไม่ระบุ'}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="font-medium">🔌 {t.typeLabel || 'ประเภท'}:</span> 
+                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">{selectedStation.type} {t.evCharger || 'Charger'}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="font-medium">✓ สถานะ:</span> 
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    selectedStation.status === 'available' ? 'bg-green-100 text-green-700' : 
+                    selectedStation.status === 'maintenance' ? 'bg-red-100 text-red-700' : 
+                    'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {selectedStation.status === 'available' ? 'พร้อมใช้งาน' : 
+                     selectedStation.status === 'maintenance' ? 'ปิดปรับปรุง' : 
+                     'กำลังชาร์จ'}
+                  </span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="font-medium">🔋 {t.availableLabel || 'ช่องว่าง'}:</span> 
+                  <span className="text-green-600 font-bold text-lg">{selectedStation.availablePorts || 0} / {selectedStation.allPorts || 0}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="font-medium">⚡ {t.powerLabel || 'กำลังไฟ'}:</span> 
+                  <span>{selectedStation.power}</span>
+                </p>
+                <p className="flex items-start gap-2">
+                  <span className="font-medium">🏢 {t.amenitiesLabel || 'สิ่งอำนวยความสะดวก'}:</span> 
+                  <span className="flex-1">{selectedStation.amenities || 'ไม่มี'}</span>
+                </p>
+                <p className="flex items-start gap-2 text-sm text-gray-500">
+                  <span className="font-medium">📍 พิกัด:</span> 
+                  <span>{selectedStation.lat.toFixed(6)}, {selectedStation.lng.toFixed(6)}</span>
+                </p>
               </div>
             </div>
             <div className="flex items-center justify-end">
@@ -401,7 +478,7 @@ export default function MapPage(){
                 onClick={() => navigate(`/booking/${selectedStation.id}`)}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition duration-200 hover:scale-105"
               >
-                {t.bookThisStation}
+                {t.bookThisStation || 'จองสถานีนี้'}
               </button>
             </div>
           </div>

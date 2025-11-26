@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { loadBookings, updateBooking } from '../data/bookings';
 import '../styles/Booking.css';
 
 function timeToMinutes(t) {
@@ -18,29 +17,16 @@ export default function Payment() {
 
   useEffect(() => {
     const loadBookingData = async () => {
-      let all = [];
-      
-      // Try to load from API first
       try {
-        const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-          ? 'http://localhost:4000'
-          : '';
-        if (apiBase) {
-          const response = await fetch(`${apiBase}/api/bookings`);
-          if (response.ok) {
-            all = await response.json();
-          }
+        // Load from API only
+        const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+        const response = await fetch(`${apiBase}/api/bookings`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch bookings');
         }
-      } catch (apiError) {
-        console.warn('Failed to load from API, using localStorage', apiError);
-      }
-      
-      // Fallback to localStorage
-      if (!all || all.length === 0) {
-        all = loadBookings();
-      }
-      
-      const b = all.find(x => String(x.id) === String(bookingId));
+        
+        const all = await response.json();
+        const b = all.find(x => String(x.id) === String(bookingId));
       if (b) {
         setBooking(b);
         // Calculate cost from pricePerUnit * energy
@@ -50,26 +36,22 @@ export default function Payment() {
         const ratePerHour = chargerType.toLowerCase().includes('dc') ? 60 : 40; // kW/hour
         const energy = Math.round(((mins / 60) * ratePerHour) * 10) / 10;
         
-        // Load station to get pricePerUnit
-        let pricePerUnit = 7.5; // default
-        try {
-          const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:4000' : '';
-          if (apiBase) {
-            const stationsResp = await fetch(`${apiBase}/api/stations`);
-            if (stationsResp.ok) {
-              const stationsList = await stationsResp.json();
-              const station = stationsList.find(s => String(s.id) === String(b.stationId));
-              if (station && station.pricePerUnit) {
-                pricePerUnit = station.pricePerUnit;
-              }
+          // Load station to get pricePerUnit
+          let pricePerUnit = 7.5; // default
+          const stationsResp = await fetch(`${apiBase}/api/stations`);
+          if (stationsResp.ok) {
+            const stationsList = await stationsResp.json();
+            const station = stationsList.find(s => String(s.id) === String(b.stationId));
+            if (station && station.pricePerUnit) {
+              pricePerUnit = station.pricePerUnit;
             }
           }
-        } catch (e) {
-          console.warn('Could not load station price, using default', e);
+          
+          const cost = Math.round(energy * pricePerUnit * 100) / 100;
+          setAmount(cost);
         }
-        
-        const cost = Math.round(energy * pricePerUnit * 100) / 100;
-        setAmount(cost);
+      } catch (error) {
+        console.error('Error loading booking:', error);
       }
     };
     
@@ -84,41 +66,28 @@ export default function Payment() {
       await new Promise(r => setTimeout(r, 800));
       
       const paymentData = { status: 'paid', paidAt: new Date().toISOString(), paidAmount: amount };
-      let updated = null;
       
-      // Try to update via API first
-      try {
-        const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-          ? 'http://localhost:4000'
-          : '';
-        if (apiBase) {
-          const response = await fetch(`${apiBase}/api/bookings/${booking.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(paymentData)
-          });
-          if (response.ok) {
-            updated = await response.json();
-            console.log('Updated booking payment via API:', updated);
-          }
-        }
-      } catch (apiError) {
-        console.warn('Failed to update payment via API, using localStorage', apiError);
+      // Update via API
+      const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
+      const response = await fetch(`${apiBase}/api/bookings/${booking.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update booking');
       }
       
-      // Fallback to localStorage if API failed
-      if (!updated) {
-        updated = updateBooking({ ...booking, ...paymentData });
-      }
+      const updated = await response.json();
+      console.log('Updated booking payment via API:', updated);
       
-      if (updated) {
-        // Compute minutes & charger type
-        const mins = Math.max(1, timeToMinutes(booking.endTime) - timeToMinutes(booking.startTime));
-        const rawName = String(booking.stationName || '').toLowerCase();
-        const chargerType = (rawName.includes('dc') || rawName.includes('fast')) ? 'DC Fast' : 'AC';
-        const ratePerHour = chargerType.toLowerCase().includes('dc') ? 60 : 40; // kW/hour
-        const energy = Math.round(((mins / 60) * ratePerHour) * 10) / 10; // one decimal
-        const apiBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? 'http://localhost:4000' : '';
+      // Compute minutes & charger type
+      const mins = Math.max(1, timeToMinutes(booking.endTime) - timeToMinutes(booking.startTime));
+      const rawName = String(booking.stationName || '').toLowerCase();
+      const chargerType = (rawName.includes('dc') || rawName.includes('fast')) ? 'DC Fast' : 'AC';
+      const ratePerHour = chargerType.toLowerCase().includes('dc') ? 60 : 40; // kW/hour
+      const energy = Math.round(((mins / 60) * ratePerHour) * 10) / 10; // one decimal
 
         // Read saved payment method from localStorage
         let paymentMethod = 'PromptPay'; // default
@@ -157,51 +126,41 @@ export default function Payment() {
           paymentMethod
         };
 
-        // Try to save both session & payment separately
-        if (apiBase) {
-          try {
-            console.log('Sending session history:', basePayload);
-            const sessionResp = await fetch(`${apiBase}/api/history/session`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(basePayload)
-            });
-            if (sessionResp.ok) {
-              const sessionSaved = await sessionResp.json();
-              console.log('✅ Session saved:', sessionSaved);
-            } else {
-              console.warn('⚠️ Session save failed status', sessionResp.status);
-            }
-          } catch (e) {
-            console.warn('Session history request failed', e);
-          }
-          try {
-            console.log('Sending payment history:', basePayload);
-            const paymentResp = await fetch(`${apiBase}/api/history/payment`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(basePayload)
-            });
-            if (paymentResp.ok) {
-              const paymentSaved = await paymentResp.json();
-              console.log('✅ Payment saved:', paymentSaved);
-            } else {
-              console.warn('⚠️ Payment save failed status', paymentResp.status);
-            }
-          } catch (e) {
-            console.warn('Payment history request failed', e);
-          }
-        } else {
-          console.warn('⚠️ API base not available; history not persisted to file');
+      // Save session & payment history via API
+      try {
+        console.log('Sending session history:', basePayload);
+        const sessionResp = await fetch(`${apiBase}/api/history/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(basePayload)
+        });
+        if (sessionResp.ok) {
+          const sessionSaved = await sessionResp.json();
+          console.log('✅ Session saved:', sessionSaved);
         }
-        
-        // Dispatch event to notify other components
-        window.dispatchEvent(new CustomEvent('bookings-changed', { detail: { action: 'update', booking: updated } }));
-        // navigate to receipt view if available
-        navigate(`/receipt/${booking.id}`);
-      } else {
-        alert('ไม่สามารถทำรายการชำระเงินได้ กรุณาลองใหม่');
+      } catch (e) {
+        console.warn('Session history request failed', e);
       }
+      
+      try {
+        console.log('Sending payment history:', basePayload);
+        const paymentResp = await fetch(`${apiBase}/api/history/payment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(basePayload)
+        });
+        if (paymentResp.ok) {
+          const paymentSaved = await paymentResp.json();
+          console.log('✅ Payment saved:', paymentSaved);
+        }
+      } catch (e) {
+        console.warn('Payment history request failed', e);
+      }
+      
+      // Dispatch event to notify other components
+      window.dispatchEvent(new CustomEvent('bookings-changed', { detail: { action: 'update', booking: updated } }));
+      // navigate to receipt view if available
+      navigate(`/receipt/${booking.id}`);
     } catch (e) {
       console.error(e);
       alert('เกิดข้อผิดพลาดขณะชำระเงิน');
