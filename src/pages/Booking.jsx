@@ -18,6 +18,7 @@ const QRCode = ({ value }) => (
 export default function Booking() {
   const { id } = useParams();
   const [stations, setStations] = useState([]);
+  // station starts as null; accesses must be guarded (previously caused crash)
   const [station, setStation] = useState(null);
   const [step, setStep] = useState('select');
   const [startTime, setStartTime] = useState('');
@@ -37,13 +38,13 @@ export default function Booking() {
         }
         const data = await response.json();
         setStations(Array.isArray(data) ? data : []);
-        
+
         // Find the station by id
         const foundStation = (Array.isArray(data) ? data : []).find(s => String(s.id) === String(id) || String(s.stationSerial) === String(id));
-        setStation(foundStation || { id, name: id, available: 'N/A', power: 'N/A', amenities: 'N/A' });
+        setStation(foundStation || { id, name: id, availablePorts: 1, available: 'N/A', power: 'N/A', amenities: 'N/A' });
       } catch (error) {
         console.error('Error fetching stations:', error);
-        setStation({ id, name: id, available: 'N/A', power: 'N/A', amenities: 'N/A' });
+        setStation({ id, name: id, availablePorts: 1, available: 'N/A', power: 'N/A', amenities: 'N/A' });
       }
     };
     
@@ -61,19 +62,20 @@ export default function Booking() {
 
   const handleBook = () => {
     if (!user) {
-      // remember to redirect back after login
       try { sessionStorage.setItem('allowLogin', '1'); sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search); } catch (e) {}
       navigate('/login');
       return;
     }
-    
-    // Check if station has available ports (use availablePorts from stations-data.json)
-    const availablePorts = Number(station.availablePorts || 0);
+    if (!station) {
+      alert('กำลังโหลดข้อมูลสถานี กรุณารอสักครู่');
+      return;
+    }
+    // Treat unknown availability as available (default 1) so user can submit
+    const availablePorts = station?.availablePorts == null ? 1 : Number(station?.availablePorts || 0);
     if (availablePorts <= 0) {
       alert('สถานีนี้เต็มแล้ว ไม่สามารถจองได้ในขณะนี้ กรุณาเลือกสถานีอื่น');
       return;
     }
-    
     if (startTime && endTime) {
       setStep('confirm');
     }
@@ -133,6 +135,13 @@ export default function Booking() {
       
       const created = await resp.json();
       console.log('Created booking via API:', created);
+
+      // Best-effort: decrement station availablePorts if API supports it
+      try {
+        await fetch(base + '/api/stations/' + encodeURIComponent(id) + '/decrement', { method: 'PUT' });
+      } catch (e) {
+        // ignore if not supported
+      }
       
       // inform user and wait for admin approval
       alert('คำร้องการจองถูกส่งแล้ว รอการอนุมัติจากผู้ดูแลระบบ');
@@ -156,7 +165,7 @@ export default function Booking() {
             <div className="station-info">
               <FaMapMarkerAlt className="station-info-icon" />
               <div className="station-details">
-                <p className="station-name">สถานี: {station.name}</p>
+                <p className="station-name">สถานี: {station?.name}</p>
                 <p className="station-date">
                   <FaCalendarAlt className="station-date-icon" />
                   วันที่ 28 พฤศจิกายน 2568
@@ -213,23 +222,36 @@ export default function Booking() {
                   ข้อมูลจุดชาร์จ
                 </h3>
                 <p className="details-item">
-                  จำนวนจุดว่าง: 
-                  <span className={`font-medium ${Number(station.availablePorts || 0) > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {station.availablePorts || 0}
-                  </span>
-                  {Number(station.availablePorts || 0) <= 0 && <span className="text-xs text-red-600 ml-2">(เต็ม)</span>}
+                  จำนวนจุดว่าง:
+                  {(() => {
+                    const ap = station?.availablePorts == null ? 1 : Number(station?.availablePorts || 0);
+                    return (
+                      <span className={`font-medium ${ap > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {station?.availablePorts == null ? '-' : (station?.availablePorts || 0)}
+                      </span>
+                    );
+                  })()}
+                  {(() => {
+                    const ap = station?.availablePorts == null ? 1 : Number(station?.availablePorts || 0);
+                    return ap <= 0 ? <span className="text-xs text-red-600 ml-2">(เต็ม)</span> : null;
+                  })()}
                 </p>
-                <p className="details-item">กำลังไฟ: <span className="font-medium">{station.power}</span></p>
-                <p className="details-item">สิ่งอำนวยความสะดวก: {station.amenities}</p>
+                <p className="details-item">กำลังไฟ: <span className="font-medium">{station?.power || '-'}</span></p>
+                <p className="details-item">สิ่งอำนวยความสะดวก: {station?.amenities || '-'}</p>
               </div>
 
               <button
                 onClick={handleBook}
                 className="book-button"
-                disabled={!startTime || !endTime || timeToMinutes(endTime) <= timeToMinutes(startTime) || Number(station.availablePorts || 0) <= 0}
+                disabled={(() => {
+                  if (!station || !startTime || !endTime) return true;
+                  if (timeToMinutes(endTime) <= timeToMinutes(startTime)) return true;
+                  const ap = station?.availablePorts == null ? 1 : Number(station?.availablePorts || 0);
+                  return ap <= 0;
+                })()}
               >
                 <FaCheckCircle />
-                {Number(station.availablePorts || 0) <= 0 ? 'สถานีเต็ม' : 'จองเลย'}
+                {(station?.availablePorts == null ? 1 : Number(station?.availablePorts || 0)) <= 0 ? 'สถานีเต็ม' : 'จองเลย'}
               </button>
             </div>
           ) : (
@@ -246,11 +268,11 @@ export default function Booking() {
                 </p>
                 <p className="confirmation-detail">
                   <FaBolt className="confirmation-detail-icon bolt" />
-                  จุดชาร์จ: {station.availablePorts || 0}, {station.power}
+                  จุดชาร์จ: {station?.availablePorts || 0}, {station?.power || '-'}
                 </p>
                 <p className="confirmation-detail">
                   <FaMapMarkerAlt className="confirmation-detail-icon marker" />
-                  สิ่งอำนวยความสะดวก: {station.amenities}
+                  สิ่งอำนวยความสะดวก: {station?.amenities || '-'}
                 </p>
               </div>
               <div className="action-buttons">

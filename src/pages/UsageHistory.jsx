@@ -52,10 +52,13 @@ export default function UsageHistory() {
           payment: p.payment || existing.payment,
           cost: (typeof p.cost !== 'undefined' ? p.cost : existing.cost),
           status: p.status || existing.status,
+          paymentId: p.id, // keep payment id for API operations
+          refundedAt: p.refundedAt || existing.refundedAt,
+          refundRequestedAt: p.refundRequestedAt || existing.refundRequestedAt,
           _hasPayment: true,
         });
       } else {
-        map.set(key, { ...p, _isPaymentOnly: true });
+        map.set(key, { ...p, _isPaymentOnly: true, paymentId: p.id });
       }
     });
 
@@ -102,7 +105,8 @@ export default function UsageHistory() {
   };
 
   const handleRefundRequest = async (item) => {
-    if (!item.id) {
+    const paymentId = item.paymentId || item.id;
+    if (!paymentId) {
       alert('ไม่สามารถขอคืนเงินได้ เนื่องจากไม่พบข้อมูลรายการ');
       return;
     }
@@ -117,11 +121,11 @@ export default function UsageHistory() {
 
     if (!confirmRefund) return;
 
-    setRefundingId(item.id);
+    setRefundingId(paymentId);
 
     try {
       const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:4000';
-      const response = await fetch(`${apiBase}/api/payments/${item.id}/request-refund`, {
+      const response = await fetch(`${apiBase}/api/payments/${paymentId}/request-refund`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -133,11 +137,12 @@ export default function UsageHistory() {
       if (response.ok) {
         alert('✓ ส่งคำขอคืนเงินสำเร็จ\n\nแอดมินจะตรวจสอบและดำเนินการภายใน 1-3 วันทำการ');
         // Update local state
-        setHistoryList(historyList.map(h => 
-          h.id === item.id 
+        setHistoryList(historyList.map(h => {
+          const hPaymentId = h.paymentId || h.id;
+          return hPaymentId === paymentId
             ? { ...h, status: 'refund_requested', refundRequestedAt: new Date().toISOString() }
-            : h
-        ));
+            : h;
+        }));
       } else {
         throw new Error('Failed to request refund');
       }
@@ -253,16 +258,16 @@ export default function UsageHistory() {
                           </Link>
                           <button
                             onClick={() => handleRefundRequest(item)}
-                            disabled={refundingId === item.id}
+                            disabled={refundingId === (item.paymentId || item.id)}
                             className="receipt-button"
                             style={{
                               backgroundColor: '#ef4444',
                               border: 'none',
-                              cursor: refundingId === item.id ? 'wait' : 'pointer',
-                              opacity: refundingId === item.id ? 0.6 : 1
+                              cursor: refundingId === (item.paymentId || item.id) ? 'wait' : 'pointer',
+                              opacity: refundingId === (item.paymentId || item.id) ? 0.6 : 1
                             }}
                           >
-                            {refundingId === item.id ? '⏳ กำลังส่ง...' : '💰 ขอคืนเงิน'}
+                            {refundingId === (item.paymentId || item.id) ? '⏳ กำลังส่ง...' : '💰 ขอคืนเงิน'}
                           </button>
                         </>
                       )}

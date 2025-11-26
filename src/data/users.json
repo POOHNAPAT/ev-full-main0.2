@@ -28,6 +28,16 @@
       "modelcar": "",
       "telephone": "",
       "historyCookies": 0
+    },
+    {
+      "id": 4,
+      "email": "sddds@gmail.com",
+      "password": "ddd",
+      "name": "sddds",
+      "modelcar": "",
+      "telephone": "",
+      "status": "active",
+      "historyCookies": 0
     }
   ],
   "Admins": [

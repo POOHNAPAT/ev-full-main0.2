@@ -347,6 +347,22 @@
       "userEmail": "ddd@gmail.com",
       "bookingId": 9,
       "paidAt": "2025-11-26T08:17:55.428Z"
+    },
+    {
+      "id": "h-024",
+      "station": "Mega Bangna – ลานจอดรถ, สมุทรปราการ",
+      "stationSerial": "2",
+      "type": "AC",
+      "date": "28 พฤศจิกายน 2568",
+      "time": "00:45",
+      "duration": "105 นาที",
+      "energy": 70,
+      "cost": 560,
+      "status": "completed",
+      "userId": 4,
+      "userEmail": "sddds@gmail.com",
+      "bookingId": 10,
+      "paidAt": "2025-11-26T09:31:03.845Z"
     }
   ],
   "paymentHistory": [
@@ -635,6 +651,23 @@
       "userId": 2,
       "userEmail": "ddd@gmail.com",
       "bookingId": 9
+    },
+    {
+      "id": "p-023",
+      "station": "Mega Bangna – ลานจอดรถ, สมุทรปราการ",
+      "stationSerial": "2",
+      "date": "28 พฤศจิกายน 2568",
+      "time": "00:45",
+      "payment": "PromptPay",
+      "cost": 560,
+      "status": "refunded",
+      "userId": 4,
+      "userEmail": "sddds@gmail.com",
+      "bookingId": 10,
+      "refundRequestedAt": "2025-11-26T09:39:12.639Z",
+      "refundRequestedBy": 4,
+      "refundReason": "User requested refund",
+      "refundedAt": "2025-11-26T09:39:23.070Z"
     }
   ]
 }
