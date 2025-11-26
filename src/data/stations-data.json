@@ -278,7 +278,7 @@
     "name": "ห้างโลตัส นนทบุรี",
     "type": "AC",
     "location": "นนทบุรี",
-    "availablePorts": 3,
+    "availablePorts": 1,
     "allPorts": 5,
     "status": "available",
     "pricePerUnit": 7.5,
