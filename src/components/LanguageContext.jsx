@@ -1,17 +1,37 @@
+// นำเข้า React และ hooks สำหรับจัดการ context
 import React, { createContext, useContext, useState } from 'react';
 
+// สร้าง Context สำหรับการจัดการภาษาทั่วทั้งแอปพลิเคชัน
 const LanguageContext = createContext();
 
+/**
+ * Custom Hook สำหรับเข้าถึง Language Context
+ * @returns {Object} context object ที่มี language, toggleLanguage, และ translations
+ */
 export const useLanguage = () => useContext(LanguageContext);
 
+/**
+ * LanguageProvider Component
+ * จัดการการเปลี่ยนภาษาและข้อความแปลทั่วทั้งแอปพลิเคชัน
+ * @param {Object} children - Component ลูกที่จะได้รับ context
+ */
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState('th'); // 'th' for Thai, 'en' for English
+  // State สำหรับเก็บภาษาปัจจุบัน ('th' สำหรับภาษาไทย, 'en' สำหรับภาษาอังกฤษ)
+  const [language, setLanguage] = useState('th');
 
+  /**
+   * ฟังก์ชันสลับภาษาระหว่างไทยและอังกฤษ
+   */
   const toggleLanguage = () => {
     setLanguage(prev => prev === 'th' ? 'en' : 'th');
   };
 
+  /**
+   * Object เก็บข้อความแปลทั้งหมดของทั้งสองภาษา
+   * แต่ละภาษาจะมี key-value pairs ของข้อความแปล
+   */
   const translations = {
+    // ข้อความภาษาไทย
     th: {
       home: 'หน้าแรก',
       map: 'แผนที่สถานีชาร์จ',
@@ -74,6 +94,7 @@ export const LanguageProvider = ({ children }) => {
     },
   };
 
+  // ส่งค่า context ไปยัง component ลูกทั้งหมด
   return (
     <LanguageContext.Provider value={{ language, toggleLanguage, t: translations[language] }}>
       {children}

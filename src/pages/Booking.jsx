@@ -171,6 +171,25 @@ export default function Booking() {
                   วันที่ 28 พฤศจิกายน 2568
                 </p>
               </div>
+              {/* Availability Badge */}
+              {(() => {
+                const ap = station?.availablePorts == null ? null : Number(station?.availablePorts || 0);
+                const isFull = ap !== null && ap <= 0;
+                const isLow = ap !== null && ap > 0 && ap <= 2;
+                
+                return (
+                  <div className={`availability-badge ${
+                    isFull ? 'availability-full' : 
+                    isLow ? 'availability-low' : 
+                    'availability-good'
+                  }`}>
+                    <div className="availability-label">ช่องว่างเหลือ</div>
+                    <div className="availability-number">{ap !== null ? ap : '?'}</div>
+                    {isFull && <div className="availability-status">⚠️ เต็ม</div>}
+                    {isLow && <div className="availability-status">รีบจอง!</div>}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -221,23 +240,32 @@ export default function Booking() {
                   <FaBolt className="details-title-icon" />
                   ข้อมูลจุดชาร์จ
                 </h3>
-                <p className="details-item">
-                  จำนวนจุดว่าง:
-                  {(() => {
-                    const ap = station?.availablePorts == null ? 1 : Number(station?.availablePorts || 0);
-                    return (
-                      <span className={`font-medium ${ap > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {station?.availablePorts == null ? '-' : (station?.availablePorts || 0)}
-                      </span>
-                    );
-                  })()}
-                  {(() => {
-                    const ap = station?.availablePorts == null ? 1 : Number(station?.availablePorts || 0);
-                    return ap <= 0 ? <span className="text-xs text-red-600 ml-2">(เต็ม)</span> : null;
-                  })()}
-                </p>
-                <p className="details-item">กำลังไฟ: <span className="font-medium">{station?.power || '-'}</span></p>
-                <p className="details-item">สิ่งอำนวยความสะดวก: {station?.amenities || '-'}</p>
+                <div className="details-grid">
+                  <div className="detail-card">
+                    <div className="detail-icon">⚡</div>
+                    <div className="detail-content">
+                      <div className="detail-label">กำลังไฟ</div>
+                      <div className="detail-value">{station?.power || '-'}</div>
+                    </div>
+                  </div>
+                  <div className="detail-card">
+                    <div className="detail-icon">🔌</div>
+                    <div className="detail-content">
+                      <div className="detail-label">ประเภท</div>
+                      <div className="detail-value">{station?.type || 'AC'}</div>
+                    </div>
+                  </div>
+                </div>
+                {station?.amenities && station.amenities !== 'N/A' && (
+                  <div className="amenities-section">
+                    <div className="amenities-label">สิ่งอำนวยความสะดวก:</div>
+                    <div className="amenities-list">
+                      {(typeof station.amenities === 'string' ? station.amenities.split(',') : Array.isArray(station.amenities) ? station.amenities : []).map((a, i) => (
+                        <span key={i} className="amenity-tag">{a.trim()}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <button

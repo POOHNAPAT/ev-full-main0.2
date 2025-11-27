@@ -1,25 +1,43 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const cors = require('cors');
+/**
+ * API Server สำหรับระบบ EV Charger
+ * จัดการ CRUD operations สำหรับ stations, users, bookings, payments, contacts
+ * ใช้ JSON files เป็น database
+ */
 
+// นำเข้า dependencies ที่จำเป็น
+const express = require('express'); // Web framework
+const fs = require('fs'); // File system operations
+const path = require('path'); // Path utilities
+const cors = require('cors'); // Enable CORS
+
+// สร้าง Express app instance
 const app = express();
+// เปิดใช้งาน CORS สำหรับให้ frontend เรียก API ได้
 app.use(cors());
+// เปิดใช้งาน JSON parser สำหรับ request body
 app.use(express.json());
 
+// กำหนด path ของ data directory และไฟล์ข้อมูลต่างๆ
 const dataDir = path.resolve(__dirname, '..', 'src', 'data');
-const stationsFile = path.join(dataDir, 'stations-data.json');
-const usersFile = path.join(dataDir, 'users.json');
-const paymentsFile = path.join(dataDir, 'History-user.json');
-const bookingsFile = path.join(dataDir, 'bookings.json');
-const contactsFile = path.join(dataDir, 'contacts.json');
+const stationsFile = path.join(dataDir, 'stations-data.json'); // ข้อมูลสถานีชาร์จ
+const usersFile = path.join(dataDir, 'users.json'); // ข้อมูลผู้ใช้
+const paymentsFile = path.join(dataDir, 'History-user.json'); // ประวัติการชำระเงิน
+const bookingsFile = path.join(dataDir, 'bookings.json'); // ข้อมูลการจอง
+const contactsFile = path.join(dataDir, 'contacts.json'); // ข้อมูลการติดต่อ
 
+/**
+ * ฟังก์ชันอ่านไฟล์ JSON
+ * @param {string} filePath - path ของไฟล์ที่ต้องการอ่าน
+ * @returns {Object|null} - ข้อมูลที่อ่านได้ หรือ null ถ้ามีข้อผิดพลาด
+ */
 function readJson(filePath) {
   try {
+    // ตรวจสอบว่าไฟล์มีอยู่จริงหรือไม่
     if (!fs.existsSync(filePath)) {
       console.error(`File does not exist: ${filePath}`);
       return null;
     }
+    // อ่านไฟล์และแปลงจาก JSON string เป็น Object
     const raw = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(raw);
   } catch (e) {
@@ -28,26 +46,41 @@ function readJson(filePath) {
   }
 }
 
+/**
+ * ฟังก์ชันเขียนข้อมูลลงไฟล์ JSON
+ * @param {string} filePath - path ของไฟล์ที่ต้องการเขียน
+ * @param {Object} data - ข้อมูลที่ต้องการบันทึก
+ */
 function writeJson(filePath, data) {
+  // แปลง Object เป็น JSON string และเขียนลงไฟล์
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
+/**
+ * API Endpoint: GET /api/stations
+ * ดึงข้อมูลสถานีชาร์จทั้งหมด
+ */
 app.get('/api/stations', (req, res) => {
   const data = readJson(stationsFile);
   if (data == null) {
     console.error('Failed to read stations file:', stationsFile);
     return res.status(200).json([]);
   }
+  // ส่งข้อมูลเป็น array (ตรวจสอบว่าเป็น array ก่อน)
   res.json(Array.isArray(data) ? data : []);
 });
 
-// Return all users (file-backed)
+/**
+ * API Endpoint: GET /api/users
+ * ดึงข้อมูลผู้ใช้ทั้งหมด
+ */
 app.get('/api/users', (req, res) => {
   const data = readJson(usersFile);
   if (!data) {
     console.error('Failed to read users file:', usersFile);
     return res.status(200).json([]);
   }
+  // ดึง users array จาก data object
   const users = Array.isArray(data.users) ? data.users : [];
   res.json(users);
 });

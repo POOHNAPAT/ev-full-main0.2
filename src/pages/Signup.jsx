@@ -15,12 +15,8 @@ export default function Signup(){
     try{
       const normalizedEmail = String(email || '').trim().toLowerCase();
       const created = await signup(normalizedEmail, password);
-      if (created && created.status === 'pending') {
-        // show friendly message and don't log in
-        setError('คำร้องสมัครสมาชิกถูกส่งเรียบร้อย รอการอนุมัติจากผู้ดูแลระบบ');
-        return;
-      }
-      navigate('/');
+      // หลังสมัครเสร็จ ให้กลับไปหน้าล็อกอิน โดยยังไม่เข้าสู่ระบบ
+      navigate('/login');
     }catch(err){
       setError(err.message);
     }

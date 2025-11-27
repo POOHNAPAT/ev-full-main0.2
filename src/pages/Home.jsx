@@ -302,16 +302,34 @@ export default function Home() {
       {approvedBookings && approvedBookings.length > 0 && (
         <section className="approved-booking-section">
           <div className="approved-booking-card">
-            <h3 className="approved-booking-title">การจองที่ได้รับการอนุมัติ</h3>
+            <div className="approved-booking-header">
+              <h3 className="approved-booking-title">
+                <span className="title-icon">✅</span>
+                การจองที่ได้รับการอนุมัติ
+              </h3>
+              <span className="booking-count-badge">{approvedBookings.length} รายการ</span>
+            </div>
             <div className="approved-list">
               {approvedBookings.map(b => (
                 <div key={b.id} className="approved-item">
-                  <div className="approved-info">
-                    <div className="approved-station">{b.stationName}</div>
-                    <div className="approved-meta">{b.date} • {b.startTime} - {b.endTime}</div>
-                  </div>
-                  <div className="approved-qr">
-                    <img alt="QR code" src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(JSON.stringify({ bookingId: b.id, stationId: b.stationId, userId: b.userId, email: b.userEmail }))}`} />
+                  <div className="approved-content">
+                    <div className="approved-info">
+                      <div className="station-icon">📍</div>
+                      <div className="station-details">
+                        <div className="approved-station">{b.stationName}</div>
+                        <div className="approved-meta">
+                          <span className="meta-icon">📅</span>
+                          {b.date} • {b.startTime} - {b.endTime}
+                        </div>
+                        <div className="booking-id">รหัสการจอง: #{b.id}</div>
+                      </div>
+                    </div>
+                    <div className="approved-qr-section">
+                      <div className="qr-label">สแกนเพื่อเข้าใช้งาน</div>
+                      <div className="approved-qr">
+                        <img alt="QR code" src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(JSON.stringify({ bookingId: b.id, stationId: b.stationId, userId: b.userId, email: b.userEmail }))}`} />
+                      </div>
+                    </div>
                   </div>
                   <div className="approved-actions">
                     <button className="complete-charge-button" onClick={async () => {

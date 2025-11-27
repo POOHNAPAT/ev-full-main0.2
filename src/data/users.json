@@ -38,6 +38,26 @@
       "telephone": "",
       "status": "active",
       "historyCookies": 0
+    },
+    {
+      "id": 5,
+      "email": "gjiegnjie@gmail.com",
+      "password": "ddd",
+      "name": "gjiegnjie",
+      "modelcar": "",
+      "telephone": "",
+      "status": "active",
+      "historyCookies": 0
+    },
+    {
+      "id": 6,
+      "email": "ooo@gmail.com",
+      "password": "ddd",
+      "name": "ooo",
+      "modelcar": "",
+      "telephone": "",
+      "status": "active",
+      "historyCookies": 0
     }
   ],
   "Admins": [
@@ -61,6 +81,20 @@
       "role": "admin",
       "password": "N$Jb(u>Jiq",
       "id": 1764144723205
+    },
+    {
+      "username": "test",
+      "name": "Test Admin",
+      "role": "admin",
+      "password": "test123",
+      "id": 9999
+    },
+    {
+      "username": "mmmmm",
+      "name": "mmmm",
+      "role": "admin",
+      "password": "n_L*_9<zOV",
+      "id": 1764208453839
     }
   ]
 }

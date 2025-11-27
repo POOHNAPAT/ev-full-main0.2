@@ -4,7 +4,7 @@
     "name": "Central World – ชั้น B2, กรุงเทพมหานคร",
     "type": "AC",
     "location": "กรุงเทพมหานคร",
-    "availablePorts": 1,
+    "availablePorts": 6,
     "allPorts": 6,
     "pricePerUnit": 7.5,
     "status": "available",
@@ -16,14 +16,18 @@
       "restaurant",
       "restroom"
     ],
-    "stationSerial": "ST001"
+    "stationSerial": "ST001",
+    "lat": 13.7461,
+    "lng": 100.5394,
+    "price": 7.5,
+    "currentSession": null
   },
   {
     "id": 2,
     "name": "Mega Bangna – ลานจอดรถ, สมุทรปราการ",
     "type": "Both",
     "location": "สมุทรปราการ",
-    "availablePorts": 1,
+    "availablePorts": 5,
     "allPorts": 8,
     "pricePerUnit": 8,
     "status": "available",
@@ -34,31 +38,42 @@
       "shopping",
       "restroom"
     ],
-    "stationSerial": "ST002"
+    "stationSerial": "ST002",
+    "lat": 13.6579,
+    "lng": 100.6116,
+    "price": 8,
+    "currentSession": null
   },
   {
     "id": 3,
     "name": "Terminal 21 – พัทยา, ชลบุรี",
     "type": "DC",
     "location": "ชลบุรี",
-    "availablePorts": 1,
+    "availablePorts": 3,
     "allPorts": 4,
     "pricePerUnit": 9,
-    "status": "busy",
+    "status": "charging",
     "latitude": 12.9276,
     "longitude": 100.8771,
     "amenities": [
       "restaurant",
       "parking"
     ],
-    "stationSerial": "ST003"
+    "stationSerial": "ST003",
+    "lat": 12.9276,
+    "lng": 100.8771,
+    "price": 9,
+    "currentSession": {
+      "user": "Auto",
+      "percent": 43
+    }
   },
   {
     "id": 4,
     "name": "หาดใหญ่ EV Hub, สงขลา",
     "type": "AC",
     "location": "สงขลา",
-    "availablePorts": 2,
+    "availablePorts": 3,
     "allPorts": 3,
     "status": "available",
     "pricePerUnit": 7.5,
@@ -68,14 +83,18 @@
       "restroom",
       "cafe"
     ],
-    "stationSerial": "ST004"
+    "stationSerial": "ST004",
+    "lat": 6.9993,
+    "lng": 100.4734,
+    "price": 7.5,
+    "currentSession": null
   },
   {
     "id": 5,
     "name": "Airport Plaza – เชียงใหม่",
     "type": "Both",
     "location": "เชียงใหม่",
-    "availablePorts": 2,
+    "availablePorts": 8,
     "allPorts": 8,
     "pricePerUnit": 7,
     "status": "available",
@@ -86,16 +105,20 @@
       "shopping",
       "bathroom"
     ],
-    "stationSerial": "ST005"
+    "stationSerial": "ST005",
+    "lat": 18.7883,
+    "lng": 98.9853,
+    "price": 7,
+    "currentSession": null
   },
   {
     "id": 6,
     "name": "Central Festival – Phuket",
     "type": "DC",
     "location": "ภูเก็ต",
-    "availablePorts": 0,
+    "availablePorts": 3,
     "allPorts": 4,
-    "status": "busy",
+    "status": "charging",
     "pricePerUnit": 9,
     "latitude": 7.8804,
     "longitude": 98.3923,
@@ -103,14 +126,21 @@
       "restaurant",
       "parking"
     ],
-    "stationSerial": "ST006"
+    "stationSerial": "ST006",
+    "lat": 7.8804,
+    "lng": 98.3923,
+    "price": 9,
+    "currentSession": {
+      "user": "Auto",
+      "percent": 100
+    }
   },
   {
     "id": 7,
     "name": "วิทยาลัยเทคนิค ขอนแก่น EV",
     "type": "AC",
     "location": "ขอนแก่น",
-    "availablePorts": 2,
+    "availablePorts": 0,
     "allPorts": 2,
     "status": "available",
     "pricePerUnit": 7.5,
@@ -126,7 +156,7 @@
     "name": "โครงการเมืองใหม่ – นครราชสีมา",
     "type": "Both",
     "location": "นครราชสีมา",
-    "availablePorts": 5,
+    "availablePorts": 10,
     "allPorts": 10,
     "status": "available",
     "pricePerUnit": 8,
@@ -137,7 +167,11 @@
       "cafe",
       "restroom"
     ],
-    "stationSerial": "ST008"
+    "stationSerial": "ST008",
+    "lat": 14.9799,
+    "lng": 102.0977,
+    "price": 8,
+    "currentSession": null
   },
   {
     "id": 9,
@@ -161,7 +195,7 @@
     "name": "บขส. เมือง – สระบุรี",
     "type": "AC",
     "location": "สระบุรี",
-    "availablePorts": 1,
+    "availablePorts": 2,
     "allPorts": 2,
     "status": "available",
     "pricePerUnit": 7.5,
@@ -171,14 +205,18 @@
       "restroom",
       "parking"
     ],
-    "stationSerial": "ST010"
+    "stationSerial": "ST010",
+    "lat": 14.5209,
+    "lng": 101.0158,
+    "price": 7.5,
+    "currentSession": null
   },
   {
     "id": 11,
     "name": "จุดพักริมทาง มอเตอร์เวย์",
     "type": "Both",
     "location": "ปทุมธานี",
-    "availablePorts": 2,
+    "availablePorts": 6,
     "allPorts": 6,
     "status": "available",
     "pricePerUnit": 8,
@@ -188,14 +226,18 @@
       "bathroom",
       "shopping"
     ],
-    "stationSerial": "ST011"
+    "stationSerial": "ST011",
+    "lat": 14.0209,
+    "lng": 100.5386,
+    "price": 8,
+    "currentSession": null
   },
   {
     "id": 12,
     "name": "สถานีรถไฟ เชียงราย",
     "type": "AC",
     "location": "เชียงราย",
-    "availablePorts": 1,
+    "availablePorts": 2,
     "allPorts": 2,
     "status": "available",
     "pricePerUnit": 7.5,
@@ -205,7 +247,11 @@
       "restroom",
       "cafe"
     ],
-    "stationSerial": "ST012"
+    "stationSerial": "ST012",
+    "lat": 19.9107,
+    "lng": 99.84,
+    "price": 7.5,
+    "currentSession": null
   },
   {
     "id": 13,
@@ -228,7 +274,7 @@
     "name": "จุดชมวิว เขาใหญ่",
     "type": "AC",
     "location": "นครราชสีมา",
-    "availablePorts": 2,
+    "availablePorts": 4,
     "allPorts": 4,
     "status": "available",
     "pricePerUnit": 7.5,
@@ -238,14 +284,18 @@
       "restroom",
       "restaurant"
     ],
-    "stationSerial": "ST014"
+    "stationSerial": "ST014",
+    "lat": 14.4378,
+    "lng": 101.3725,
+    "price": 7.5,
+    "currentSession": null
   },
   {
     "id": 15,
     "name": "ตลาดน้ำโบราณ – สมุทรสงคราม",
     "type": "Both",
     "location": "สมุทรสงคราม",
-    "availablePorts": 3,
+    "availablePorts": 4,
     "allPorts": 4,
     "status": "available",
     "pricePerUnit": 8,
@@ -255,7 +305,11 @@
       "shopping",
       "restroom"
     ],
-    "stationSerial": "ST015"
+    "stationSerial": "ST015",
+    "lat": 13.4134,
+    "lng": 100.0147,
+    "price": 8,
+    "currentSession": null
   },
   {
     "id": 16,
@@ -278,7 +332,7 @@
     "name": "ห้างโลตัส นนทบุรี",
     "type": "AC",
     "location": "นนทบุรี",
-    "availablePorts": 3,
+    "availablePorts": 5,
     "allPorts": 5,
     "status": "available",
     "pricePerUnit": 7.5,
@@ -288,7 +342,11 @@
       "wifi",
       "parking"
     ],
-    "stationSerial": "ST017"
+    "stationSerial": "ST017",
+    "lat": 13.8591,
+    "lng": 100.49,
+    "price": 7.5,
+    "currentSession": null
   },
   {
     "id": 18,
@@ -305,7 +363,11 @@
       "restroom",
       "shopping"
     ],
-    "stationSerial": "ST018"
+    "stationSerial": "ST018",
+    "lat": 14.474,
+    "lng": 100.123,
+    "price": 8,
+    "currentSession": null
   },
   {
     "id": 19,
@@ -378,7 +440,26 @@
     "stationSerial": "ST021",
     "lat": 13.8675794,
     "lng": 100.5907893,
-    "price": 0,
-    "currentSession": null
+    "price": 8,
+    "currentSession": null,
+    "pricePerUnit": 8
+  },
+  {
+    "name": "jmio43nto34`",
+    "type": "AC",
+    "location": "ktotkp34rm34p",
+    "availablePorts": 8,
+    "allPorts": 8,
+    "status": "available",
+    "latitude": 13.9038255,
+    "longitude": 100.5177869,
+    "amenities": [],
+    "id": 22,
+    "stationSerial": "ST022",
+    "lat": 13.9038255,
+    "lng": 100.5177869,
+    "price": 8,
+    "currentSession": null,
+    "pricePerUnit": 8
   }
 ]

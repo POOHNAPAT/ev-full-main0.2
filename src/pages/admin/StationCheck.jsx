@@ -1,16 +1,39 @@
+/**
+ * StationCheck Component
+ * หน้าตรวจสอบสถานีชาร์จสำหรับผู้ดูแลระบบ
+ * แสดงข้อมูลสถานี, รถที่กำลังชาร์จ, และประวัติการชาร์จ
+ */
+
+// นำเข้า React hooks
 import React, { useEffect, useState } from 'react';
+// นำเข้า routing utilities
 import { Link } from 'react-router-dom';
+// นำเข้าข้อมูลสถานีชาร์จ
 import stations from '../../data/stations';
+// นำเข้า functions สำหรับโหลดข้อมูลรถและประวัติ
 import { loadVehicles } from '../../data/vehicles';
 import { loadHistory } from '../../data/History';
 
+/**
+ * StationCheck Main Component
+ * จัดการการเลือกสถานี, ค้นหา, และแสดงข้อมูลรถและประวัติของสถานีนั้นๆ
+ */
 export default function StationCheck() {
+  // State สำหรับเก็บ ID ของสถานีที่เลือก
   const [selectedId, setSelectedId] = useState(stations[0] ? String(stations[0].id) : '');
+  // State สำหรับเก็บ serial number ของสถานี
   const [stationSerial, setStationSerial] = useState(stations[0] ? stations[0].stationSerial : '');
+  // State สำหรับรายการรถที่กำลังชาร์จที่สถานีนี้
   const [vehicles, setVehicles] = useState([]);
+  // State สำหรับประวัติการชาร์จของสถานีนี้
   const [history, setHistory] = useState([]);
+  // State สำหรับคำค้นหา (search query)
   const [query, setQuery] = useState('');
 
+  /**
+   * useEffect: อัปเดต stationSerial เมื่อ selectedId เปลี่ยน
+   * ดึง serial number ของสถานีที่เลือก
+   */
   useEffect(() => {
     if (!selectedId) return;
     const s = stations.find(st => String(st.id) === String(selectedId));
@@ -18,7 +41,7 @@ export default function StationCheck() {
     setStationSerial(serial);
   }, [selectedId]);
 
-  // Filter stations by name, stationSerial or id (case-insensitive)
+  // กรองสถานีตามคำค้นหา (ค้นหาจาก name, stationSerial หรือ id)
   const q = String(query || '').trim().toLowerCase();
   const filteredStations = q
     ? stations.filter((s) => {
@@ -30,7 +53,10 @@ export default function StationCheck() {
       })
     : stations;
 
-  // If query narrows to exactly one station, auto-select it for convenience
+  /**
+   * useEffect: ถ้าผลการค้นหาเหลือสถานีเดียว ให้เลือกสถานีนั้นโดยอัตโนมัติ
+   * เพื่อความสะดวกในการใช้งาน
+   */
   useEffect(() => {
     if (q && filteredStations.length === 1) {
       setSelectedId(String(filteredStations[0].id));
@@ -38,16 +64,23 @@ export default function StationCheck() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
+  /**
+   * useEffect: โหลดข้อมูลรถและประวัติเมื่อ stationSerial เปลี่ยน
+   * ดึงข้อมูลจาก data modules
+   */
   useEffect(() => {
     if (!stationSerial) {
+      // ถ้าไม่มี serial ให้ล้างข้อมูล
       setVehicles([]);
       setHistory([]);
       return;
     }
+    // โหลดรายการรถและประวัติของสถานีนี้
     setVehicles(loadVehicles(stationSerial));
     setHistory(loadHistory(stationSerial));
   }, [stationSerial]);
 
+  // แสดง UI ของหน้าตรวจสอบสถานี
   return (
     <div style={{ 
       minHeight: '100vh',
@@ -56,6 +89,7 @@ export default function StationCheck() {
       fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {/* ปุ่มกลับไปหน้า Admin */}
         <div style={{ marginBottom: 24 }}>
           <Link 
             to="/admin" 

@@ -1,61 +1,108 @@
+/**
+ * Admin Dashboard Component
+ * หน้าแดชบอร์ดสำหรับผู้ดูแลระบบ EV Charger
+ * จัดการสถานีชาร์จ, ผู้ใช้, การจอง, ประวัติการใช้งาน และผู้ดูแลระบบ
+ */
+
+// นำเข้า React และ hooks
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+// นำเข้า icons จาก lucide-react สำหรับ UI
 import { 
-  MapPin, 
-  BatteryCharging, 
-  Users, 
-  Calendar, 
-  DollarSign, 
-  Settings, 
-  LogOut, 
-  Search, 
-  Plus, 
-  Trash2, 
-  Edit, 
-  CheckCircle, 
-  XCircle, 
-  Power,
-  RefreshCw,
-  History,
-  Shield
+  MapPin,           // ไอคอนแผนที่
+  BatteryCharging,  // ไอคอนแบตเตอรี่ชาร์จ
+  Users,            // ไอคอนผู้ใช้
+  Calendar,         // ไอคอนปฏิทิน
+  DollarSign,       // ไอคอนเงิน
+  Settings,         // ไอคอนตั้งค่า
+  LogOut,           // ไอคอนออกจากระบบ
+  Search,           // ไอคอนค้นหา
+  Plus,             // ไอคอนเพิ่ม
+  Trash2,           // ไอคอนลบ
+  Edit,             // ไอคอนแก้ไข
+  CheckCircle,      // ไอคอนอนุมัติ
+  XCircle,          // ไอคอนปฏิเสธ
+  Power,            // ไอคอนพลังงาน
+  RefreshCw,        // ไอคอนรีเฟรช
+  History,          // ไอคอนประวัติ
+  Shield            // ไอคอนการป้องกัน
 } from 'lucide-react';
 import MapPage from '../Map';
 import '../../styles/Map.css';
-// All data will be loaded from API - no local imports needed
+// ข้อมูลทั้งหมดจะถูกโหลดจาก API - ไม่ต้อง import ไฟล์ data โดยตรง
 
-// Helper to compute API base URL
+/**
+ * Helper function สำหรับดึง API base URL
+ * @returns {string} URL ของ API server
+ */
 const getApiBase = () => {
   return import.meta.env.VITE_API_BASE || 'http://localhost:4000';
 };
 
-// Note: bookings JSON not present in data folder — start with an empty bookings array.
+// หมายเหตุ: ไฟล์ bookings.json อาจยังไม่มี — เริ่มต้นด้วย array ว่าง
 
 // --- COMPONENTS ---
 
-// 1. Login Component
+/**
+ * Login Component
+ * Component สำหรับหน้า login ของผู้ดูแลระบบ
+ * @param {Function} onLogin - callback เมื่อ login สำเร็จ
+ * @param {Array} admins - รายการผู้ดูแลระบบจาก API
+ */
 const Login = ({ onLogin, admins = [] }) => {
+  // State สำหรับเก็บ username และ password
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  // Debug: แสดงจำนวนผู้ดูแลที่โหลดมาเมื่อ component ถูก render
+  useEffect(() => {
+    console.log('Login component loaded. Admins available:', admins.length);
+    if (admins.length > 0) {
+      console.log('Admin usernames:', admins.map(a => a.username));
+    }
+  }, [admins]);
+
+  /**
+   * ฟังก์ชันจัดการการ submit form login
+   * ตรวจสอบ username และ password กับรายการผู้ดูแล
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Prefer using admins loaded from JSON / API. Fallback to legacy hardcoded check if admins not available yet.
+    console.log('Login attempt:', { username, passwordLength: password.length });
+    console.log('Available admins:', admins.length);
+
+    // ใช้ข้อมูล admins ที่โหลดจาก JSON/API ก่อน ถ้าไม่มีค่อยใช้ hardcoded fallback
     let matched = null;
     if (Array.isArray(admins) && admins.length > 0) {
-      matched = admins.find(a => String(a.username || '') === String(username) && String(a.password || '') === String(password));
+      // ค้นหาผู้ดูแลที่ username และ password ตรงกัน
+      matched = admins.find(a => String(a.username || '').trim() === String(username).trim() && String(a.password || '') === String(password));
+      
+      if (!matched) {
+        // Debug: แสดงผลการเปรียบเทียบแต่ละรายการ
+        console.log('No match found. Checking credentials...');
+        admins.forEach(a => {
+          const usernameMatch = String(a.username || '').trim() === String(username).trim();
+          const passwordMatch = String(a.password || '') === String(password);
+          console.log(`Admin ${a.username}: username match=${usernameMatch}, password match=${passwordMatch}`);
+        });
+      }
     } else {
+      // Fallback: ใช้ hardcoded admin credentials
+      console.log('No admins loaded, using fallback');
       if (username === 'admin' && password === 'password') matched = { username, role: 'admin', name: 'Super Admin' };
     }
 
+    // ถ้าพบผู้ดูแลที่ตรงกัน
     if (matched) {
+      console.log('Login successful:', matched.username);
       const adminUser = { username: matched.username, role: matched.role || 'admin', name: matched.name || matched.username, id: matched.id || Date.now() };
       localStorage.setItem('adminSession', JSON.stringify(adminUser));
       onLogin(adminUser);
       return;
     }
 
-    alert('Login Failed: กรุณาตรวจสอบ username และ password');
+    alert('Login Failed: กรุณาตรวจสอบ username และ password\n(ผู้ดูแลที่เพิ่งสร้างสามารถเข้าสู่ระบบได้ทันที)');
   };
 
   return (
@@ -93,19 +140,39 @@ const Login = ({ onLogin, admins = [] }) => {
   );
 };
 
+/**
+ * PendingBookings Component
+ * แสดงรายการจองที่รออนุมัติและจัดการการอนุมัติ/ปฏิเสธ
+ * @param {Array} bookings - รายการจองทั้งหมด
+ * @param {Function} setBookings - ฟังก์ชันอัปเดต bookings
+ * @param {Array} stations - รายการสถานีชาร์จ
+ * @param {Function} setStations - ฟังก์ชันอัปเดต stations
+ * @param {Function} addToast - ฟังก์ชันแสดง notification
+ */
 const PendingBookings = ({ bookings, setBookings, stations, setStations, addToast }) => {
+  // กรองเฉพาะการจองที่มีสถานะ pending
   const pending = Array.isArray(bookings) ? bookings.filter(b => String(b.status).toLowerCase() === 'pending') : [];
+  // State สำหรับเก็บการจองที่กำลังจะอนุมัติ (สำหรับ confirmation dialog)
   const [confirmTarget, setConfirmTarget] = React.useState(null);
+  // State สำหรับแสดงสถานะการประมวลผล
   const [isProcessing, setIsProcessing] = React.useState(false);
 
+  // เปิด confirmation dialog
   const openConfirm = (b) => {
     setConfirmTarget(b);
   };
 
+  // ปิด confirmation dialog
   const closeConfirm = () => {
     setConfirmTarget(null);
   };
 
+  /**
+   * ฟังก์ชันอนุมัติการจอง
+   * - อัปเดตสถานะการจองเป็น 'approved'
+   * - ลดจำนวนช่องว่างของสถานี
+   * - อัปเดต UI และแสดง notification
+   */
   const doApprove = async () => {
     if (!confirmTarget) return;
     setIsProcessing(true);
@@ -211,6 +278,7 @@ const PendingBookings = ({ bookings, setBookings, stations, setStations, addToas
             // Get station name from stations array by stationId
             const station = stations.find(s => String(s.id) === String(b.stationId));
             const stationName = station?.name || b.stationName || 'ไม่ทราบชื่อสถานี';
+            const currentAvail = station ? Number(station.availablePorts || station.available || 0) : null;
             
             return (
               <div key={b.id} className="p-4 border rounded-lg flex justify-between items-start bg-slate-50">
@@ -220,9 +288,18 @@ const PendingBookings = ({ bookings, setBookings, stations, setStations, addToas
                     <div className="text-sm text-gray-600 mt-1">วันที่: {b.date} • เวลา: {b.startTime} - {b.endTime}</div>
                     <div className="text-xs text-gray-500 mt-1">ส่งเมื่อ: {new Date(b.timestamp).toLocaleString()}</div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <button onClick={() => openConfirm(b)} className="px-3 py-1 rounded bg-green-600 text-white text-sm">Approve</button>
-                    <button onClick={() => handleReject(b)} className="px-3 py-1 rounded bg-red-600 text-white text-sm">Reject</button>
+                  <div className="flex flex-col gap-2 items-end">
+                    <div className={`text-xs px-2 py-1 rounded-full border ${currentAvail !== null && currentAvail <= 0 ? 'bg-red-50 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+                      ช่องว่างที่เหลืออยู่: {currentAvail !== null ? currentAvail : 'ไม่ทราบ'}
+                    </div>
+                    <button 
+                      onClick={() => openConfirm(b)} 
+                      disabled={currentAvail !== null && currentAvail <= 0}
+                      className={`px-3 py-1 rounded text-sm ${currentAvail !== null && currentAvail <= 0 ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
+                    >
+                      Approve
+                    </button>
+                    <button onClick={() => handleReject(b)} className="px-3 py-1 rounded bg-red-600 text-white text-sm hover:bg-red-700">Reject</button>
                   </div>
               </div>
             );
@@ -364,10 +441,11 @@ export default function App() {
     Promise.all([
       fetchJson(base + '/api/stations'),
       fetchJson(base + '/api/users'),
+      fetchJson(base + '/api/admins'),
       fetchJson(base + '/api/payments'),
       fetchJson(base + '/api/bookings'),
       fetchJson(base + '/api/contacts'),
-    ]).then(([stationsRes, usersRes, paymentsRes, bookingsRes, contactsRes]) => {
+    ]).then(([stationsRes, usersRes, adminsRes, paymentsRes, bookingsRes, contactsRes]) => {
       // stations: normalize raw stations (latitude/longitude) into UI shape (lat/lng)
       const rawArr = Array.isArray(stationsRes) ? stationsRes : (Array.isArray(stationsRes?.stations) ? stationsRes.stations : []);
       const sUI = (Array.isArray(rawArr) ? rawArr : []).map(raw => ({
@@ -385,14 +463,16 @@ export default function App() {
       }));
       setStations(sUI);
 
-      // users/admins — normalize regardless of source
+      // users — normalize regardless of source
       const uSource = Array.isArray(usersRes?.users) ? usersRes.users : (Array.isArray(usersRes) ? usersRes : []);
       setAppUsers(uSource.map(normalizeUser));
-      const aSource = Array.isArray(usersRes?.Admins) ? usersRes.Admins : (Array.isArray(usersRes?.admins) ? usersRes.admins : []);
-      // Also include any users from the users list that have role 'admin'
+      
+      // admins — use dedicated API endpoint
+      const aSource = Array.isArray(adminsRes) ? adminsRes : [];
+      // Also include any users from the users list that have role 'admin' as fallback
       const adminsFromUsers = (Array.isArray(uSource) ? uSource : []).filter(u => String(u.role || '').toLowerCase() === 'admin').map(u => ({ id: u.id, username: (u.email ? String(u.email).split('@')[0] : (u.username || u.name || u.id)), name: u.name || u.username || '', role: 'admin', ...u }));
       const combined = [
-        ...aSource.map(a => ({ id: a.id, username: a.username, name: a.name, role: a.role || 'admin', ...a })),
+        ...aSource.map(a => ({ id: a.id, username: a.username, name: a.name, role: a.role || 'admin', password: a.password, ...a })),
         ...adminsFromUsers
       ];
       // dedupe by id or username
@@ -913,6 +993,19 @@ const StationManagement = ({ stations, setStations }) => {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ราคาต่อหน่วย (฿/kWh)</label>
+                <input 
+                  type="number" 
+                  min="0"
+                  step="0.5"
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  value={editingStation.price || 0}
+                  onChange={(e) => setEditingStation({...editingStation, price: Number(e.target.value)})}
+                />
+                <p className="text-xs text-gray-500 mt-1">ราคาค่าไฟฟ้าต่อหน่วย (kWh)</p>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">สถานะ</label>
                 <select 
                   className="w-full border border-gray-300 rounded px-3 py-2"
@@ -935,10 +1028,18 @@ const StationManagement = ({ stations, setStations }) => {
                   // Try to update via API
                   const base = getApiBase();
                   if (base) {
+                    // Prepare station data with pricePerUnit for API
+                    const stationData = {
+                      ...editingStation,
+                      pricePerUnit: editingStation.price || 0,
+                      latitude: editingStation.lat,
+                      longitude: editingStation.lng
+                    };
+                    
                     fetch(base + '/api/stations/' + editingStation.id, {
                       method: 'PUT',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(editingStation)
+                      body: JSON.stringify(stationData)
                     }).catch(() => {
                       console.warn('API update failed, using local state only');
                     });
@@ -994,6 +1095,12 @@ const StationManagement = ({ stations, setStations }) => {
                 <span>ช่องว่าง:</span>
                 <span className={`font-semibold ${station.availablePorts > 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {station.availablePorts} / {station.allPorts}
+                </span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span>ราคา:</span>
+                <span className="font-semibold text-blue-600">
+                  ฿{station.price || 0}/kWh
                 </span>
               </div>
             </div>
@@ -1689,7 +1796,7 @@ const AdminManagement = ({ admins, setAdmins, addToast }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       }).then(r => r.json()).then(created => {
-        addToast('ผู้ดูแลถูกบันทึกไปยังเซิร์ฟเวอร์', 'success');
+        addToast('ผู้ดูแลถูกบันทึกแล้ว สามารถเข้าสู่ระบบได้ทันที', 'success', 4000);
         setAdmins(prev => [...prev, created]);
         setNewAdmin({ username: '', name: '', role: 'admin' });
         setLastGeneratedPassword(created.password || generated);
@@ -1725,16 +1832,35 @@ const AdminManagement = ({ admins, setAdmins, addToast }) => {
                     <button type="submit" className="bg-blue-600 text-white px-6 rounded hover:bg-blue-700">เพิ่ม</button>
                 </form>
                   {lastGeneratedPassword && (
-                    <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded flex items-center gap-3">
-                      <div className="flex-1 text-sm">
-                        <div className="text-xs text-gray-600">รหัสผ่านที่สร้างขึ้น (โปรดบันทึกไว้)</div>
-                        <div className="font-mono font-semibold text-lg">{lastGeneratedPassword}</div>
-                      </div>
-                      <div>
-                        <button onClick={async () => {
-                          try { await navigator.clipboard.writeText(lastGeneratedPassword); addToast && addToast('คัดลอกรหัสผ่านแล้ว', 'success', 2000); }
-                          catch (e) { addToast && addToast('ไม่สามารถคัดลอกรหัสผ่าน', 'error', 2000); }
-                        }} className="bg-blue-600 text-white px-3 py-1 rounded">คัดลอก</button>
+                    <div className="mt-3 p-4 bg-green-50 border-2 border-green-300 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="text-green-600" size={20} />
+                            <div className="font-semibold text-green-800">สร้างผู้ดูแลสำเร็จ!</div>
+                          </div>
+                          <div className="text-sm text-gray-700 mb-1">
+                            <strong>Username:</strong> {newAdmin.username || admins[admins.length - 1]?.username || '-'}
+                          </div>
+                          <div className="text-sm mb-2">
+                            <span className="text-gray-700"><strong>รหัสผ่าน:</strong></span>
+                            <div className="font-mono font-bold text-lg text-green-900 bg-white px-3 py-2 rounded border border-green-200 mt-1">{lastGeneratedPassword}</div>
+                          </div>
+                          <div className="text-xs text-orange-700 bg-orange-50 px-2 py-1 rounded border border-orange-200">
+                            ⚠️ โปรดบันทึกรหัสผ่านนี้ไว้ — ผู้ดูแลสามารถเข้าสู่ระบบได้ทันที
+                          </div>
+                        </div>
+                        <div>
+                          <button onClick={async () => {
+                            try { 
+                              await navigator.clipboard.writeText(lastGeneratedPassword); 
+                              addToast && addToast('คัดลอกรหัสผ่านแล้ว', 'success', 2000); 
+                            }
+                            catch (e) { addToast && addToast('ไม่สามารถคัดลอกรหัสผ่าน', 'error', 2000); }
+                          }} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-medium">
+                            คัดลอก
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
